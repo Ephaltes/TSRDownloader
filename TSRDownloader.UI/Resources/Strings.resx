@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="App_Name" xml:space="preserve">
+    <value>TSR Downloader</value>
+  </data>
+  <data name="Menu_File" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Menu_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Menu_Help" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>About TSR Downloader</value>
+  </data>
+  <data name="Main_Status_Monitoring" xml:space="preserve">
+    <value>Clipboard: ✅ Monitoring active</value>
+  </data>
+  <data name="Column_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Column_Id" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="Column_FileName" xml:space="preserve">
+    <value>File name</value>
+  </data>
+  <data name="Column_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="Column_Progress" xml:space="preserve">
+    <value>Progress</value>
+  </data>
+  <data name="Overall_Total" xml:space="preserve">
+    <value>Total:</value>
+  </data>
+  <data name="Overall_Done" xml:space="preserve">
+    <value>done</value>
+  </data>
+  <data name="StatusBar_Queue" xml:space="preserve">
+    <value>Queue:</value>
+  </data>
+  <data name="StatusBar_Active" xml:space="preserve">
+    <value>Active:</value>
+  </data>
+  <data name="StatusBar_Errors" xml:space="preserve">
+    <value>Errors:</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_DownloadDirectory" xml:space="preserve">
+    <value>Download directory:</value>
+  </data>
+  <data name="Settings_Browse" xml:space="preserve">
+    <value>📁 Browse...</value>
+  </data>
+  <data name="Settings_MaxDownloads" xml:space="preserve">
+    <value>Maximum parallel downloads (1-10):</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Language:</value>
+  </data>
+  <data name="Settings_NotifyOnLink" xml:space="preserve">
+    <value>Show a notification when a link is found</value>
+  </data>
+  <data name="Settings_StartOnStartup" xml:space="preserve">
+    <value>Launch the application at system startup</value>
+  </data>
+  <data name="Settings_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Settings_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Settings_ChooseDirectory" xml:space="preserve">
+    <value>Select download directory</value>
+  </data>
+  <data name="Status_Queued" xml:space="preserve">
+    <value>Queued</value>
+  </data>
+  <data name="Status_Downloading" xml:space="preserve">
+    <value>Downloading...</value>
+  </data>
+  <data name="Status_Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="Status_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Status_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Progress_QueuePosition" xml:space="preserve">
+    <value>Waiting in queue</value>
+  </data>
+  <data name="Progress_UnknownError" xml:space="preserve">
+    <value>Unknown error</value>
+  </data>
+  <data name="Notify_LinkFound_One" xml:space="preserve">
+    <value>1 link found and added to the list</value>
+  </data>
+  <data name="Notify_LinkFound_Many" xml:space="preserve">
+    <value>{0} links found and added to the list</value>
+  </data>
+  <data name="Notify_UrlCopied" xml:space="preserve">
+    <value>Copied URL for {0}</value>
+  </data>
+  <data name="About_Message" xml:space="preserve">
+    <value>Monitors the clipboard for TSR links and downloads them automatically.</value>
+  </data>
+  <data name="Status_WaitingToExtract" xml:space="preserve">
+    <value>Waiting to extract</value>
+  </data>
+  <data name="Status_Extracting" xml:space="preserve">
+    <value>Extracting...</value>
+  </data>
+  <data name="Status_ExtractionCompleted" xml:space="preserve">
+    <value>Extraction complete</value>
+  </data>
+  <data name="Status_ExtractionFailed" xml:space="preserve">
+    <value>Extraction failed</value>
+  </data>
+  <data name="Progress_WaitingToExtract" xml:space="preserve">
+    <value>Waiting to extract</value>
+  </data>
+  <data name="Progress_ExtractionDone" xml:space="preserve">
+    <value>Extraction complete</value>
+  </data>
+  <data name="Progress_ExtractionError" xml:space="preserve">
+    <value>Extraction error</value>
+  </data>
+  <data name="Settings_ExtractZip" xml:space="preserve">
+    <value>Extract downloaded zip archives</value>
+  </data>
+  <data name="Settings_DeleteZipAfterExtract" xml:space="preserve">
+    <value>Delete zip after successful extraction</value>
+  </data>
+  <data name="Conflict_Title" xml:space="preserve">
+    <value>File already exists</value>
+  </data>
+  <data name="Conflict_Message" xml:space="preserve">
+    <value>The file "{0}" already exists. What would you like to do?</value>
+  </data>
+  <data name="Conflict_Overwrite" xml:space="preserve">
+    <value>Overwrite</value>
+  </data>
+  <data name="Conflict_Skip" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="Conflict_ApplyToAll" xml:space="preserve">
+    <value>Apply to all files in this archive</value>
+  </data>
+  <data name="Settings_Updates" xml:space="preserve">
+    <value>When a new version is available:</value>
+  </data>
+  <data name="Settings_UpdateMode_Automatic" xml:space="preserve">
+    <value>Install automatically</value>
+  </data>
+  <data name="Settings_UpdateMode_NotifyOnly" xml:space="preserve">
+    <value>Notify only</value>
+  </data>
+  <data name="Settings_UpdateMode_Disabled" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Settings_Version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="Settings_DevelopmentBuild" xml:space="preserve">
+    <value>Development build</value>
+  </data>
+  <data name="Update_WindowTitle" xml:space="preserve">
+    <value>Updating TSR Downloader</value>
+  </data>
+  <data name="Update_Downloading" xml:space="preserve">
+    <value>Updating to version {0}…</value>
+  </data>
+  <data name="Update_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Update_DownloadsActive" xml:space="preserve">
+    <value>Downloads are in progress. Finish or cancel them first, then try again.</value>
+  </data>
+  <data name="Update_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Toast_UpdateAvailable_Title" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="Toast_UpdateAvailable_Message" xml:space="preserve">
+    <value>TSR Downloader {0} is available.</value>
+  </data>
+  <data name="Toast_UpdateAvailable_Install" xml:space="preserve">
+    <value>Install now</value>
+  </data>  <data name="Settings_Tab_General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Settings_Tab_Downloads" xml:space="preserve">
+    <value>Downloads</value>
+  </data>
+  <data name="Settings_Tab_Updates" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="Settings_TicketDelay" xml:space="preserve">
+    <value>Wait before a download starts (seconds, 0-60):</value>
+  </data>
+  <data name="Settings_TicketDelayHint" xml:space="preserve">
+    <value>TSR requires a short wait after a download is requested. Increase it if downloads fail.</value>
+  </data>
+  <data name="Main_Status_Paused" xml:space="preserve">
+    <value>Clipboard: ⏸ Monitoring paused</value>
+  </data>
+  <data name="Toolbar_Pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="Toolbar_Resume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="Toolbar_PauseHint" xml:space="preserve">
+    <value>Pauses clipboard monitoring and all running downloads</value>
+  </data>
+  <data name="Toolbar_ClearFinished" xml:space="preserve">
+    <value>Clear finished</value>
+  </data>
+  <data name="Toolbar_OpenFolder" xml:space="preserve">
+    <value>Open download folder</value>
+  </data>
+  <data name="Context_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Context_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Context_ShowInFolder" xml:space="preserve">
+    <value>Show in folder</value>
+  </data>
+  <data name="Context_CopyUrl" xml:space="preserve">
+    <value>Copy URL</value>
+  </data>
+  <data name="Settings_DownloadDirectoryRequired" xml:space="preserve">
+    <value>Please choose a download folder.</value>
+  </data>
+  <data name="Settings_DownloadDirectoryInvalid" xml:space="preserve">
+    <value>Please enter a complete folder path, e.g. C:\Users\Name\Downloads\TSR.</value>
+  </data>
+  <data name="Main_EmptyHint" xml:space="preserve">
+    <value>Copy a link from thesimsresource.com — it will be downloaded automatically.</value>
+  </data>
+</root>

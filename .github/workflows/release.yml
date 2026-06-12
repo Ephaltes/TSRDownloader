@@ -1,0 +1,99 @@
+name: Release
+
+# Every push to main (merged PRs and direct pushes) ships a new 1.1.x release.
+# Docs-only changes do not.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+
+permissions:
+  contents: write
+
+# Never run two releases at once — they would compute the same patch number.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  VPK_VERSION: 1.2.161
+  PACK_ID: TSRDownloader
+  UI_PROJECT: TSRDownloader.UI/TSRDownloader.UI.csproj
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Compute version
+        id: version
+        run: |
+          prefix="$(dotnet msbuild "$UI_PROJECT" -getProperty:VersionPrefix | tr -d '\r')"
+          bash .github/scripts/next-version.sh "$prefix" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
+
+      - name: Write release notes
+        env:
+          PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
+        run: |
+          if [ -n "$PREVIOUS_TAG" ]; then
+            git log --pretty='- %s' "$PREVIOUS_TAG..HEAD" > notes.md
+          else
+            git log --pretty='- %s' -20 > notes.md
+          fi
+          cat notes.md
+
+      - name: Test
+        run: dotnet test TSRDownloader.slnx -c Release
+
+      - name: Publish
+        run: >
+          dotnet publish "$UI_PROJECT"
+          -c Release -r win-x64 --self-contained false
+          -p:Version=${{ steps.version.outputs.version }}
+          -o publish
+
+      - name: Install vpk
+        run: dotnet tool install -g vpk --version "$VPK_VERSION"
+
+      - name: Download previous release (for delta packages)
+        run: >
+          vpk download github
+          --repoUrl "https://github.com/${{ github.repository }}"
+          --token "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Pack
+        run: >
+          vpk pack
+          --packId "$PACK_ID"
+          --packVersion "${{ steps.version.outputs.version }}"
+          --packDir publish
+          --packTitle "TSR Downloader"
+          --mainExe TSRDownloader.exe
+          --icon TSRDownloader.UI/iconA.ico
+          --framework net10.0-x64-desktop
+          --releaseNotes notes.md
+
+      - name: Upload GitHub release
+        run: >
+          vpk upload github
+          --repoUrl "https://github.com/${{ github.repository }}"
+          --token "${{ secrets.GITHUB_TOKEN }}"
+          --publish
+          --tag "v${{ steps.version.outputs.version }}"
+          --releaseName "TSRDownloader ${{ steps.version.outputs.version }}"
+          --targetCommitish "${{ github.sha }}"

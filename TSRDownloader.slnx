@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Build Settings/" />
+  <Project Path="TSRDownloader.Core.Tests/TSRDownloader.Core.Tests.csproj" />
+  <Project Path="TSRDownloader.Core/TSRDownloader.Core.csproj" />
+  <Project Path="TSRDownloader.E2E.Tests/TSRDownloader.E2E.Tests.csproj" />
+  <Project Path="TSRDownloader.Integration.Tests/TSRDownloader.Integration.Tests.csproj" />
+  <Project Path="TSRDownloader.TestHelper/TSRDownloader.TestHelper.csproj" />
+  <Project Path="TSRDownloader.UI.Tests/TSRDownloader.UI.Tests.csproj" />
+  <Project Path="TSRDownloader.UI/TSRDownloader.UI.csproj" />
+</Solution>

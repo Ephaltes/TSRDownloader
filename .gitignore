@@ -427,3 +427,13 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+**/[Oo]bj/*
+
+*.claude
+*.copilot
+*publish
+
+# Superpowers design specs and plans (local only)
+**/superpowers/
+**/.superpowers/

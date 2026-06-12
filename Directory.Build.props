@@ -1,0 +1,12 @@
+<Project>
+	<PropertyGroup Label="Version">
+		<!-- Major.Minor of the app. The release pipeline appends the patch number
+		     (v1.1.0, v1.1.1, ...); bump this to start a new series. -->
+		<VersionPrefix>1.1</VersionPrefix>
+	</PropertyGroup>
+	<PropertyGroup Label="Globals">
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>false</ImplicitUsings>
+	</PropertyGroup>
+</Project>

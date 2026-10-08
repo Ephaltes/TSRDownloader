@@ -14,7 +14,8 @@ namespace TSRDownloader.UI.Tests;
 public class MainViewModelTests
 {
     private static MainViewModel NewVm(
-        IDownloadService download, IClipboardService clipboard, IConfigService config)
+        IDownloadService download, IClipboardService clipboard, IConfigService config,
+        IUpdateService? updates = null)
     {
         return new MainViewModel(
             download,
@@ -22,8 +23,44 @@ public class MainViewModelTests
             clipboard,
             config,
             Substitute.For<INotificationService>(),
+            updates ?? Substitute.For<IUpdateService>(),
             LocalizationManager.Instance,
             new ImmediateDispatcher());
+    }
+
+    private static MainViewModel NewVmWithUpdates(bool isInstalled, string? currentVersion = null)
+    {
+        IUpdateService updates = Substitute.For<IUpdateService>();
+        updates.IsInstalled.Returns(isInstalled);
+        updates.CurrentVersion.Returns(currentVersion);
+        return NewVm(Substitute.For<IDownloadService>(), Substitute.For<IClipboardService>(),
+            Substitute.For<IConfigService>(), updates);
+    }
+
+    [Fact]
+    public void VersionText_Should_ShowInstalledVersion_When_Installed()
+    {
+        // Arrange
+        LocalizationManager.Instance.SetLanguage("en");
+
+        // Act
+        MainViewModel vm = NewVmWithUpdates(isInstalled: true, currentVersion: "1.1.7");
+
+        // Assert
+        vm.VersionText.ShouldBe("Version 1.1.7");
+    }
+
+    [Fact]
+    public void VersionText_Should_ShowDevelopmentBuild_When_NotInstalled()
+    {
+        // Arrange
+        LocalizationManager.Instance.SetLanguage("en");
+
+        // Act
+        MainViewModel vm = NewVmWithUpdates(isInstalled: false);
+
+        // Assert
+        vm.VersionText.ShouldBe("Development build");
     }
 
     [Fact]

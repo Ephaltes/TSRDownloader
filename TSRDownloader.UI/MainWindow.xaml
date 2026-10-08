@@ -345,6 +345,9 @@
         <!-- Row 3: Status Bar -->
         <Border Grid.Row="3" Margin="0,8,0,0" Padding="10,4"
                 Background="#F5F5F5" CornerRadius="4">
+            <DockPanel>
+            <TextBlock DockPanel.Dock="Right" Text="{Binding VersionText}"
+                       FontSize="12" Foreground="#999" VerticalAlignment="Center"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock FontSize="12" Foreground="#666">
                     <Run Text="{loc:Loc StatusBar_Queue}"/>
@@ -361,6 +364,7 @@
                     <Run Text="{Binding FailedCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>
             </StackPanel>
+            </DockPanel>
         </Border>
     </Grid>
 </Window>

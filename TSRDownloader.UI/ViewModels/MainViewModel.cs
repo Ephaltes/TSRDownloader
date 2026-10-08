@@ -19,6 +19,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IClipboardService _clipboardService;
     private readonly IConfigService _configService;
     private readonly INotificationService _notificationService;
+    private readonly IUpdateService _updateService;
     private readonly LocalizationManager _localization;
     private readonly IUiDispatcher _dispatcher;
     private readonly Dictionary<int, DownloadItemViewModel> _vmLookup = [];
@@ -51,12 +52,17 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private double _overallProgress;
 
+    /// <summary>"Version 1.1.7", or "Development build" when not installed via the installer.</summary>
+    [ObservableProperty]
+    private string _versionText = string.Empty;
+
     public MainViewModel(
         IDownloadService downloadService,
         IArchiveExtractionService extractionService,
         IClipboardService clipboardService,
         IConfigService configService,
         INotificationService notificationService,
+        IUpdateService updateService,
         LocalizationManager localization,
         IUiDispatcher dispatcher)
     {
@@ -65,8 +71,10 @@ public partial class MainViewModel : ObservableObject
         _clipboardService = clipboardService;
         _configService = configService;
         _notificationService = notificationService;
+        _updateService = updateService;
         _localization = localization;
         _dispatcher = dispatcher;
+        VersionText = FormatVersionText();
 
         _downloadService.ItemChanged += OnItemChanged;
         _downloadService.QueueStatsChanged += OnQueueStatsChanged;
@@ -82,8 +90,13 @@ public partial class MainViewModel : ObservableObject
         {
             foreach (DownloadItemViewModel vm in DownloadItems)
                 vm.UpdateFromModel();
+            VersionText = FormatVersionText();
         });
     }
+
+    private string FormatVersionText() => _updateService.IsInstalled
+        ? _localization.Format("Settings_Version", _updateService.CurrentVersion ?? string.Empty)
+        : _localization.Get("Settings_DevelopmentBuild");
 
     /// <summary>
     /// Called by the ClipboardHookService when new clipboard content is detected.

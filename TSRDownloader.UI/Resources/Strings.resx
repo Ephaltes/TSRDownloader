@@ -324,4 +324,19 @@
   <data name="Toolbar_DownloadsHint" xml:space="preserve">
     <value>Pauses or resumes all downloads. Links are still added to the list while paused.</value>
   </data>
+  <data name="Progress_InQueue" xml:space="preserve">
+    <value>#{0} in queue</value>
+  </data>
+  <data name="Progress_WaitingForTsr" xml:space="preserve">
+    <value>Waiting for TSR…</value>
+  </data>
+  <data name="Progress_Retrying" xml:space="preserve">
+    <value>Retrying ({0}/{1})…</value>
+  </data>
+  <data name="Progress_Transfer" xml:space="preserve">
+    <value>{0} · {1}/s · {2} left</value>
+  </data>
+  <data name="Progress_TransferNoTotal" xml:space="preserve">
+    <value>{0} · {1}/s</value>
+  </data>
 </root>

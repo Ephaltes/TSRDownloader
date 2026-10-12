@@ -22,6 +22,9 @@ public partial class LocalizationManager : ObservableObject
 
     private CultureInfo _culture = CultureInfo.GetCultureInfo(DefaultLanguage);
 
+    /// <summary>The culture of the current language, for formatting numbers.</summary>
+    public CultureInfo Culture => _culture;
+
     /// <summary>The current two-letter language code (e.g. "de", "en").</summary>
     public string CurrentLanguage => _culture.TwoLetterISOLanguageName;
 

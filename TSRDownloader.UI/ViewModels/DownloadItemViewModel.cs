@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TSRDownloader.Core.Models;
+using TSRDownloader.Core.Services;
 using TSRDownloader.UI.Localization;
 using TSRDownloader.UI.Presentation;
 using TSRDownloader.UI.Services;
@@ -16,6 +17,7 @@ public partial class DownloadItemViewModel : ObservableObject
 {
     private readonly DownloadItem _model;
     private readonly INotificationService _notificationService;
+    private readonly TransferRateMeter _rateMeter = new();
 
     public DownloadItem Model => _model;
 
@@ -56,10 +58,15 @@ public partial class DownloadItemViewModel : ObservableObject
     {
         DownloadStatusPresentation presentation = DownloadStatusPresenter.For(_model.Status);
 
+        if (IsTransferring)
+            _rateMeter.Sample(_model.DownloadedBytes, Environment.TickCount64);
+        else
+            _rateMeter.Reset();
+
         StatusIcon = presentation.Icon;
         StatusText = LocalizationManager.Instance.Get(presentation.LabelKey);
         StatusColor = presentation.Color;
-        IsIndeterminate = presentation.IsIndeterminate;
+        IsIndeterminate = presentation.IsIndeterminate || IsWaitingForTransfer;
 
         Progress = _model.Status is DownloadStatus.Completed or DownloadStatus.ExtractionCompleted
             ? 100
@@ -67,10 +74,24 @@ public partial class DownloadItemViewModel : ObservableObject
         ProgressText = BuildProgressText();
     }
 
+    /// <summary>Position among the queued items (1 = next to start); 0 when not queued.</summary>
+    [ObservableProperty]
+    private int _queuePosition;
+
+    partial void OnQueuePositionChanged(int value) => ProgressText = BuildProgressText();
+
+    // Downloading but no bytes yet: TSR's ticket handshake (or a retry wait) is still running.
+    private bool IsWaitingForTransfer =>
+        _model.Status == DownloadStatus.Downloading && _model.DownloadedBytes == 0 && _model.TotalBytes == 0;
+
+    private bool IsTransferring => _model.Status == DownloadStatus.Downloading && !IsWaitingForTransfer;
+
     private string BuildProgressText() => _model.Status switch
     {
-        DownloadStatus.Queued => LocalizationManager.Instance.Get("Progress_QueuePosition"),
-        DownloadStatus.Downloading => $"{_model.Progress:F1}%",
+        DownloadStatus.Queued => QueuePosition > 0
+            ? LocalizationManager.Instance.Format("Progress_InQueue", QueuePosition)
+            : LocalizationManager.Instance.Get("Progress_QueuePosition"),
+        DownloadStatus.Downloading => IsWaitingForTransfer ? WaitingText() : TransferText(),
         DownloadStatus.Completed => "100%",
         DownloadStatus.Failed => _model.ErrorMessage ?? LocalizationManager.Instance.Get("Progress_UnknownError"),
         DownloadStatus.WaitingToExtract => LocalizationManager.Instance.Get("Progress_WaitingToExtract"),
@@ -79,6 +100,34 @@ public partial class DownloadItemViewModel : ObservableObject
         DownloadStatus.ExtractionFailed => _model.ErrorMessage ?? LocalizationManager.Instance.Get("Progress_ExtractionError"),
         _ => string.Empty
     };
+
+    private string WaitingText()
+    {
+        LocalizationManager loc = LocalizationManager.Instance;
+        return _model.RetryAttempt > 0
+            ? loc.Format("Progress_Retrying", _model.RetryAttempt, DownloadService.MaxAutomaticRetries)
+            : loc.Get("Progress_WaitingForTsr");
+    }
+
+    /// <summary>"1.2 / 4.2 MB · 1.1 MB/s · 0:03 left"; size only until the speed is known.</summary>
+    private string TransferText()
+    {
+        LocalizationManager loc = LocalizationManager.Instance;
+        CultureInfo culture = loc.Culture;
+        string size = _model.TotalBytes > 0
+            ? TransferFormat.Progress(_model.DownloadedBytes, _model.TotalBytes, culture)
+            : TransferFormat.Size(_model.DownloadedBytes, culture);
+
+        if (_rateMeter.BytesPerSecond is not { } rate || rate <= 0)
+            return size;
+
+        string speed = TransferFormat.Size((long)rate, culture);
+        if (_model.TotalBytes <= 0)
+            return loc.Format("Progress_TransferNoTotal", size, speed);
+
+        TimeSpan left = TimeSpan.FromSeconds(Math.Ceiling((_model.TotalBytes - _model.DownloadedBytes) / rate));
+        return loc.Format("Progress_Transfer", size, speed, TransferFormat.Duration(left));
+    }
 
     public void UpdateFromModel()
     {

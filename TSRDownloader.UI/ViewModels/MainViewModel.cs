@@ -361,6 +361,14 @@ public partial class MainViewModel : ObservableObject
             OverallProgress = TotalCount > 0
                 ? (double)(CompletedCount + FailedCount) / TotalCount * 100
                 : 0;
+
+            // Queued items start in the service's order, whatever order the list is shown in.
+            int position = 0;
+            foreach (DownloadItem item in items)
+            {
+                if (_vmLookup.TryGetValue(item.ItemId, out DownloadItemViewModel? vm))
+                    vm.QueuePosition = item.Status == DownloadStatus.Queued ? ++position : 0;
+            }
         });
     }
 }

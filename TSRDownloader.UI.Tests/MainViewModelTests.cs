@@ -87,6 +87,29 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public void QueueStatsChanged_Should_NumberQueuedItemsInServiceOrder_When_Raised()
+    {
+        // Arrange
+        IDownloadService download = Substitute.For<IDownloadService>();
+        DownloadItem[] items =
+        [
+            new() { ItemId = 1, Status = DownloadStatus.Downloading },
+            new() { ItemId = 2, Status = DownloadStatus.Queued },
+            new() { ItemId = 3, Status = DownloadStatus.Completed },
+            new() { ItemId = 4, Status = DownloadStatus.Queued },
+        ];
+        download.Items.Returns(items);
+        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>());
+        vm.RestoreDownloads(items);
+
+        // Act
+        download.QueueStatsChanged += Raise.Event<System.Action>();
+
+        // Assert
+        vm.DownloadItems.Select(item => item.QueuePosition).ShouldBe(new[] { 0, 1, 0, 2 });
+    }
+
+    [Fact]
     public void OnClipboardContentChanged_Should_EnqueueItems_When_Monitoring()
     {
         // Arrange

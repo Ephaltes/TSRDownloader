@@ -32,19 +32,59 @@ public class DownloadItemViewModelTests
     }
 
     [Fact]
-    public void ProgressText_Should_ShowPercentage_When_Downloading()
+    public void ProgressText_Should_ShowSize_When_DownloadingBeforeSpeedIsKnown()
     {
-        WithInvariantCulture(() =>
+        // Arrange
+        DownloadItem model = new()
         {
-            // Arrange
-            DownloadItem model = new() { Status = DownloadStatus.Downloading, Progress = 42.5 };
+            Status = DownloadStatus.Downloading, DownloadedBytes = 1_258_291, TotalBytes = 4_404_019
+        };
 
-            // Act
-            string progressText = VmFor(model).ProgressText;
+        // Act
+        string progressText = VmFor(model).ProgressText;
 
-            // Assert
-            progressText.ShouldBe("42.5%");
-        });
+        // Assert
+        progressText.ShouldBe("1.2 / 4.2 MB");
+    }
+
+    [Fact]
+    public void ProgressText_Should_ShowWaitingForTsr_When_DownloadingWithoutBytesYet()
+    {
+        // Arrange
+        DownloadItem model = new() { Status = DownloadStatus.Downloading };
+
+        // Act
+        DownloadItemViewModel vm = VmFor(model);
+
+        // Assert
+        vm.ProgressText.ShouldBe("Waiting for TSR…");
+        vm.IsIndeterminate.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ProgressText_Should_ShowRetryAttempt_When_RetryingAutomatically()
+    {
+        // Arrange
+        DownloadItem model = new() { Status = DownloadStatus.Downloading, RetryAttempt = 2 };
+
+        // Act
+        string progressText = VmFor(model).ProgressText;
+
+        // Assert
+        progressText.ShouldBe("Retrying (2/3)…");
+    }
+
+    [Fact]
+    public void ProgressText_Should_ShowQueuePosition_When_Queued()
+    {
+        // Arrange
+        DownloadItemViewModel vm = VmFor(new DownloadItem { Status = DownloadStatus.Queued });
+
+        // Act
+        vm.QueuePosition = 3;
+
+        // Assert
+        vm.ProgressText.ShouldBe("#3 in queue");
     }
 
     [Fact]

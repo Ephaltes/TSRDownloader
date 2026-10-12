@@ -187,6 +187,19 @@ public partial class App : Application
         _ = updateCoordinator.CheckAndNotifyAsync();
     }
 
+    /// <summary>Brings the main window to the front, restoring it if minimized or hidden.</summary>
+    public void ShowMainWindow()
+    {
+        // Ignored while only the startup update window exists.
+        if (MainWindow is not UI.MainWindow window)
+            return;
+
+        window.Show();
+        if (window.WindowState == WindowState.Minimized)
+            window.WindowState = WindowState.Normal;
+        window.Activate();
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
         _logger.LogInformation("TSR Downloader shutting down");

@@ -22,8 +22,16 @@ public static class Program
             })
             .Run();
 
+        using SingleInstance instance = new("TSRDownloader.SingleInstance");
+        if (!instance.IsFirstInstance)
+        {
+            instance.SignalFirstInstance();
+            return;
+        }
+
         App app = new();
         app.InitializeComponent();
+        instance.ListenForSecondInstances(() => app.Dispatcher.BeginInvoke(app.ShowMainWindow));
         app.Run();
     }
 }

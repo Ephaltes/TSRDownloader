@@ -1,9 +1,12 @@
 using System.Net;
 using System.Net.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using TSRDownloader.Core.Models;
 using TSRDownloader.Core.Services;
+using TSRDownloader.UI.Localization;
 using TSRDownloader.UI.Services;
 using TSRDownloader.UI.ViewModels;
 
@@ -45,9 +48,9 @@ public partial class App : Application
         builder.Logging.AddSerilog(dispose: true);
 
         // Core services
-        builder.Services.AddSingleton<IConfigService>(serviceProvider => new ConfigService(
-            serviceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>(),
-            serviceProvider.GetRequiredService<ILogger<ConfigService>>(),
+        builder.Services.AddSingleton<IConfigurationService>(serviceProvider => new ConfigurationService(
+            serviceProvider.GetRequiredService<IConfiguration>(),
+            serviceProvider.GetRequiredService<ILogger<ConfigurationService>>(),
             paths.SettingsFile));
         builder.Services.AddSingleton<IClipboardService, ClipboardService>();
 
@@ -67,10 +70,10 @@ public partial class App : Application
             httpClient.Timeout = TimeSpan.FromMinutes(30);
 
             // Read per download, so a changed setting applies without a restart.
-            IConfigService configService = serviceProvider.GetRequiredService<IConfigService>();
+            IConfigurationService configurationService = serviceProvider.GetRequiredService<IConfigurationService>();
             return new TsrDownloadClient(
                 httpClient,
-                () => TimeSpan.FromSeconds(configService.Config.TicketActivationDelaySeconds));
+                () => TimeSpan.FromSeconds(configurationService.Configuration.TicketActivationDelaySeconds));
         });
 
         // Archive extraction (Core) — single-worker sequential queue
@@ -97,7 +100,7 @@ public partial class App : Application
         builder.Services.AddSingleton<IFileConflictResolver, FileConflictResolver>();
         builder.Services.AddSingleton<IThemeService, ThemeService>();
         builder.Services.AddSingleton<TrayIconService>();
-        builder.Services.AddSingleton(Localization.LocalizationManager.Instance);
+        builder.Services.AddSingleton(LocalizationManager.Instance);
 
         // Updates (Velopack / GitHub Releases)
         builder.Services.AddSingleton<IUpdateService, VelopackUpdateService>();
@@ -113,34 +116,34 @@ public partial class App : Application
     /// </summary>
     private void RegisterGlobalExceptionLogging()
     {
-        DispatcherUnhandledException += (_, args) =>
-            _logger.LogCritical(args.Exception, "Unhandled exception on the UI thread");
-        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        DispatcherUnhandledException += (_, eventArgs) =>
+            _logger.LogCritical(eventArgs.Exception, "Unhandled exception on the UI thread");
+        AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
         {
-            _logger.LogCritical(args.ExceptionObject as Exception, "Unhandled exception");
+            _logger.LogCritical(eventArgs.ExceptionObject as Exception, "Unhandled exception");
             Log.CloseAndFlush();
         };
-        TaskScheduler.UnobservedTaskException += (_, args) =>
+        TaskScheduler.UnobservedTaskException += (_, eventArgs) =>
         {
-            _logger.LogError(args.Exception, "Unobserved task exception");
-            args.SetObserved();
+            _logger.LogError(eventArgs.Exception, "Unobserved task exception");
+            eventArgs.SetObserved();
         };
     }
 
-    protected override async void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs eventArgs)
     {
-        base.OnStartup(e);
+        base.OnStartup(eventArgs);
         RegisterGlobalExceptionLogging();
 
         await _host.StartAsync();
 
         // Load configuration
-        IConfigService configService = Services.GetRequiredService<IConfigService>();
-        configService.Load();
+        IConfigurationService configurationService = Services.GetRequiredService<IConfigurationService>();
+        configurationService.Load();
 
         // Apply the configured UI language and theme before any window is shown
-        Localization.LocalizationManager.Instance.SetLanguage(configService.Config.Language);
-        Services.GetRequiredService<IThemeService>().Apply(configService.Config.Theme);
+        LocalizationManager.Instance.SetLanguage(configurationService.Configuration.Language);
+        Services.GetRequiredService<IThemeService>().Apply(configurationService.Configuration.Theme);
 
         // The update window may open and close before the main window exists; keep the app
         // alive until the main window takes over.
@@ -159,19 +162,19 @@ public partial class App : Application
         // Ensure download directory exists
         try
         {
-            Directory.CreateDirectory(configService.Config.DownloadDirectory);
+            Directory.CreateDirectory(configurationService.Configuration.DownloadDirectory);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _logger.LogWarning(ex, "Failed to create download directory {Directory}, using default",
-                configService.Config.DownloadDirectory);
+            _logger.LogWarning(exception, "Failed to create download directory {Directory}, using default",
+                configurationService.Configuration.DownloadDirectory);
 
-            configService.Config.DownloadDirectory = Core.Models.AppConfig.DefaultDownloadDirectory;
-            Directory.CreateDirectory(configService.Config.DownloadDirectory);
+            configurationService.Configuration.DownloadDirectory = AppConfiguration.DefaultDownloadDirectory;
+            Directory.CreateDirectory(configurationService.Configuration.DownloadDirectory);
         }
 
         _logger.LogInformation("TSR Downloader starting. Download directory: {Directory}",
-            configService.Config.DownloadDirectory);
+            configurationService.Configuration.DownloadDirectory);
 
         // Bring back the previous run's downloads; they continue once monitoring starts.
         // The autosave is resolved first so it records every change from here on.
@@ -182,7 +185,7 @@ public partial class App : Application
         // Launch main window
         TrayIconService trayIcon = Services.GetRequiredService<TrayIconService>();
         MainWindow mainWindow = new(mainViewModel, Services.GetRequiredService<ClipboardHookService>(),
-            configService, trayIcon);
+            configurationService, trayIcon);
         // Set explicitly: an update window created earlier would otherwise be Application.MainWindow.
         MainWindow = mainWindow;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
@@ -209,7 +212,7 @@ public partial class App : Application
         window.Activate();
     }
 
-    protected override void OnExit(ExitEventArgs e)
+    protected override void OnExit(ExitEventArgs eventArgs)
     {
         _logger.LogInformation("TSR Downloader shutting down");
 
@@ -218,6 +221,6 @@ public partial class App : Application
         // No hosted services are registered and the host does not need the UI thread, so this cannot deadlock.
         _host.StopAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
         _host.Dispose();
-        base.OnExit(e);
+        base.OnExit(eventArgs);
     }
 }

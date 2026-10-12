@@ -1,9 +1,12 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using TSRDownloader.Core.Helpers;
 using TSRDownloader.Core.Models;
 using TSRDownloader.Core.Services;
 using TSRDownloader.UI.Localization;
+using TSRDownloader.UI.Presentation;
 using TSRDownloader.UI.Services;
 
 namespace TSRDownloader.UI.ViewModels;
@@ -17,12 +20,12 @@ public partial class MainViewModel : ObservableObject
     private readonly IDownloadService _downloadService;
     private readonly IArchiveExtractionService _extractionService;
     private readonly IClipboardService _clipboardService;
-    private readonly IConfigService _configService;
+    private readonly IConfigurationService _configurationService;
     private readonly INotificationService _notificationService;
     private readonly IUpdateService _updateService;
     private readonly LocalizationManager _localization;
     private readonly IUiDispatcher _dispatcher;
-    private readonly Dictionary<int, DownloadItemViewModel> _vmLookup = [];
+    private readonly Dictionary<int, DownloadItemViewModel> _itemViewModelsById = [];
     private int _nextSequence;
 
     [ObservableProperty]
@@ -43,11 +46,16 @@ public partial class MainViewModel : ObservableObject
     private int _totalCount;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FinishedCount))]
     private int _completedCount;
 
     /// <summary>Failed items of the current batch (see <see cref="BatchItems"/>).</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FinishedCount))]
     private int _failedCount;
+
+    /// <summary>Items of the current batch that are done, successfully or not.</summary>
+    public int FinishedCount => CompletedCount + FailedCount;
 
     /// <summary>Failed items in the whole list.</summary>
     [ObservableProperty]
@@ -78,7 +86,7 @@ public partial class MainViewModel : ObservableObject
         IDownloadService downloadService,
         IArchiveExtractionService extractionService,
         IClipboardService clipboardService,
-        IConfigService configService,
+        IConfigurationService configurationService,
         INotificationService notificationService,
         IUpdateService updateService,
         LocalizationManager localization,
@@ -87,12 +95,12 @@ public partial class MainViewModel : ObservableObject
         _downloadService = downloadService;
         _extractionService = extractionService;
         _clipboardService = clipboardService;
-        _configService = configService;
+        _configurationService = configurationService;
         _notificationService = notificationService;
         _updateService = updateService;
         _localization = localization;
         _dispatcher = dispatcher;
-        VersionText = FormatVersionText();
+        VersionText = AppVersionText.Format(_updateService, _localization);
 
         DownloadItemsView = new ListCollectionView(DownloadItems)
         {
@@ -107,9 +115,9 @@ public partial class MainViewModel : ObservableObject
         SelectedSort = SortOptions[0];
 
         _downloadService.ItemChanged += OnItemChanged;
-        _downloadService.QueueStatsChanged += OnQueueStatsChanged;
+        _downloadService.QueueStatisticsChanged += OnQueueStatisticsChanged;
         _extractionService.ItemChanged += OnItemChanged;
-        _extractionService.StatsChanged += OnQueueStatsChanged;
+        _extractionService.StatisticsChanged += OnQueueStatisticsChanged;
         _localization.LanguageChanged += OnLanguageChanged;
     }
 
@@ -118,9 +126,9 @@ public partial class MainViewModel : ObservableObject
         // Refresh the language-dependent text of every already-listed item.
         _dispatcher.Invoke(() =>
         {
-            foreach (DownloadItemViewModel vm in DownloadItems)
-                vm.UpdateFromModel();
-            VersionText = FormatVersionText();
+            foreach (DownloadItemViewModel itemViewModel in DownloadItems)
+                itemViewModel.UpdateFromModel();
+            VersionText = AppVersionText.Format(_updateService, _localization);
 
             ListSort current = SelectedSort.Sort;
             SortOptions = BuildSortOptions();
@@ -175,21 +183,17 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private bool MatchesSearch(object item)
+    private bool MatchesSearch(object entry)
     {
         string term = SearchText.Trim();
         if (term.Length == 0)
             return true;
 
-        DownloadItemViewModel vm = (DownloadItemViewModel)item;
-        return (vm.Model.FileName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
-               || vm.Url.Contains(term, StringComparison.OrdinalIgnoreCase)
-               || vm.ItemId.ToString(CultureInfo.InvariantCulture).Contains(term, StringComparison.Ordinal);
+        DownloadItemViewModel itemViewModel = (DownloadItemViewModel)entry;
+        return (itemViewModel.Model.FileName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+               || itemViewModel.Url.Contains(term, StringComparison.OrdinalIgnoreCase)
+               || itemViewModel.ItemId.ToString(CultureInfo.InvariantCulture).Contains(term, StringComparison.Ordinal);
     }
-
-    private string FormatVersionText() => _updateService.IsInstalled
-        ? _localization.Format("Settings_Version", _updateService.CurrentVersion ?? string.Empty)
-        : _localization.Get("Settings_DevelopmentBuild");
 
     /// <summary>
     /// Called by the ClipboardHookService when new clipboard content is detected.
@@ -200,7 +204,7 @@ public partial class MainViewModel : ObservableObject
         if (!IsMonitoring) return;
 
         int added = AddLinks(clipboardText);
-        if (added == 0 || !_configService.Config.NotifyOnLinkFound) return;
+        if (added == 0 || !_configurationService.Configuration.NotifyOnLinkFound) return;
 
         string message = added == 1
             ? _localization.Get("Notify_LinkFound_One")
@@ -230,7 +234,7 @@ public partial class MainViewModel : ObservableObject
     {
         string text;
         try { text = Clipboard.GetText(); }
-        catch (System.Runtime.InteropServices.ExternalException) { return; } // clipboard held by another app
+        catch (ExternalException) { return; } // clipboard held by another app
 
         AddLinks(text);
     }
@@ -242,7 +246,7 @@ public partial class MainViewModel : ObservableObject
     public void RestoreDownloads(IReadOnlyList<DownloadItem> savedItems)
     {
         List<DownloadItem> items = savedItems
-            .Where(item => !_vmLookup.ContainsKey(item.ItemId))
+            .Where(item => !_itemViewModelsById.ContainsKey(item.ItemId))
             .DistinctBy(item => item.ItemId)
             .ToList();
         if (items.Count == 0) return;
@@ -258,9 +262,9 @@ public partial class MainViewModel : ObservableObject
     {
         foreach (DownloadItem item in items)
         {
-            DownloadItemViewModel vm = new(item, _notificationService) { Sequence = _nextSequence++ };
-            _vmLookup[item.ItemId] = vm;
-            DownloadItems.Add(vm);
+            DownloadItemViewModel itemViewModel = new(item, _notificationService) { Sequence = _nextSequence++ };
+            _itemViewModelsById[item.ItemId] = itemViewModel;
+            DownloadItems.Add(itemViewModel);
         }
     }
 
@@ -319,7 +323,7 @@ public partial class MainViewModel : ObservableObject
         };
         settingsWindow.ShowDialog();
 
-        _downloadService.SetMaxActiveDownloads(_configService.Config.MaxActiveDownloads);
+        _downloadService.SetMaxActiveDownloads(_configurationService.Configuration.MaxActiveDownloads);
     }
 
     /// <summary>Called by the view whenever the selection changes.</summary>
@@ -339,18 +343,19 @@ public partial class MainViewModel : ObservableObject
         CopyUrlsCommand.NotifyCanExecuteChanged();
     }
 
-    private static bool IsFailed(DownloadItemViewModel vm) => IsFailed(vm.Model);
+    private static bool IsFailed(DownloadItem item) => item.Status.IsFailed();
+
+    private static bool IsFailed(DownloadItemViewModel itemViewModel) => IsFailed(itemViewModel.Model);
 
     // Items owned by the extraction queue cannot be removed until extraction has finished.
-    private static bool IsRemovable(DownloadItemViewModel vm) =>
-        vm.Model.Status is not (DownloadStatus.WaitingToExtract or DownloadStatus.Extracting);
+    private static bool IsRemovable(DownloadItemViewModel itemViewModel) => !itemViewModel.Model.Status.IsInExtraction();
 
     /// <summary>Re-queues the selected failed items.</summary>
     [RelayCommand(CanExecute = nameof(CanRetry))]
     private void Retry()
     {
-        foreach (DownloadItemViewModel vm in SelectedItems.Where(IsFailed).ToList())
-            _downloadService.Retry(vm.Model);
+        foreach (DownloadItemViewModel itemViewModel in SelectedItems.Where(IsFailed).ToList())
+            _downloadService.Retry(itemViewModel.Model);
     }
 
     private bool CanRetry() => SelectedItems.Any(IsFailed);
@@ -369,8 +374,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanRemove))]
     private void Remove()
     {
-        foreach (DownloadItemViewModel vm in SelectedItems.Where(IsRemovable).ToList())
-            RemoveItem(vm);
+        foreach (DownloadItemViewModel itemViewModel in SelectedItems.Where(IsRemovable).ToList())
+            RemoveItem(itemViewModel);
     }
 
     private bool CanRemove() => SelectedItems.Any(IsRemovable);
@@ -379,30 +384,27 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ClearFinished()
     {
-        foreach (DownloadItemViewModel vm in DownloadItems
-                     .Where(vm => vm.Model.Status is DownloadStatus.Completed or DownloadStatus.ExtractionCompleted)
+        foreach (DownloadItemViewModel itemViewModel in DownloadItems
+                     .Where(itemViewModel => itemViewModel.Model.Status.IsSucceeded())
                      .ToList())
-            RemoveItem(vm);
+            RemoveItem(itemViewModel);
     }
 
-    private void RemoveItem(DownloadItemViewModel vm)
+    private void RemoveItem(DownloadItemViewModel itemViewModel)
     {
-        if (!_downloadService.Remove(vm.Model))
+        if (!_downloadService.Remove(itemViewModel.Model))
             return;
 
-        DownloadItems.Remove(vm);
-        _vmLookup.Remove(vm.ItemId);
-        SetSelection(SelectedItems.Where(selected => selected != vm));
+        DownloadItems.Remove(itemViewModel);
+        _itemViewModelsById.Remove(itemViewModel.ItemId);
+        SetSelection(SelectedItems.Where(selected => selected != itemViewModel));
         // Copying the link again should add it again.
-        _clipboardService.Forget(vm.ItemId);
+        _clipboardService.Forget(itemViewModel.ItemId);
     }
 
     /// <summary>The first selected item that has been downloaded (folder actions open one window only).</summary>
     private DownloadItem? FirstDownloadedSelection =>
-        SelectedItems.Select(vm => vm.Model).FirstOrDefault(item => item.FilePath is not null);
-
-    private static string ExtractedFolder(string filePath) =>
-        Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, Path.GetFileNameWithoutExtension(filePath));
+        SelectedItems.Select(itemViewModel => itemViewModel.Model).FirstOrDefault(item => item.FilePath is not null);
 
     [RelayCommand(CanExecute = nameof(CanShowInFolder))]
     private void ShowInFolder()
@@ -412,7 +414,7 @@ public partial class MainViewModel : ObservableObject
             return;
 
         // After extraction the archive may be gone; select the extracted folder instead.
-        string extractedFolder = ExtractedFolder(filePath);
+        string extractedFolder = ArchivePaths.ExtractionFolder(filePath);
         string target = File.Exists(filePath) ? filePath
             : Directory.Exists(extractedFolder) ? extractedFolder
             : Path.GetDirectoryName(filePath) ?? string.Empty;
@@ -441,10 +443,10 @@ public partial class MainViewModel : ObservableObject
         if (filePath is null)
             return null;
 
-        string extractedFolder = ExtractedFolder(filePath);
+        string extractedFolder = ArchivePaths.ExtractionFolder(filePath);
         if (Directory.Exists(extractedFolder))
             return extractedFolder;
-        return File.Exists(filePath) && Path.GetExtension(filePath).Equals(".zip", StringComparison.OrdinalIgnoreCase)
+        return File.Exists(filePath) && ArchivePaths.IsZip(filePath)
             ? filePath
             : null;
     }
@@ -453,11 +455,11 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private void OpenOnTsr()
     {
-        foreach (DownloadItemViewModel vm in SelectedItems)
+        foreach (DownloadItemViewModel itemViewModel in SelectedItems)
         {
             try
             {
-                Process.Start(new ProcessStartInfo(TsrPageUrl(vm.Model)) { UseShellExecute = true });
+                Process.Start(new ProcessStartInfo(TsrPageUrl(itemViewModel.Model)) { UseShellExecute = true });
             }
             catch (Exception)
             {
@@ -490,9 +492,9 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
-            Clipboard.SetText(string.Join(Environment.NewLine, SelectedItems.Select(vm => vm.Url)));
+            Clipboard.SetText(string.Join(Environment.NewLine, SelectedItems.Select(itemViewModel => itemViewModel.Url)));
         }
-        catch (System.Runtime.InteropServices.ExternalException)
+        catch (ExternalException)
         {
             return; // another application holds the clipboard open
         }
@@ -506,7 +508,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void OpenDownloadFolder()
     {
-        string directory = _configService.Config.DownloadDirectory;
+        string directory = _configurationService.Configuration.DownloadDirectory;
         try { Directory.CreateDirectory(directory); }
         catch (Exception) { return; }
 
@@ -529,11 +531,11 @@ public partial class MainViewModel : ObservableObject
     {
         _dispatcher.Invoke(() =>
         {
-            if (!_vmLookup.TryGetValue(item.ItemId, out DownloadItemViewModel? vm))
+            if (!_itemViewModelsById.TryGetValue(item.ItemId, out DownloadItemViewModel? itemViewModel))
                 return;
 
-            vm.UpdateFromModel();
-            if (SelectedItems.Contains(vm))
+            itemViewModel.UpdateFromModel();
+            if (SelectedItems.Contains(itemViewModel))
                 NotifySelectionCommandsChanged();
 
             // Keeps the overall bar moving with the running downloads' byte progress.
@@ -541,12 +543,6 @@ public partial class MainViewModel : ObservableObject
                 UpdateOverallProgress(_downloadService.Items);
         });
     }
-
-    private static bool IsFinished(DownloadItem item) => item.Status is DownloadStatus.Completed
-        or DownloadStatus.ExtractionCompleted or DownloadStatus.Failed or DownloadStatus.ExtractionFailed;
-
-    private static bool IsFailed(DownloadItem item) =>
-        item.Status is DownloadStatus.Failed or DownloadStatus.ExtractionFailed;
 
     /// <summary>
     /// The items of the current batch: everything that was pending at some point since the queue
@@ -568,30 +564,28 @@ public partial class MainViewModel : ObservableObject
         OverallProgress = batch.Count > 0 ? done / batch.Count * 100 : 0;
     }
 
-    private void OnQueueStatsChanged()
+    private void OnQueueStatisticsChanged()
     {
         _dispatcher.Invoke(() =>
         {
             IReadOnlyList<DownloadItem> items = _downloadService.Items;
-            bool isBusy = items.Any(item => !IsFinished(item));
+            bool isBusy = items.Any(item => !item.Status.IsFinished());
 
             // A new batch starts when work arrives on an idle queue; everything pending joins it.
             if (isBusy && !_wasBusy)
                 _batch.Clear();
-            foreach (DownloadItem item in items.Where(item => !IsFinished(item)))
+            foreach (DownloadItem item in items.Where(item => !item.Status.IsFinished()))
                 _batch.Add(item.ItemId);
             _batch.IntersectWith(items.Select(item => item.ItemId)); // drop removed items
 
             List<DownloadItem> batch = BatchItems(items);
             TotalCount = batch.Count;
-            CompletedCount = batch.Count(item =>
-                item.Status is DownloadStatus.Completed or DownloadStatus.ExtractionCompleted);
+            CompletedCount = batch.Count(item => item.Status.IsSucceeded());
             FailedCount = batch.Count(IsFailed);
             ErrorCount = items.Count(IsFailed);
-            QueuedCount = items.Count(downloadItem => downloadItem.Status == DownloadStatus.Queued);
-            ActiveCount = items.Count(downloadItem => downloadItem.Status == DownloadStatus.Downloading);
-            ExtractingCount = items.Count(downloadItem =>
-                downloadItem.Status is DownloadStatus.WaitingToExtract or DownloadStatus.Extracting);
+            QueuedCount = items.Count(item => item.Status == DownloadStatus.Queued);
+            ActiveCount = items.Count(item => item.Status == DownloadStatus.Downloading);
+            ExtractingCount = items.Count(item => item.Status.IsInExtraction());
             UpdateOverallProgress(items);
 
             if (_wasBusy && !isBusy && CompletedCount + FailedCount > 0)
@@ -602,8 +596,8 @@ public partial class MainViewModel : ObservableObject
             int position = 0;
             foreach (DownloadItem item in items)
             {
-                if (_vmLookup.TryGetValue(item.ItemId, out DownloadItemViewModel? vm))
-                    vm.QueuePosition = item.Status == DownloadStatus.Queued ? ++position : 0;
+                if (_itemViewModelsById.TryGetValue(item.ItemId, out DownloadItemViewModel? itemViewModel))
+                    itemViewModel.QueuePosition = item.Status == DownloadStatus.Queued ? ++position : 0;
             }
         });
     }

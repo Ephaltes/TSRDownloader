@@ -42,12 +42,12 @@ public class TsrDownloadClientTests
     {
         // Arrange
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
-            .When(r => r.RequestUri!.Query.Contains("a=initDownload"),
+            .When(request => request.RequestUri!.Query.Contains("a=initDownload"),
                   _ => new HttpResponseMessage(HttpStatusCode.OK)
                   { Content = new StringContent("{\"ticket\":\"tkt\"}", Encoding.UTF8, "application/json") })
-            .When(r => r.RequestUri!.AbsolutePath.Contains("/downloads/download/itemId/1/ticket/"),
+            .When(request => request.RequestUri!.AbsolutePath.Contains("/downloads/download/itemId/1/ticket/"),
                   _ => new HttpResponseMessage(HttpStatusCode.OK))
-            .When(r => r.RequestUri!.Query.Contains("a=getdownloadurl"),
+            .When(request => request.RequestUri!.Query.Contains("a=getdownloadurl"),
                   _ => new HttpResponseMessage(HttpStatusCode.OK)
                   { Content = new StringContent("{\"error\":\"bad ticket\",\"url\":\"\"}", Encoding.UTF8, "application/json") });
 
@@ -60,17 +60,17 @@ public class TsrDownloadClientTests
     public async Task DownloadFileAsync_Should_WriteFileAndReturnPath_When_Downloaded()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         byte[] zip = Encoding.UTF8.GetBytes("file-content");
         StubHttpMessageHandler handler = TsrProtocolStub.Create(1, "tkt", "mod.zip", zip);
         TsrDownloadClient client = ClientWith(handler);
         TsrDownloadInfo info = await client.ResolveDownloadAsync(1, CancellationToken.None);
 
         // Act
-        string path = await client.DownloadFileAsync(info, temp.Path, null, CancellationToken.None);
+        string path = await client.DownloadFileAsync(info, temporaryDirectory.Path, null, CancellationToken.None);
 
         // Assert
-        path.ShouldBe(Path.Combine(temp.Path, "mod.zip"));
+        path.ShouldBe(Path.Combine(temporaryDirectory.Path, "mod.zip"));
         File.ReadAllBytes(path).ShouldBe(zip);
     }
 
@@ -131,15 +131,15 @@ public class TsrDownloadClientTests
     public async Task DownloadFileAsync_Should_AppendToPartFile_When_ServerHonoursRange()
     {
         // Arrange
-        using TempDir temp = new();
-        File.WriteAllText(Path.Combine(temp.Path, "mod.zip.1.part"), "file-");
+        using TemporaryDirectory temporaryDirectory = new();
+        File.WriteAllText(Path.Combine(temporaryDirectory.Path, "mod.zip.1.part"), "file-");
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
-            .When(r => r.Headers.Range is not null,
+            .When(request => request.Headers.Range is not null,
                   _ => new HttpResponseMessage(HttpStatusCode.PartialContent)
                   { Content = new StringContent("content") });
 
         // Act
-        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temp.Path, null, CancellationToken.None);
+        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temporaryDirectory.Path, null, CancellationToken.None);
 
         // Assert
         File.ReadAllText(path).ShouldBe("file-content");
@@ -149,13 +149,13 @@ public class TsrDownloadClientTests
     public async Task DownloadFileAsync_Should_RestartFromScratch_When_ServerIgnoresRange()
     {
         // Arrange
-        using TempDir temp = new();
-        File.WriteAllText(Path.Combine(temp.Path, "mod.zip.1.part"), "stale-");
+        using TemporaryDirectory temporaryDirectory = new();
+        File.WriteAllText(Path.Combine(temporaryDirectory.Path, "mod.zip.1.part"), "stale-");
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
             .When(_ => true, _ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("full") });
 
         // Act
-        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temp.Path, null, CancellationToken.None);
+        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temporaryDirectory.Path, null, CancellationToken.None);
 
         // Assert
         File.ReadAllText(path).ShouldBe("full");
@@ -165,15 +165,15 @@ public class TsrDownloadClientTests
     public async Task DownloadFileAsync_Should_RestartFromScratch_When_RangeIsNotSatisfiable()
     {
         // Arrange
-        using TempDir temp = new();
-        File.WriteAllText(Path.Combine(temp.Path, "mod.zip.1.part"), "stale-and-too-long");
+        using TemporaryDirectory temporaryDirectory = new();
+        File.WriteAllText(Path.Combine(temporaryDirectory.Path, "mod.zip.1.part"), "stale-and-too-long");
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
-            .When(r => r.Headers.Range is not null,
+            .When(request => request.Headers.Range is not null,
                   _ => new HttpResponseMessage(HttpStatusCode.RequestedRangeNotSatisfiable))
             .When(_ => true, _ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("full") });
 
         // Act
-        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temp.Path, null, CancellationToken.None);
+        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temporaryDirectory.Path, null, CancellationToken.None);
 
         // Assert
         File.ReadAllText(path).ShouldBe("full");
@@ -183,35 +183,35 @@ public class TsrDownloadClientTests
     public async Task DownloadFileAsync_Should_AddNumberSuffix_When_FileAlreadyExists()
     {
         // Arrange
-        using TempDir temp = new();
-        File.WriteAllText(Path.Combine(temp.Path, "mod.zip"), "other item");
-        File.WriteAllText(Path.Combine(temp.Path, "mod (2).zip"), "another item");
+        using TemporaryDirectory temporaryDirectory = new();
+        File.WriteAllText(Path.Combine(temporaryDirectory.Path, "mod.zip"), "other item");
+        File.WriteAllText(Path.Combine(temporaryDirectory.Path, "mod (2).zip"), "another item");
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
             .When(_ => true, _ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("new") });
 
         // Act
-        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temp.Path, null, CancellationToken.None);
+        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temporaryDirectory.Path, null, CancellationToken.None);
 
         // Assert
-        path.ShouldBe(Path.Combine(temp.Path, "mod (3).zip"));
+        path.ShouldBe(Path.Combine(temporaryDirectory.Path, "mod (3).zip"));
         File.ReadAllText(path).ShouldBe("new");
-        File.ReadAllText(Path.Combine(temp.Path, "mod.zip")).ShouldBe("other item");
+        File.ReadAllText(Path.Combine(temporaryDirectory.Path, "mod.zip")).ShouldBe("other item");
     }
 
     [Fact]
     public async Task DownloadFileAsync_Should_AddNumberSuffix_When_ExtractedFolderOfSameNameExists()
     {
         // Arrange
-        using TempDir temp = new();
-        Directory.CreateDirectory(Path.Combine(temp.Path, "mod"));
+        using TemporaryDirectory temporaryDirectory = new();
+        Directory.CreateDirectory(Path.Combine(temporaryDirectory.Path, "mod"));
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
             .When(_ => true, _ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("new") });
 
         // Act
-        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temp.Path, null, CancellationToken.None);
+        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temporaryDirectory.Path, null, CancellationToken.None);
 
         // Assert
-        path.ShouldBe(Path.Combine(temp.Path, "mod (2).zip"));
+        path.ShouldBe(Path.Combine(temporaryDirectory.Path, "mod (2).zip"));
     }
 
     [Theory]
@@ -235,12 +235,12 @@ public class TsrDownloadClientTests
     {
         // Arrange
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
-            .When(r => r.RequestUri!.Query.Contains("a=initDownload"),
+            .When(request => request.RequestUri!.Query.Contains("a=initDownload"),
                   _ => new HttpResponseMessage(HttpStatusCode.OK)
                   { Content = new StringContent("{\"ticket\":\"tkt\"}", Encoding.UTF8, "application/json") })
-            .When(r => r.RequestUri!.AbsolutePath.Contains("/downloads/download/itemId/1/ticket/"),
+            .When(request => request.RequestUri!.AbsolutePath.Contains("/downloads/download/itemId/1/ticket/"),
                   _ => new HttpResponseMessage(HttpStatusCode.OK))
-            .When(r => r.RequestUri!.Query.Contains("a=getdownloadurl"),
+            .When(request => request.RequestUri!.Query.Contains("a=getdownloadurl"),
                   _ => new HttpResponseMessage(HttpStatusCode.OK)
                   { Content = new StringContent("{}", Encoding.UTF8, "application/json") });
 

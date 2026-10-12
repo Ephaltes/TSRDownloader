@@ -10,7 +10,7 @@ internal static class TsrEndpoints
     public const string BaseUrl = "https://www.thesimsresource.com";
 
     /// <summary>Requests a download ticket and sets the <c>tsrdlticket</c> cookie.</summary>
-    public static string InitDownload(int itemId) =>
+    public static string InitializeDownload(int itemId) =>
         $"{BaseUrl}/ajax.php?c=downloads&a=initDownload&itemid={itemId}&format=zip";
 
     /// <summary>Visited to activate the <c>tsrdlticket</c> cookie for the item.</summary>

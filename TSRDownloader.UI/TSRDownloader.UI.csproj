@@ -19,6 +19,8 @@
 
   <ItemGroup>
     <Content Include="iconA.ico" />
+    <!-- Also embedded, so the About window can show it. -->
+    <Resource Include="..\Icons\iconA.png" Link="iconA.png" />
     <!-- Shipped defaults and logging config (read-only); user settings live in the data directory. -->
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

@@ -37,9 +37,9 @@ public sealed class NotificationService : INotificationService
                         toast.Tag = tag;
                 });
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _logger.LogWarning(ex, "Failed to show notification {Title}", title);
+            _logger.LogWarning(exception, "Failed to show notification {Title}", title);
         }
     }
 
@@ -55,9 +55,9 @@ public sealed class NotificationService : INotificationService
                     .AddArgument(ActionKey, actionArgument))
                 .Show();
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _logger.LogWarning(ex, "Failed to show notification {Title}", title);
+            _logger.LogWarning(exception, "Failed to show notification {Title}", title);
         }
     }
 
@@ -69,9 +69,9 @@ public sealed class NotificationService : INotificationService
             if (arguments.TryGetValue(ActionKey, out string actionArgument))
                 ActionInvoked?.Invoke(actionArgument);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _logger.LogWarning(ex, "Failed to handle notification activation {Argument}", toastArgs.Argument);
+            _logger.LogWarning(exception, "Failed to handle notification activation {Argument}", toastArgs.Argument);
         }
     }
 }

@@ -3,12 +3,12 @@ using System.IO;
 
 namespace TSRDownloader.TestHelper;
 
-/// <summary>A unique temp directory that deletes itself on dispose.</summary>
-public sealed class TempDir : IDisposable
+/// <summary>A unique temporary directory that deletes itself on dispose.</summary>
+public sealed class TemporaryDirectory : IDisposable
 {
     public string Path { get; }
 
-    public TempDir()
+    public TemporaryDirectory()
     {
         Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "tsrtests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path);

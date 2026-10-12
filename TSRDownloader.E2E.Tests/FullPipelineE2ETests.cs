@@ -17,39 +17,39 @@ public class FullPipelineE2ETests
 {
     private sealed class Harness : IDisposable
     {
-        public TempDir Temp { get; } = new();
-        public string DownloadDir { get; }
-        public ConfigService Config { get; }
+        public TemporaryDirectory TemporaryDirectory { get; } = new();
+        public string DownloadDirectory { get; }
+        public ConfigurationService Configuration { get; }
         public DownloadService Downloads { get; }
         public ArchiveExtractionService Extraction { get; }
         public ClipboardService Clipboard { get; } = new();
 
         public Harness(byte[] zipBytes, string fileName, FileConflictResolution resolution)
         {
-            DownloadDir = Temp.Combine("downloads");
-            IConfiguration configuration = new ConfigurationBuilder()
+            DownloadDirectory = TemporaryDirectory.Combine("downloads");
+            IConfiguration hostConfiguration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["AppConfig:DownloadDirectory"] = DownloadDir,
+                    ["AppConfig:DownloadDirectory"] = DownloadDirectory,
                     ["AppConfig:ExtractZipArchives"] = "true",
                     ["AppConfig:DeleteZipAfterExtraction"] = "true",
                     ["AppConfig:MaxActiveDownloads"] = "1"
                 })
                 .Build();
-            Config = new ConfigService(configuration, NullLogger<ConfigService>.Instance, Temp.Combine("appsettings.json"));
+            Configuration = new ConfigurationService(hostConfiguration, NullLogger<ConfigurationService>.Instance, TemporaryDirectory.Combine("appsettings.json"));
 
             StubHttpMessageHandler handler = TsrProtocolStub.Create(1, "tkt", fileName, zipBytes);
             TsrDownloadClient client = new(new HttpClient(handler), () => TimeSpan.Zero);
 
-            Extraction = new ArchiveExtractionService(new ZipArchiveExtractor(), Config, new RecordingConflictResolver(resolution));
-            Downloads = new DownloadService(client, Config, Extraction);
+            Extraction = new ArchiveExtractionService(new ZipArchiveExtractor(), Configuration, new RecordingConflictResolver(resolution));
+            Downloads = new DownloadService(client, Configuration, Extraction);
         }
 
         public void Dispose()
         {
             Downloads.Dispose();
             Extraction.Dispose();
-            Temp.Dispose();
+            TemporaryDirectory.Dispose();
         }
     }
 
@@ -60,20 +60,20 @@ public class FullPipelineE2ETests
         string srcZip = ZipTestBuilder.Create(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".zip"),
             new Dictionary<string, string> { ["a.package"] = "payload" });
         byte[] zipBytes = ZipTestBuilder.ReadBytes(srcZip);
-        using Harness h = new(zipBytes, "mod.zip", new FileConflictResolution(FileConflictAction.Overwrite, false));
+        using Harness harness = new(zipBytes, "mod.zip", new FileConflictResolution(FileConflictAction.Overwrite, false));
 
         // Act
-        List<DownloadItem> items = h.Clipboard.ProcessClipboardContent(
+        List<DownloadItem> items = harness.Clipboard.ProcessClipboardContent(
             "https://www.thesimsresource.com/downloads/details/id/1");
-        h.Downloads.EnqueueRange(items);
-        h.Downloads.Start();
-        await ServiceCompletion.WaitAsync(h.Extraction, () => items[0].Status == DownloadStatus.ExtractionCompleted);
-        h.Downloads.Stop();
+        harness.Downloads.EnqueueRange(items);
+        harness.Downloads.Start();
+        await ServiceCompletion.WaitAsync(harness.Extraction, () => items[0].Status == DownloadStatus.ExtractionCompleted);
+        harness.Downloads.Stop();
 
         // Assert
         items.ShouldNotBeEmpty();
-        File.ReadAllText(Path.Combine(h.DownloadDir, "mod", "a.package")).ShouldBe("payload");
-        File.Exists(Path.Combine(h.DownloadDir, "mod.zip")).ShouldBeFalse();
+        File.ReadAllText(Path.Combine(harness.DownloadDirectory, "mod", "a.package")).ShouldBe("payload");
+        File.Exists(Path.Combine(harness.DownloadDirectory, "mod.zip")).ShouldBeFalse();
 
         File.Delete(srcZip);
     }
@@ -85,23 +85,23 @@ public class FullPipelineE2ETests
         string srcZip = ZipTestBuilder.Create(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".zip"),
             new Dictionary<string, string> { ["a.package"] = "new" });
         byte[] zipBytes = ZipTestBuilder.ReadBytes(srcZip);
-        using Harness h = new(zipBytes, "mod.zip", new FileConflictResolution(FileConflictAction.Skip, true));
+        using Harness harness = new(zipBytes, "mod.zip", new FileConflictResolution(FileConflictAction.Skip, true));
 
         // Pre-create the conflicting file in the extraction subfolder.
-        string outDir = Path.Combine(h.DownloadDir, "mod");
-        Directory.CreateDirectory(outDir);
-        File.WriteAllText(Path.Combine(outDir, "a.package"), "old");
+        string outputDirectory = Path.Combine(harness.DownloadDirectory, "mod");
+        Directory.CreateDirectory(outputDirectory);
+        File.WriteAllText(Path.Combine(outputDirectory, "a.package"), "old");
 
         // Act
-        List<DownloadItem> items = h.Clipboard.ProcessClipboardContent(
+        List<DownloadItem> items = harness.Clipboard.ProcessClipboardContent(
             "https://www.thesimsresource.com/downloads/details/id/1");
-        h.Downloads.EnqueueRange(items);
-        h.Downloads.Start();
-        await ServiceCompletion.WaitAsync(h.Extraction, () => items[0].Status == DownloadStatus.ExtractionCompleted);
-        h.Downloads.Stop();
+        harness.Downloads.EnqueueRange(items);
+        harness.Downloads.Start();
+        await ServiceCompletion.WaitAsync(harness.Extraction, () => items[0].Status == DownloadStatus.ExtractionCompleted);
+        harness.Downloads.Stop();
 
         // Assert
-        File.ReadAllText(Path.Combine(outDir, "a.package")).ShouldBe("old");
+        File.ReadAllText(Path.Combine(outputDirectory, "a.package")).ShouldBe("old");
 
         File.Delete(srcZip);
     }

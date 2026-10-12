@@ -12,8 +12,8 @@ internal static class AtomicFile
         if (!string.IsNullOrEmpty(directory))
             Directory.CreateDirectory(directory);
 
-        string tempPath = path + ".tmp";
-        File.WriteAllText(tempPath, contents);
-        File.Move(tempPath, path, overwrite: true);
+        string temporaryPath = path + ".tmp";
+        File.WriteAllText(temporaryPath, contents);
+        File.Move(temporaryPath, path, overwrite: true);
     }
 }

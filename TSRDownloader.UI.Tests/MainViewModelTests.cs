@@ -13,28 +13,28 @@ namespace TSRDownloader.UI.Tests;
 
 public class MainViewModelTests
 {
-    private static MainViewModel NewVm(
-        IDownloadService download, IClipboardService clipboard, IConfigService config,
+    private static MainViewModel CreateViewModel(
+        IDownloadService download, IClipboardService clipboard, IConfigurationService configuration,
         IUpdateService? updates = null, INotificationService? notifications = null)
     {
         return new MainViewModel(
             download,
             Substitute.For<IArchiveExtractionService>(),
             clipboard,
-            config,
+            configuration,
             notifications ?? Substitute.For<INotificationService>(),
             updates ?? Substitute.For<IUpdateService>(),
             LocalizationManager.Instance,
             new ImmediateDispatcher());
     }
 
-    private static MainViewModel NewVmWithUpdates(bool isInstalled, string? currentVersion = null)
+    private static MainViewModel CreateViewModelWithUpdates(bool isInstalled, string? currentVersion = null)
     {
         IUpdateService updates = Substitute.For<IUpdateService>();
         updates.IsInstalled.Returns(isInstalled);
         updates.CurrentVersion.Returns(currentVersion);
-        return NewVm(Substitute.For<IDownloadService>(), Substitute.For<IClipboardService>(),
-            Substitute.For<IConfigService>(), updates);
+        return CreateViewModel(Substitute.For<IDownloadService>(), Substitute.For<IClipboardService>(),
+            Substitute.For<IConfigurationService>(), updates);
     }
 
     [Fact]
@@ -44,10 +44,10 @@ public class MainViewModelTests
         LocalizationManager.Instance.SetLanguage("en");
 
         // Act
-        MainViewModel vm = NewVmWithUpdates(isInstalled: true, currentVersion: "1.1.7");
+        MainViewModel viewModel = CreateViewModelWithUpdates(isInstalled: true, currentVersion: "1.1.7");
 
         // Assert
-        vm.VersionText.ShouldBe("Version 1.1.7");
+        viewModel.VersionText.ShouldBe("Version 1.1.7");
     }
 
     [Fact]
@@ -57,14 +57,14 @@ public class MainViewModelTests
         LocalizationManager.Instance.SetLanguage("en");
 
         // Act
-        MainViewModel vm = NewVmWithUpdates(isInstalled: false);
+        MainViewModel viewModel = CreateViewModelWithUpdates(isInstalled: false);
 
         // Assert
-        vm.VersionText.ShouldBe("Development build");
+        viewModel.VersionText.ShouldBe("Development build");
     }
 
     [Fact]
-    public void QueueStatsChanged_Should_CountExtractionStatesAsTerminal_When_Raised()
+    public void QueueStatisticsChanged_Should_CountExtractionStatesAsTerminal_When_Raised()
     {
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
@@ -75,19 +75,19 @@ public class MainViewModelTests
             new() { Status = DownloadStatus.Failed },
             new() { Status = DownloadStatus.ExtractionFailed },
         });
-        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>());
+        MainViewModel viewModel = CreateViewModel(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigurationService>());
 
         // Act
-        download.QueueStatsChanged += Raise.Event<System.Action>();
+        download.QueueStatisticsChanged += Raise.Event<System.Action>();
 
         // Assert
-        vm.CompletedCount.ShouldBe(2);
-        vm.FailedCount.ShouldBe(2);
-        vm.OverallProgress.ShouldBe(100);
+        viewModel.CompletedCount.ShouldBe(2);
+        viewModel.FailedCount.ShouldBe(2);
+        viewModel.OverallProgress.ShouldBe(100);
     }
 
     [Fact]
-    public void QueueStatsChanged_Should_CountOnlyTheCurrentBatchAndNotifyOnce_When_QueueFinishes()
+    public void QueueStatisticsChanged_Should_CountOnlyTheCurrentBatchAndNotifyOnce_When_QueueFinishes()
     {
         // Arrange: one finished item from earlier, then two new downloads
         IDownloadService download = Substitute.For<IDownloadService>();
@@ -96,41 +96,42 @@ public class MainViewModelTests
         DownloadItem first = new() { ItemId = 2, Status = DownloadStatus.Queued };
         DownloadItem second = new() { ItemId = 3, Status = DownloadStatus.Downloading, Progress = 50 };
         download.Items.Returns(new List<DownloadItem> { history, first, second });
-        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>(),
+        MainViewModel viewModel = CreateViewModel(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigurationService>(),
             notifications: notifications);
-        download.QueueStatsChanged += Raise.Event<System.Action>();
-        double progressWhileRunning = vm.OverallProgress;
+        download.QueueStatisticsChanged += Raise.Event<System.Action>();
+        double progressWhileRunning = viewModel.OverallProgress;
 
         // Act
         first.Status = DownloadStatus.Completed;
         second.Status = DownloadStatus.Failed;
-        download.QueueStatsChanged += Raise.Event<System.Action>();
-        download.QueueStatsChanged += Raise.Event<System.Action>();
+        download.QueueStatisticsChanged += Raise.Event<System.Action>();
+        download.QueueStatisticsChanged += Raise.Event<System.Action>();
 
         // Assert
         progressWhileRunning.ShouldBe(25);
-        vm.TotalCount.ShouldBe(2);
-        vm.CompletedCount.ShouldBe(1);
-        vm.FailedCount.ShouldBe(1);
-        vm.OverallProgress.ShouldBe(100);
+        viewModel.TotalCount.ShouldBe(2);
+        viewModel.CompletedCount.ShouldBe(1);
+        viewModel.FailedCount.ShouldBe(1);
+        viewModel.FinishedCount.ShouldBe(2);
+        viewModel.OverallProgress.ShouldBe(100);
         notifications.Received(1).Notify(Arg.Any<string>(), Arg.Any<string>(), INotificationService.StatusTag);
     }
 
-    private static MainViewModel VmWithFiles()
+    private static MainViewModel CreateViewModelWithFiles()
     {
-        MainViewModel vm = NewVm(Substitute.For<IDownloadService>(), Substitute.For<IClipboardService>(),
-            Substitute.For<IConfigService>());
-        vm.RestoreDownloads(
+        MainViewModel viewModel = CreateViewModel(Substitute.For<IDownloadService>(), Substitute.For<IClipboardService>(),
+            Substitute.For<IConfigurationService>());
+        viewModel.RestoreDownloads(
         [
             new() { ItemId = 11, FileName = "Bravo.zip", Url = "https://www.thesimsresource.com/id/11", Status = DownloadStatus.Completed },
             new() { ItemId = 22, FileName = "Alpha.zip", Url = "https://www.thesimsresource.com/id/22", Status = DownloadStatus.Failed },
             new() { ItemId = 33, FileName = "Charlie.package", Url = "https://www.thesimsresource.com/id/33", Status = DownloadStatus.Queued },
         ]);
-        return vm;
+        return viewModel;
     }
 
-    private static int[] ShownIds(MainViewModel vm) =>
-        vm.DownloadItemsView.Cast<DownloadItemViewModel>().Select(item => item.ItemId).ToArray();
+    private static int[] ShownIds(MainViewModel viewModel) =>
+        viewModel.DownloadItemsView.Cast<DownloadItemViewModel>().Select(item => item.ItemId).ToArray();
 
     [Theory]
     [InlineData("alpha", new[] { 22 })]
@@ -140,13 +141,13 @@ public class MainViewModelTests
     public void SearchText_Should_FilterByNameLinkOrId_When_Set(string search, int[] expected)
     {
         // Arrange
-        MainViewModel vm = VmWithFiles();
+        MainViewModel viewModel = CreateViewModelWithFiles();
 
         // Act
-        vm.SearchText = search;
+        viewModel.SearchText = search;
 
         // Assert
-        ShownIds(vm).ShouldBe(expected);
+        ShownIds(viewModel).ShouldBe(expected);
     }
 
     [Theory]
@@ -157,35 +158,35 @@ public class MainViewModelTests
     public void SelectedSort_Should_OrderTheList_When_Changed(ListSort sort, int[] expected)
     {
         // Arrange
-        MainViewModel vm = VmWithFiles();
+        MainViewModel viewModel = CreateViewModelWithFiles();
 
         // Act
-        vm.SelectedSort = vm.SortOptions.Single(option => option.Sort == sort);
+        viewModel.SelectedSort = viewModel.SortOptions.Single(option => option.Sort == sort);
 
         // Assert
-        ShownIds(vm).ShouldBe(expected);
+        ShownIds(viewModel).ShouldBe(expected);
     }
 
     [Fact]
-    public void QueueStatsChanged_Should_NotNotify_When_OnlyFinishedHistoryIsRestored()
+    public void QueueStatisticsChanged_Should_NotNotify_When_OnlyFinishedHistoryIsRestored()
     {
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
         INotificationService notifications = Substitute.For<INotificationService>();
         download.Items.Returns(new List<DownloadItem> { new() { ItemId = 1, Status = DownloadStatus.Completed } });
-        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>(),
+        MainViewModel viewModel = CreateViewModel(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigurationService>(),
             notifications: notifications);
 
         // Act
-        download.QueueStatsChanged += Raise.Event<System.Action>();
+        download.QueueStatisticsChanged += Raise.Event<System.Action>();
 
         // Assert
-        vm.TotalCount.ShouldBe(1);
+        viewModel.TotalCount.ShouldBe(1);
         notifications.DidNotReceiveWithAnyArgs().Notify(default!, default!);
     }
 
     [Fact]
-    public void QueueStatsChanged_Should_NumberQueuedItemsInServiceOrder_When_Raised()
+    public void QueueStatisticsChanged_Should_NumberQueuedItemsInServiceOrder_When_Raised()
     {
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
@@ -197,14 +198,14 @@ public class MainViewModelTests
             new() { ItemId = 4, Status = DownloadStatus.Queued },
         ];
         download.Items.Returns(items);
-        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>());
-        vm.RestoreDownloads(items);
+        MainViewModel viewModel = CreateViewModel(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigurationService>());
+        viewModel.RestoreDownloads(items);
 
         // Act
-        download.QueueStatsChanged += Raise.Event<System.Action>();
+        download.QueueStatisticsChanged += Raise.Event<System.Action>();
 
         // Assert
-        vm.DownloadItems.Select(item => item.QueuePosition).ShouldBe(new[] { 0, 1, 0, 2 });
+        viewModel.DownloadItems.Select(item => item.QueuePosition).ShouldBe(new[] { 0, 1, 0, 2 });
     }
 
     [Fact]
@@ -215,16 +216,16 @@ public class MainViewModelTests
         IClipboardService clipboard = Substitute.For<IClipboardService>();
         clipboard.ProcessClipboardContent(Arg.Any<string>())
             .Returns(new List<DownloadItem> { new() { ItemId = 1, Url = "u" } });
-        IConfigService config = Substitute.For<IConfigService>();
-        config.Config.Returns(new AppConfig { NotifyOnLinkFound = false });
-        MainViewModel vm = NewVm(download, clipboard, config);
-        vm.StartMonitoringCommand.Execute(null);
+        IConfigurationService configuration = Substitute.For<IConfigurationService>();
+        configuration.Configuration.Returns(new AppConfiguration { NotifyOnLinkFound = false });
+        MainViewModel viewModel = CreateViewModel(download, clipboard, configuration);
+        viewModel.StartMonitoringCommand.Execute(null);
 
         // Act
-        vm.OnClipboardContentChanged("some tsr url");
+        viewModel.OnClipboardContentChanged("some tsr url");
 
         // Assert
-        vm.DownloadItems.Count.ShouldBe(1);
+        viewModel.DownloadItems.Count.ShouldBe(1);
         download.Received(1).EnqueueRange(Arg.Any<IEnumerable<DownloadItem>>());
     }
 
@@ -233,25 +234,25 @@ public class MainViewModelTests
     {
         // Arrange
         IClipboardService clipboard = Substitute.For<IClipboardService>();
-        MainViewModel vm = NewVm(Substitute.For<IDownloadService>(), clipboard, Substitute.For<IConfigService>());
+        MainViewModel viewModel = CreateViewModel(Substitute.For<IDownloadService>(), clipboard, Substitute.For<IConfigurationService>());
 
         // Act
-        vm.OnClipboardContentChanged("some tsr url");
+        viewModel.OnClipboardContentChanged("some tsr url");
 
         // Assert
         clipboard.DidNotReceive().ProcessClipboardContent(Arg.Any<string>());
     }
 
-    private static MainViewModel VmWithItems(
+    private static MainViewModel CreateViewModelWithItems(
         IDownloadService download, IClipboardService clipboard, params DownloadItem[] items)
     {
         clipboard.ProcessClipboardContent(Arg.Any<string>()).Returns(new List<DownloadItem>(items));
-        IConfigService config = Substitute.For<IConfigService>();
-        config.Config.Returns(new AppConfig { NotifyOnLinkFound = false });
-        MainViewModel vm = NewVm(download, clipboard, config);
-        vm.StartMonitoringCommand.Execute(null);
-        vm.OnClipboardContentChanged("links");
-        return vm;
+        IConfigurationService configuration = Substitute.For<IConfigurationService>();
+        configuration.Configuration.Returns(new AppConfiguration { NotifyOnLinkFound = false });
+        MainViewModel viewModel = CreateViewModel(download, clipboard, configuration);
+        viewModel.StartMonitoringCommand.Execute(null);
+        viewModel.OnClipboardContentChanged("links");
+        return viewModel;
     }
 
     [Fact]
@@ -261,14 +262,14 @@ public class MainViewModelTests
         IDownloadService download = Substitute.For<IDownloadService>();
         download.Remove(Arg.Any<DownloadItem>()).Returns(true);
         IClipboardService clipboard = Substitute.For<IClipboardService>();
-        MainViewModel vm = VmWithItems(download, clipboard, new DownloadItem { ItemId = 7, Status = DownloadStatus.Failed });
-        vm.SetSelection([vm.DownloadItems[0]]);
+        MainViewModel viewModel = CreateViewModelWithItems(download, clipboard, new DownloadItem { ItemId = 7, Status = DownloadStatus.Failed });
+        viewModel.SetSelection([viewModel.DownloadItems[0]]);
 
         // Act
-        vm.RemoveCommand.Execute(null);
+        viewModel.RemoveCommand.Execute(null);
 
         // Assert
-        vm.DownloadItems.ShouldBeEmpty();
+        viewModel.DownloadItems.ShouldBeEmpty();
         clipboard.Received(1).Forget(7);
     }
 
@@ -280,14 +281,14 @@ public class MainViewModelTests
     public void RemoveCommand_Should_BeEnabledOnlyOutsideExtraction_When_ItemSelected(DownloadStatus status, bool expected)
     {
         // Arrange
-        MainViewModel vm = VmWithItems(Substitute.For<IDownloadService>(), Substitute.For<IClipboardService>(),
+        MainViewModel viewModel = CreateViewModelWithItems(Substitute.For<IDownloadService>(), Substitute.For<IClipboardService>(),
             new DownloadItem { ItemId = 1, Status = status });
 
         // Act
-        vm.SetSelection([vm.DownloadItems[0]]);
+        viewModel.SetSelection([viewModel.DownloadItems[0]]);
 
         // Assert
-        vm.RemoveCommand.CanExecute(null).ShouldBe(expected);
+        viewModel.RemoveCommand.CanExecute(null).ShouldBe(expected);
     }
 
     [Fact]
@@ -295,17 +296,17 @@ public class MainViewModelTests
     {
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
-        MainViewModel vm = VmWithItems(download, Substitute.For<IClipboardService>(),
+        MainViewModel viewModel = CreateViewModelWithItems(download, Substitute.For<IClipboardService>(),
             new DownloadItem { ItemId = 1, Status = DownloadStatus.Failed });
-        vm.SetSelection([vm.DownloadItems[0]]);
+        viewModel.SetSelection([viewModel.DownloadItems[0]]);
 
         // Act
-        bool canRetry = vm.RetryCommand.CanExecute(null);
-        vm.RetryCommand.Execute(null);
+        bool canRetry = viewModel.RetryCommand.CanExecute(null);
+        viewModel.RetryCommand.Execute(null);
 
         // Assert
         canRetry.ShouldBeTrue();
-        download.Received(1).Retry(vm.DownloadItems[0].Model);
+        download.Received(1).Retry(viewModel.DownloadItems[0].Model);
     }
 
     [Fact]
@@ -314,19 +315,19 @@ public class MainViewModelTests
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
         download.Remove(Arg.Any<DownloadItem>()).Returns(true);
-        MainViewModel vm = VmWithItems(download, Substitute.For<IClipboardService>(),
+        MainViewModel viewModel = CreateViewModelWithItems(download, Substitute.For<IClipboardService>(),
             new DownloadItem { ItemId = 1, Status = DownloadStatus.Failed },
             new DownloadItem { ItemId = 2, Status = DownloadStatus.Extracting },
             new DownloadItem { ItemId = 3, Status = DownloadStatus.Completed },
             new DownloadItem { ItemId = 4, Status = DownloadStatus.Queued });
-        vm.SetSelection(vm.DownloadItems.Take(3));
+        viewModel.SetSelection(viewModel.DownloadItems.Take(3));
 
         // Act
-        vm.RemoveCommand.Execute(null);
+        viewModel.RemoveCommand.Execute(null);
 
         // Assert
-        vm.DownloadItems.Select(item => item.ItemId).ShouldBe(new[] { 2, 4 });
-        vm.SelectedItems.Select(item => item.ItemId).ShouldBe(new[] { 2 });
+        viewModel.DownloadItems.Select(item => item.ItemId).ShouldBe(new[] { 2, 4 });
+        viewModel.SelectedItems.Select(item => item.ItemId).ShouldBe(new[] { 2 });
     }
 
     [Fact]
@@ -334,19 +335,19 @@ public class MainViewModelTests
     {
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
-        MainViewModel vm = VmWithItems(download, Substitute.For<IClipboardService>(),
+        MainViewModel viewModel = CreateViewModelWithItems(download, Substitute.For<IClipboardService>(),
             new DownloadItem { ItemId = 1, Status = DownloadStatus.Failed },
             new DownloadItem { ItemId = 2, Status = DownloadStatus.Completed },
             new DownloadItem { ItemId = 3, Status = DownloadStatus.ExtractionFailed });
-        vm.SetSelection(vm.DownloadItems);
+        viewModel.SetSelection(viewModel.DownloadItems);
 
         // Act
-        vm.RetryCommand.Execute(null);
+        viewModel.RetryCommand.Execute(null);
 
         // Assert
-        download.Received(1).Retry(vm.DownloadItems[0].Model);
-        download.Received(1).Retry(vm.DownloadItems[2].Model);
-        download.DidNotReceive().Retry(vm.DownloadItems[1].Model);
+        download.Received(1).Retry(viewModel.DownloadItems[0].Model);
+        download.Received(1).Retry(viewModel.DownloadItems[2].Model);
+        download.DidNotReceive().Retry(viewModel.DownloadItems[1].Model);
     }
 
     [Theory]
@@ -373,12 +374,12 @@ public class MainViewModelTests
         DownloadItem extractionFailed = new() { ItemId = 2, Status = DownloadStatus.ExtractionFailed };
         DownloadItem completed = new() { ItemId = 3, Status = DownloadStatus.Completed };
         download.Items.Returns(new List<DownloadItem> { failed, extractionFailed, completed });
-        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>());
-        download.QueueStatsChanged += Raise.Event<System.Action>();
+        MainViewModel viewModel = CreateViewModel(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigurationService>());
+        download.QueueStatisticsChanged += Raise.Event<System.Action>();
 
         // Act
-        bool canExecute = vm.RetryFailedCommand.CanExecute(null);
-        vm.RetryFailedCommand.Execute(null);
+        bool canExecute = viewModel.RetryFailedCommand.CanExecute(null);
+        viewModel.RetryFailedCommand.Execute(null);
 
         // Assert
         canExecute.ShouldBeTrue();
@@ -393,17 +394,17 @@ public class MainViewModelTests
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
         download.Remove(Arg.Any<DownloadItem>()).Returns(true);
-        MainViewModel vm = VmWithItems(download, Substitute.For<IClipboardService>(),
+        MainViewModel viewModel = CreateViewModelWithItems(download, Substitute.For<IClipboardService>(),
             new DownloadItem { ItemId = 1, Status = DownloadStatus.Completed },
             new DownloadItem { ItemId = 2, Status = DownloadStatus.ExtractionCompleted },
             new DownloadItem { ItemId = 3, Status = DownloadStatus.Failed },
             new DownloadItem { ItemId = 4, Status = DownloadStatus.Downloading });
 
         // Act
-        vm.ClearFinishedCommand.Execute(null);
+        viewModel.ClearFinishedCommand.Execute(null);
 
         // Assert
-        vm.DownloadItems.Select(item => item.ItemId).ShouldBe(new[] { 3, 4 });
+        viewModel.DownloadItems.Select(item => item.ItemId).ShouldBe(new[] { 3, 4 });
     }
 
     [Fact]
@@ -412,7 +413,7 @@ public class MainViewModelTests
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
         IClipboardService clipboard = Substitute.For<IClipboardService>();
-        MainViewModel vm = NewVm(download, clipboard, Substitute.For<IConfigService>());
+        MainViewModel viewModel = CreateViewModel(download, clipboard, Substitute.For<IConfigurationService>());
         DownloadItem[] saved =
         [
             new() { ItemId = 1, Status = DownloadStatus.Queued },
@@ -421,10 +422,10 @@ public class MainViewModelTests
         ];
 
         // Act
-        vm.RestoreDownloads(saved);
+        viewModel.RestoreDownloads(saved);
 
         // Assert
-        vm.DownloadItems.Select(item => item.ItemId).ShouldBe(new[] { 1, 2 });
+        viewModel.DownloadItems.Select(item => item.ItemId).ShouldBe(new[] { 1, 2 });
         clipboard.Received(1).MarkSeen(1);
         clipboard.Received(1).MarkSeen(2);
         download.Received(1).Restore(Arg.Is<IEnumerable<DownloadItem>>(items => items != null && items.Count() == 2));
@@ -435,18 +436,18 @@ public class MainViewModelTests
     {
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
-        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>());
-        vm.StartMonitoringCommand.Execute(null);
+        MainViewModel viewModel = CreateViewModel(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigurationService>());
+        viewModel.StartMonitoringCommand.Execute(null);
 
         // Act
-        vm.ToggleDownloadsCommand.Execute(null);
-        bool pausedState = vm.IsDownloading;
-        vm.ToggleDownloadsCommand.Execute(null);
+        viewModel.ToggleDownloadsCommand.Execute(null);
+        bool pausedState = viewModel.IsDownloading;
+        viewModel.ToggleDownloadsCommand.Execute(null);
 
         // Assert
         pausedState.ShouldBeFalse();
-        vm.IsDownloading.ShouldBeTrue();
-        vm.IsMonitoring.ShouldBeTrue();
+        viewModel.IsDownloading.ShouldBeTrue();
+        viewModel.IsMonitoring.ShouldBeTrue();
         download.Received(1).Stop();
         download.Received(2).Start();
     }
@@ -459,18 +460,18 @@ public class MainViewModelTests
         IClipboardService clipboard = Substitute.For<IClipboardService>();
         clipboard.ProcessClipboardContent(Arg.Any<string>())
             .Returns(new List<DownloadItem> { new() { ItemId = 9, Url = "u" } });
-        IConfigService config = Substitute.For<IConfigService>();
-        config.Config.Returns(new AppConfig { NotifyOnLinkFound = false });
-        MainViewModel vm = NewVm(download, clipboard, config);
-        vm.StartMonitoringCommand.Execute(null);
-        vm.ToggleDownloadsCommand.Execute(null);
+        IConfigurationService configuration = Substitute.For<IConfigurationService>();
+        configuration.Configuration.Returns(new AppConfiguration { NotifyOnLinkFound = false });
+        MainViewModel viewModel = CreateViewModel(download, clipboard, configuration);
+        viewModel.StartMonitoringCommand.Execute(null);
+        viewModel.ToggleDownloadsCommand.Execute(null);
 
         // Act
-        vm.OnClipboardContentChanged("links");
+        viewModel.OnClipboardContentChanged("links");
 
         // Assert
-        vm.IsDownloading.ShouldBeFalse();
-        vm.DownloadItems.Count.ShouldBe(1);
+        viewModel.IsDownloading.ShouldBeFalse();
+        viewModel.DownloadItems.Count.ShouldBe(1);
         download.Received(1).EnqueueRange(Arg.Any<IEnumerable<DownloadItem>>());
     }
 
@@ -480,16 +481,16 @@ public class MainViewModelTests
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
         IClipboardService clipboard = Substitute.For<IClipboardService>();
-        MainViewModel vm = NewVm(download, clipboard, Substitute.For<IConfigService>());
-        vm.StartMonitoringCommand.Execute(null);
+        MainViewModel viewModel = CreateViewModel(download, clipboard, Substitute.For<IConfigurationService>());
+        viewModel.StartMonitoringCommand.Execute(null);
 
         // Act
-        vm.ToggleClipboardCommand.Execute(null);
-        vm.OnClipboardContentChanged("links");
+        viewModel.ToggleClipboardCommand.Execute(null);
+        viewModel.OnClipboardContentChanged("links");
 
         // Assert
-        vm.IsMonitoring.ShouldBeFalse();
-        vm.IsDownloading.ShouldBeTrue();
+        viewModel.IsMonitoring.ShouldBeFalse();
+        viewModel.IsDownloading.ShouldBeTrue();
         clipboard.DidNotReceive().ProcessClipboardContent(Arg.Any<string>());
         download.DidNotReceive().Stop();
     }
@@ -502,14 +503,14 @@ public class MainViewModelTests
         IClipboardService clipboard = Substitute.For<IClipboardService>();
         clipboard.ProcessClipboardContent("dropped text")
             .Returns(new List<DownloadItem> { new() { ItemId = 5, Url = "u" } });
-        MainViewModel vm = NewVm(download, clipboard, Substitute.For<IConfigService>());
+        MainViewModel viewModel = CreateViewModel(download, clipboard, Substitute.For<IConfigurationService>());
 
         // Act
-        int added = vm.AddLinks("dropped text");
+        int added = viewModel.AddLinks("dropped text");
 
         // Assert
         added.ShouldBe(1);
-        vm.DownloadItems.Single().ItemId.ShouldBe(5);
+        viewModel.DownloadItems.Single().ItemId.ShouldBe(5);
         download.Received(1).EnqueueRange(Arg.Any<IEnumerable<DownloadItem>>());
     }
 }

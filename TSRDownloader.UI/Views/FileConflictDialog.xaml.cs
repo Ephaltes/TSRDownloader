@@ -21,13 +21,13 @@ public partial class FileConflictDialog : Window
         MessageText.Text = LocalizationManager.Instance.Format("Conflict_Message", fileName);
     }
 
-    private void OnOverwrite(object sender, RoutedEventArgs e)
+    private void OnOverwrite(object sender, RoutedEventArgs eventArgs)
     {
         SelectedAction = FileConflictAction.Overwrite;
         DialogResult = true;
     }
 
-    private void OnSkip(object sender, RoutedEventArgs e)
+    private void OnSkip(object sender, RoutedEventArgs eventArgs)
     {
         SelectedAction = FileConflictAction.Skip;
         DialogResult = true;

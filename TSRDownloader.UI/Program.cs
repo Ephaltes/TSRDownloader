@@ -11,7 +11,7 @@ namespace TSRDownloader.UI;
 public static class Program
 {
     [STAThread]
-    public static void Main(string[] args)
+    public static void Main(string[] arguments)
     {
         VelopackApp.Build()
             .OnBeforeUninstallFastCallback(_ =>

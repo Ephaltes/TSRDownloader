@@ -1,9 +1,9 @@
 using TSRDownloader.Core.Models;
 using TSRDownloader.Core.Services;
 using TSRDownloader.UI.Behaviors;
-using TSRDownloader.UI.Localization;
 using TSRDownloader.UI.Services;
 using TSRDownloader.UI.ViewModels;
+using TSRDownloader.UI.Views;
 
 namespace TSRDownloader.UI;
 
@@ -15,17 +15,17 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private readonly ClipboardHookService _clipboardHook;
-    private readonly IConfigService _configService;
+    private readonly IConfigurationService _configurationService;
     private readonly TrayIconService _trayIcon;
     private bool _isExiting;
 
     public MainWindow(MainViewModel viewModel, ClipboardHookService clipboardHook,
-        IConfigService configService, TrayIconService trayIcon)
+        IConfigurationService configurationService, TrayIconService trayIcon)
     {
         InitializeComponent();
         _viewModel = viewModel;
         _clipboardHook = clipboardHook;
-        _configService = configService;
+        _configurationService = configurationService;
         _trayIcon = trayIcon;
         DataContext = _viewModel;
         RestoreLayout();
@@ -34,7 +34,7 @@ public partial class MainWindow : Window
         Closing += OnClosing;
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    private void OnLoaded(object sender, RoutedEventArgs eventArgs)
     {
         _clipboardHook.Attach(this);
 
@@ -60,7 +60,7 @@ public partial class MainWindow : Window
     /// <summary>Applies the size, position and column widths saved by <see cref="SaveLayout"/>.</summary>
     private void RestoreLayout()
     {
-        if (_configService.Config.MainWindowLayout is not { } layout)
+        if (_configurationService.Configuration.MainWindowLayout is not { } layout)
             return;
 
         if (layout.IsReachableOn(SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop,
@@ -78,13 +78,13 @@ public partial class MainWindow : Window
         GridViewColumnCollection columns = ((GridView)DownloadList.View).Columns;
         if (layout.ColumnWidths.Count != columns.Count || layout.ColumnWidths.Any(width => width <= 0))
             return;
-        for (int i = 0; i < columns.Count; i++)
+        for (int index = 0; index < columns.Count; index++)
         {
             // Filling columns keep their share of the width: the saved widths become their weights.
-            if (GridViewColumnSizing.GetStarWeight(columns[i]) > 0)
-                GridViewColumnSizing.SetStarWeight(columns[i], layout.ColumnWidths[i]);
+            if (GridViewColumnSizing.GetStarWeight(columns[index]) > 0)
+                GridViewColumnSizing.SetStarWeight(columns[index], layout.ColumnWidths[index]);
             else
-                columns[i].Width = layout.ColumnWidths[i];
+                columns[index].Width = layout.ColumnWidths[index];
         }
     }
 
@@ -94,7 +94,7 @@ public partial class MainWindow : Window
         if (bounds.IsEmpty)
             return;
 
-        _configService.Config.MainWindowLayout = new WindowLayout
+        _configurationService.Configuration.MainWindowLayout = new WindowLayout
         {
             Left = bounds.Left,
             Top = bounds.Top,
@@ -103,17 +103,17 @@ public partial class MainWindow : Window
             IsMaximized = WindowState == WindowState.Maximized,
             ColumnWidths = ((GridView)DownloadList.View).Columns.Select(column => column.ActualWidth).ToList()
         };
-        _configService.Save();
+        _configurationService.Save();
     }
 
-    private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs eventArgs)
     {
         SaveLayout();
 
-        if (!_isExiting && _configService.Config.CloseToTray)
+        if (!_isExiting && _configurationService.Configuration.CloseToTray)
         {
             // Keep watching the clipboard and downloading in the background.
-            e.Cancel = true;
+            eventArgs.Cancel = true;
             Hide();
             _trayIcon.ShowStillRunningHint();
             return;
@@ -124,29 +124,22 @@ public partial class MainWindow : Window
         _clipboardHook.Dispose();
     }
 
-    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e) =>
+    private void OnSelectionChanged(object sender, SelectionChangedEventArgs eventArgs) =>
         _viewModel.SetSelection(DownloadList.SelectedItems.Cast<DownloadItemViewModel>());
 
-    private void OnDragOver(object sender, DragEventArgs e)
+    private void OnDragOver(object sender, DragEventArgs eventArgs)
     {
-        e.Effects = e.Data.GetDataPresent(DataFormats.UnicodeText) ? DragDropEffects.Copy : DragDropEffects.None;
-        e.Handled = true;
+        eventArgs.Effects = eventArgs.Data.GetDataPresent(DataFormats.UnicodeText) ? DragDropEffects.Copy : DragDropEffects.None;
+        eventArgs.Handled = true;
     }
 
     /// <summary>Links dragged in from a browser or text editor are added like pasted ones.</summary>
-    private void OnDrop(object sender, DragEventArgs e)
+    private void OnDrop(object sender, DragEventArgs eventArgs)
     {
-        if (e.Data.GetData(DataFormats.UnicodeText) is string text)
+        if (eventArgs.Data.GetData(DataFormats.UnicodeText) is string text)
             _viewModel.AddLinks(text);
     }
 
-    private void OnAboutClick(object sender, RoutedEventArgs e)
-    {
-        LocalizationManager loc = LocalizationManager.Instance;
-        MessageBox.Show(this,
-            $"{loc.Get("App_Name")}\n\n{loc.Get("About_Message")}",
-            loc.Get("Menu_About"),
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-    }
+    private void OnAboutClick(object sender, RoutedEventArgs eventArgs) =>
+        new AboutWindow(_viewModel.VersionText) { Owner = this }.ShowDialog();
 }

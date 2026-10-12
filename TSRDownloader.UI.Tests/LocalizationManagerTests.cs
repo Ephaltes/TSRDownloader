@@ -16,11 +16,11 @@ public class LocalizationManagerTests
     public void Get_Should_ReturnLocalizedValue_When_KeyExists()
     {
         // Arrange
-        LocalizationManager loc = LocalizationManager.Instance;
-        loc.SetLanguage("en");
+        LocalizationManager localization = LocalizationManager.Instance;
+        localization.SetLanguage("en");
 
         // Act
-        string value = loc.Get("Status_Completed");
+        string value = localization.Get("Status_Completed");
 
         // Assert
         value.ShouldBe("Completed");
@@ -40,28 +40,28 @@ public class LocalizationManagerTests
     public void SetLanguage_Should_ChangeLanguageAndValues_When_GivenNewCode()
     {
         // Arrange
-        LocalizationManager loc = LocalizationManager.Instance;
+        LocalizationManager localization = LocalizationManager.Instance;
 
         // Act
-        loc.SetLanguage("de");
+        localization.SetLanguage("de");
 
         // Assert
-        loc.CurrentLanguage.ShouldBe("de");
-        loc.Get("Status_Completed").ShouldBe("Fertig");
+        localization.CurrentLanguage.ShouldBe("de");
+        localization.Get("Status_Completed").ShouldBe("Fertig");
 
         // Cleanup (shared singleton)
-        loc.SetLanguage("en");
+        localization.SetLanguage("en");
     }
 
     [Fact]
     public void Format_Should_ApplyArguments_When_KeyHasPlaceholders()
     {
         // Arrange
-        LocalizationManager loc = LocalizationManager.Instance;
-        loc.SetLanguage("en");
+        LocalizationManager localization = LocalizationManager.Instance;
+        localization.SetLanguage("en");
 
         // Act
-        string formatted = loc.Format("Notify_UrlCopied", "mod.zip");
+        string formatted = localization.Format("Notify_UrlCopied", "mod.zip");
 
         // Assert
         formatted.ShouldBe("Copied URL for mod.zip");
@@ -90,17 +90,17 @@ public class LocalizationManagerTests
     public void Get_Should_ReturnUpdateTexts_When_LanguageIsSet(string language, string key, string expected)
     {
         // Arrange
-        LocalizationManager loc = LocalizationManager.Instance;
-        loc.SetLanguage(language);
+        LocalizationManager localization = LocalizationManager.Instance;
+        localization.SetLanguage(language);
 
         // Act
-        string value = loc.Get(key);
+        string value = localization.Get(key);
 
         // Assert
         value.ShouldBe(expected);
 
         // Cleanup (shared singleton)
-        loc.SetLanguage("en");
+        localization.SetLanguage("en");
     }
 
     private static HashSet<string> ReadKeys(ResourceManager resources, CultureInfo culture)

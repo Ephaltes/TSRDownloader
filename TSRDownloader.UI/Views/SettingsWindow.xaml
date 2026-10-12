@@ -3,19 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:TSRDownloader.UI.ViewModels"
-        xmlns:loc="clr-namespace:TSRDownloader.UI.Localization"
-        xmlns:converters="clr-namespace:TSRDownloader.UI.Converters"
+        xmlns:viewModels="clr-namespace:TSRDownloader.UI.ViewModels"
+        xmlns:localization="clr-namespace:TSRDownloader.UI.Localization"
         mc:Ignorable="d"
         Background="{DynamicResource App.WindowBackground}" Foreground="{DynamicResource App.Text}"
-        Title="{loc:Loc Settings_Title}"
+        Title="{localization:Localize Settings_Title}"
         Height="600" Width="540"
         MinHeight="600" MinWidth="540"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner">
 
     <Window.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibility"/>
 
         <Style x:Key="SettingLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="13"/>
@@ -126,10 +125,10 @@
 
         <TabControl Grid.Row="0" Style="{StaticResource SettingsTabControl}">
             <!-- General -->
-            <TabItem Header="{loc:Loc Settings_Tab_General}">
+            <TabItem Header="{localization:Localize Settings_Tab_General}">
                 <Border Style="{StaticResource SettingsCard}">
                     <StackPanel>
-                        <TextBlock Text="{loc:Loc Settings_Language}" Style="{StaticResource SettingLabel}"/>
+                        <TextBlock Text="{localization:Localize Settings_Language}" Style="{StaticResource SettingLabel}"/>
                         <ComboBox ItemsSource="{Binding Languages}"
                                   SelectedItem="{Binding SelectedLanguage}"
                                   HorizontalAlignment="Left" Width="160"
@@ -141,7 +140,7 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <TextBlock Text="{loc:Loc Settings_Theme}" Style="{StaticResource SettingLabel}"/>
+                        <TextBlock Text="{localization:Localize Settings_Theme}" Style="{StaticResource SettingLabel}"/>
                         <ComboBox ItemsSource="{Binding Themes}"
                                   SelectedItem="{Binding SelectedTheme}"
                                   HorizontalAlignment="Left" Width="160"
@@ -153,16 +152,16 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <CheckBox Content="{loc:Loc Settings_NotifyOnLink}"
+                        <CheckBox Content="{localization:Localize Settings_NotifyOnLink}"
                                   IsChecked="{Binding NotifyOnLinkFound}"
                                   Style="{StaticResource SettingCheckBox}"
                                   Margin="0,16,0,0"/>
 
-                        <CheckBox Content="{loc:Loc Settings_StartOnStartup}"
+                        <CheckBox Content="{localization:Localize Settings_StartOnStartup}"
                                   IsChecked="{Binding StartOnSystemStartup}"
                                   Style="{StaticResource SettingCheckBox}"/>
 
-                        <CheckBox Content="{loc:Loc Settings_CloseToTray}"
+                        <CheckBox Content="{localization:Localize Settings_CloseToTray}"
                                   IsChecked="{Binding CloseToTray}"
                                   Style="{StaticResource SettingCheckBox}"/>
                     </StackPanel>
@@ -170,10 +169,10 @@
             </TabItem>
 
             <!-- Downloads -->
-            <TabItem Header="{loc:Loc Settings_Tab_Downloads}">
+            <TabItem Header="{localization:Localize Settings_Tab_Downloads}">
                 <Border Style="{StaticResource SettingsCard}">
                     <StackPanel>
-                        <TextBlock Text="{loc:Loc Settings_DownloadDirectory}" Style="{StaticResource SettingLabel}"/>
+                        <TextBlock Text="{localization:Localize Settings_DownloadDirectory}" Style="{StaticResource SettingLabel}"/>
                         <Grid Margin="0,0,0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -193,36 +192,36 @@
                                 </TextBox.Style>
                             </TextBox>
 
-                            <Button Grid.Column="1" Content="{loc:Loc Settings_Browse}"
+                            <Button Grid.Column="1" Content="{localization:Localize Settings_Browse}"
                                     Command="{Binding BrowseDownloadDirectoryCommand}"
                                     Width="130"
                                     Style="{StaticResource DialogButton}"/>
                         </Grid>
                         <TextBlock Text="{Binding DownloadDirectoryError}"
                                    Style="{StaticResource SettingHint}" Foreground="{DynamicResource App.Error}"
-                                   Visibility="{Binding HasDownloadDirectoryError, Converter={StaticResource BoolToVisibility}}"/>
+                                   Visibility="{Binding HasDownloadDirectoryError, Converter={StaticResource BooleanToVisibility}}"/>
 
-                        <TextBlock Text="{loc:Loc Settings_MaxDownloads}" Style="{StaticResource SettingLabel}"/>
+                        <TextBlock Text="{localization:Localize Settings_MaxDownloads}" Style="{StaticResource SettingLabel}"/>
                         <TextBox x:Name="MaxDownloadsTextBox"
                                  Text="{Binding MaxActiveDownloads, UpdateSourceTrigger=PropertyChanged}"
                                  HorizontalAlignment="Left" Width="80"
                                  Style="{StaticResource RoundedTextBox}"
-                                 PreviewTextInput="MaxDownloadsTextBox_PreviewTextInput"/>
+                                 PreviewTextInput="OnMaxActiveDownloadsPreviewTextInput"/>
 
-                        <TextBlock Text="{loc:Loc Settings_TicketDelay}" Style="{StaticResource SettingLabel}"/>
+                        <TextBlock Text="{localization:Localize Settings_TicketDelay}" Style="{StaticResource SettingLabel}"/>
                         <TextBox x:Name="TicketDelayTextBox"
                                  Text="{Binding TicketActivationDelaySeconds, UpdateSourceTrigger=PropertyChanged}"
                                  HorizontalAlignment="Left" Width="80"
                                  Style="{StaticResource RoundedTextBox}"
-                                 PreviewTextInput="TicketDelayTextBox_PreviewTextInput"/>
-                        <TextBlock Text="{loc:Loc Settings_TicketDelayHint}" Style="{StaticResource SettingHint}"/>
+                                 PreviewTextInput="OnTicketDelayPreviewTextInput"/>
+                        <TextBlock Text="{localization:Localize Settings_TicketDelayHint}" Style="{StaticResource SettingHint}"/>
 
-                        <CheckBox Content="{loc:Loc Settings_ExtractZip}"
+                        <CheckBox Content="{localization:Localize Settings_ExtractZip}"
                                   IsChecked="{Binding ExtractZipArchives}"
                                   Style="{StaticResource SettingCheckBox}"
                                   Margin="0,16,0,0"/>
 
-                        <CheckBox Content="{loc:Loc Settings_DeleteZipAfterExtract}"
+                        <CheckBox Content="{localization:Localize Settings_DeleteZipAfterExtract}"
                                   IsChecked="{Binding DeleteZipAfterExtraction}"
                                   IsEnabled="{Binding ExtractZipArchives}"
                                   Style="{StaticResource SettingCheckBox}"
@@ -232,10 +231,10 @@
             </TabItem>
 
             <!-- Updates -->
-            <TabItem Header="{loc:Loc Settings_Tab_Updates}">
+            <TabItem Header="{localization:Localize Settings_Tab_Updates}">
                 <Border Style="{StaticResource SettingsCard}">
                     <StackPanel>
-                        <TextBlock Text="{loc:Loc Settings_Updates}" Style="{StaticResource SettingLabel}"/>
+                        <TextBlock Text="{localization:Localize Settings_Updates}" Style="{StaticResource SettingLabel}"/>
                         <ComboBox ItemsSource="{Binding UpdateModes}"
                                   SelectedItem="{Binding SelectedUpdateMode}"
                                   HorizontalAlignment="Left" Width="220"
@@ -255,12 +254,12 @@
         <!-- Buttons (save/cancel apply to all tabs) -->
         <StackPanel Grid.Row="1" Orientation="Horizontal"
                     HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="{loc:Loc Settings_Cancel}"
+            <Button Content="{localization:Localize Settings_Cancel}"
                     Command="{Binding CancelCommand}"
                     Style="{StaticResource DialogButton}"
                     Background="{DynamicResource App.SecondaryButton}" Foreground="{DynamicResource App.Text}"/>
 
-            <Button Content="{loc:Loc Settings_Save}"
+            <Button Content="{localization:Localize Settings_Save}"
                     Command="{Binding SaveCommand}"
                     Style="{StaticResource DialogButton}"
                     Background="{DynamicResource App.Accent}" Foreground="{DynamicResource App.OnAccent}"/>

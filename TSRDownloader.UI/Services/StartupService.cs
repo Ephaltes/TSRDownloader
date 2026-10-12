@@ -26,9 +26,9 @@ public sealed class StartupService : IStartupService
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(RunKeyPath, writable: false);
             return key?.GetValue(ValueName) is not null;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _logger.LogWarning(ex, "Failed to read startup registry value");
+            _logger.LogWarning(exception, "Failed to read startup registry value");
             return false;
         }
     }
@@ -57,9 +57,9 @@ public sealed class StartupService : IStartupService
                 _logger.LogInformation("Disabled run on startup");
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _logger.LogWarning(ex, "Failed to update startup registry value");
+            _logger.LogWarning(exception, "Failed to update startup registry value");
         }
     }
 

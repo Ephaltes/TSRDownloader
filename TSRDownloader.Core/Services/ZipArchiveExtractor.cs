@@ -18,10 +18,10 @@ public sealed class ZipArchiveExtractor : IArchiveExtractor
         string destinationDirectory,
         IFileConflictResolver conflictResolver,
         Action<double>? onProgress,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(destinationDirectory);
-        string destRoot = Path.GetFullPath(destinationDirectory);
+        string destinationRoot = Path.GetFullPath(destinationDirectory);
 
         using ZipArchive archive = ZipFile.OpenRead(archivePath);
 
@@ -38,59 +38,49 @@ public sealed class ZipArchiveExtractor : IArchiveExtractor
 
         foreach (ZipArchiveEntry entry in fileEntries)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-            string targetPath = Path.GetFullPath(Path.Combine(destRoot, entry.FullName));
+            string targetPath = Path.GetFullPath(Path.Combine(destinationRoot, entry.FullName));
 
-            // Zip-slip guard: the resolved target must stay inside the destination root.
-            bool insideRoot =
-                targetPath.StartsWith(destRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-            if (!insideRoot)
-            {
-                processedBytes += entry.Length;
-                onProgress?.Invoke(Percentage(processedBytes, totalBytes));
-                continue;
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-
-            if (File.Exists(targetPath))
-            {
-                FileConflictAction action;
-                if (applyToAllAction is { } cached)
-                {
-                    action = cached;
-                }
-                else
-                {
-                    FileConflictResolution resolution =
-                        await conflictResolver.ResolveAsync(entry.FullName, targetPath, ct);
-                    action = resolution.Action;
-                    if (resolution.ApplyToAll)
-                        applyToAllAction = action;
-                }
-
-                if (action == FileConflictAction.Skip)
-                {
-                    processedBytes += entry.Length;
-                    onProgress?.Invoke(Percentage(processedBytes, totalBytes));
-                    continue;
-                }
-            }
-
-            await using (Stream entryStream = entry.Open())
-            await using (FileStream outStream = new(
-                targetPath, FileMode.Create, FileAccess.Write, FileShare.None,
-                bufferSize: BufferSize, useAsync: true))
-            {
-                await entryStream.CopyToAsync(outStream, BufferSize, ct);
-            }
+            // Zip-slip guard: entries that would land outside the destination are skipped.
+            if (IsInside(destinationRoot, targetPath) && await ShouldWriteAsync(entry, targetPath))
+                await WriteEntryAsync(entry, targetPath, cancellationToken);
 
             processedBytes += entry.Length;
             onProgress?.Invoke(Percentage(processedBytes, totalBytes));
         }
 
         onProgress?.Invoke(100);
+
+        // An existing file is only overwritten if the user (or an earlier "apply to all") says so.
+        async Task<bool> ShouldWriteAsync(ZipArchiveEntry entry, string targetPath)
+        {
+            if (!File.Exists(targetPath))
+                return true;
+
+            if (applyToAllAction is { } rememberedAction)
+                return rememberedAction != FileConflictAction.Skip;
+
+            FileConflictResolution resolution =
+                await conflictResolver.ResolveAsync(entry.FullName, targetPath, cancellationToken);
+            if (resolution.ApplyToAll)
+                applyToAllAction = resolution.Action;
+            return resolution.Action != FileConflictAction.Skip;
+        }
+    }
+
+    private static bool IsInside(string rootDirectory, string path) =>
+        path.StartsWith(rootDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+
+    private static async Task WriteEntryAsync(ZipArchiveEntry entry, string targetPath, CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+
+        await using Stream entryStream = entry.Open();
+        await using FileStream fileStream = new(
+            targetPath, FileMode.Create, FileAccess.Write, FileShare.None,
+            bufferSize: BufferSize, useAsync: true);
+        await entryStream.CopyToAsync(fileStream, BufferSize, cancellationToken);
     }
 
     private static double Percentage(long processed, long total) =>

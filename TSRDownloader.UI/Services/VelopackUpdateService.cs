@@ -9,7 +9,8 @@ namespace TSRDownloader.UI.Services;
 /// </summary>
 public sealed class VelopackUpdateService : IUpdateService
 {
-    private const string RepositoryUrl = "https://github.com/Ephaltes/TSRDownloader";
+    /// <summary>The GitHub repository releases are published to; also linked from the About window.</summary>
+    public const string RepositoryUrl = "https://github.com/Ephaltes/TSRDownloader";
 
     private readonly UpdateManager _updateManager =
         new(new GithubSource(RepositoryUrl, accessToken: null, prerelease: false));

@@ -12,5 +12,5 @@ public interface IArchiveExtractor
         string destinationDirectory,
         IFileConflictResolver conflictResolver,
         Action<double>? onProgress,
-        CancellationToken ct);
+        CancellationToken cancellationToken);
 }

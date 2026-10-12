@@ -1,0 +1,65 @@
+<Window x:Class="TSRDownloader.UI.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:localization="clr-namespace:TSRDownloader.UI.Localization"
+        Background="{DynamicResource App.WindowBackground}" Foreground="{DynamicResource App.Text}"
+        Title="{localization:Localize Menu_About}"
+        Width="420" SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <Window.Resources>
+        <Style x:Key="AboutLink" TargetType="Hyperlink">
+            <Setter Property="Foreground" Value="{DynamicResource App.Accent}"/>
+            <Setter Property="TextDecorations" Value="{x:Null}"/>
+            <EventSetter Event="RequestNavigate" Handler="OnLinkRequestNavigate"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="TextDecorations" Value="Underline"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24,24,24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Icon, name and version -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Image Source="pack://application:,,,/iconA.png" Width="56" Height="56"
+                   RenderOptions.BitmapScalingMode="HighQuality"/>
+            <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="{localization:Localize App_Name}" FontSize="20" FontWeight="SemiBold"/>
+                <TextBlock x:Name="VersionText" Margin="0,2,0,0" FontSize="13"
+                           Foreground="{DynamicResource App.TextSecondary}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <TextBlock Grid.Row="1" Margin="0,18,0,0" TextWrapping="Wrap" FontSize="13"
+                   Text="{localization:Localize About_Message}"/>
+
+        <!-- Links (addresses are set in code from the repository URL) -->
+        <StackPanel Grid.Row="2" Margin="0,16,0,0">
+            <TextBlock FontSize="13">
+                <Hyperlink x:Name="ProjectPageLink" Style="{StaticResource AboutLink}">
+                    <Run Text="{localization:Localize About_ProjectPage}"/>
+                </Hyperlink>
+            </TextBlock>
+            <TextBlock Margin="0,6,0,0" FontSize="13">
+                <Hyperlink x:Name="ReportProblemLink" Style="{StaticResource AboutLink}">
+                    <Run Text="{localization:Localize About_ReportProblem}"/>
+                </Hyperlink>
+            </TextBlock>
+        </StackPanel>
+
+        <Button Grid.Row="3" HorizontalAlignment="Right" Margin="0,20,0,0"
+                Content="{localization:Localize About_Close}"
+                IsDefault="True" IsCancel="True" Style="{StaticResource DialogButton}"
+                Width="120" Height="34"/>
+    </Grid>
+</Window>

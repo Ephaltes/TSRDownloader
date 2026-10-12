@@ -13,13 +13,13 @@ public static class TsrProtocolStub
         StubHttpMessageHandler handler = new();
 
         handler
-            .When(r => r.RequestUri!.Query.Contains("a=initDownload"),
+            .When(request => request.RequestUri!.Query.Contains("a=initDownload"),
                   _ => Json($"{{\"ticket\":\"{ticket}\"}}"))
-            .When(r => r.RequestUri!.AbsolutePath.Contains($"/downloads/download/itemId/{itemId}/ticket/"),
+            .When(request => request.RequestUri!.AbsolutePath.Contains($"/downloads/download/itemId/{itemId}/ticket/"),
                   _ => new HttpResponseMessage(HttpStatusCode.OK))
-            .When(r => r.RequestUri!.Query.Contains("a=getdownloadurl"),
+            .When(request => request.RequestUri!.Query.Contains("a=getdownloadurl"),
                   _ => Json("{\"error\":\"\",\"url\":\"https://cdn.example.test/file.zip\"}"))
-            .When(r => r.RequestUri!.Host.Contains("cdn.example.test"),
+            .When(request => request.RequestUri!.Host.Contains("cdn.example.test"),
                   _ => FileResponse(fileName, zipBytes));
 
         return handler;

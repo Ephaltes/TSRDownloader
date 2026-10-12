@@ -13,7 +13,7 @@ namespace TSRDownloader.UI.Tests;
 
 public class DownloadItemViewModelTests
 {
-    private static DownloadItemViewModel VmFor(DownloadItem model)
+    private static DownloadItemViewModel CreateViewModel(DownloadItem model)
     {
         LocalizationManager.Instance.SetLanguage("en");
         return new DownloadItemViewModel(model, Substitute.For<INotificationService>());
@@ -41,7 +41,7 @@ public class DownloadItemViewModelTests
         };
 
         // Act
-        string progressText = VmFor(model).ProgressText;
+        string progressText = CreateViewModel(model).ProgressText;
 
         // Assert
         progressText.ShouldBe("1.2 / 4.2 MB");
@@ -54,11 +54,11 @@ public class DownloadItemViewModelTests
         DownloadItem model = new() { Status = DownloadStatus.Downloading };
 
         // Act
-        DownloadItemViewModel vm = VmFor(model);
+        DownloadItemViewModel viewModel = CreateViewModel(model);
 
         // Assert
-        vm.ProgressText.ShouldBe("Waiting for TSR…");
-        vm.IsIndeterminate.ShouldBeTrue();
+        viewModel.ProgressText.ShouldBe("Waiting for TSR…");
+        viewModel.IsIndeterminate.ShouldBeTrue();
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class DownloadItemViewModelTests
         DownloadItem model = new() { Status = DownloadStatus.Downloading, RetryAttempt = 2 };
 
         // Act
-        string progressText = VmFor(model).ProgressText;
+        string progressText = CreateViewModel(model).ProgressText;
 
         // Assert
         progressText.ShouldBe("Retrying (2/3)…");
@@ -78,13 +78,13 @@ public class DownloadItemViewModelTests
     public void ProgressText_Should_ShowQueuePosition_When_Queued()
     {
         // Arrange
-        DownloadItemViewModel vm = VmFor(new DownloadItem { Status = DownloadStatus.Queued });
+        DownloadItemViewModel viewModel = CreateViewModel(new DownloadItem { Status = DownloadStatus.Queued });
 
         // Act
-        vm.QueuePosition = 3;
+        viewModel.QueuePosition = 3;
 
         // Assert
-        vm.ProgressText.ShouldBe("#3 in queue");
+        viewModel.ProgressText.ShouldBe("#3 in queue");
     }
 
     [Fact]
@@ -96,11 +96,11 @@ public class DownloadItemViewModelTests
             DownloadItem model = new() { Status = DownloadStatus.Extracting, Progress = 10 };
 
             // Act
-            DownloadItemViewModel vm = VmFor(model);
+            DownloadItemViewModel viewModel = CreateViewModel(model);
 
             // Assert
-            vm.ProgressText.ShouldBe("10.0%");
-            vm.StatusText.ShouldBe("Extracting...");
+            viewModel.ProgressText.ShouldBe("10.0%");
+            viewModel.StatusText.ShouldBe("Extracting...");
         });
     }
 
@@ -111,7 +111,7 @@ public class DownloadItemViewModelTests
         DownloadItem model = new() { Status = DownloadStatus.ExtractionCompleted, Progress = 3 };
 
         // Act
-        double progress = VmFor(model).Progress;
+        double progress = CreateViewModel(model).Progress;
 
         // Assert
         progress.ShouldBe(100);
@@ -124,7 +124,7 @@ public class DownloadItemViewModelTests
         DownloadItem model = new() { Status = DownloadStatus.ExtractionFailed, ErrorMessage = "kaputt" };
 
         // Act
-        string progressText = VmFor(model).ProgressText;
+        string progressText = CreateViewModel(model).ProgressText;
 
         // Assert
         progressText.ShouldBe("kaputt");

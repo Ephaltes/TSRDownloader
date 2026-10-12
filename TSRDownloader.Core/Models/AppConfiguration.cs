@@ -4,7 +4,7 @@ namespace TSRDownloader.Core.Models;
 /// Application configuration. Defaults come from appsettings.json; the user's values are
 /// persisted to settings.json in the data directory.
 /// </summary>
-public record AppConfig
+public record AppConfiguration
 {
     /// <summary>Allowed range for <see cref="MaxActiveDownloads"/>.</summary>
     public const int MinActiveDownloads = 1;

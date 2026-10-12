@@ -17,8 +17,8 @@ public class LoggingSetupTests
     public void CreateLogger_Should_WriteToDataDirectory_When_SinkPathUsesDataVariable()
     {
         // Arrange
-        using TempDir temp = new();
-        AppPaths paths = new(installedRootDirectory: temp.Path, fallbackDirectory: temp.Path);
+        using TemporaryDirectory temporaryDirectory = new();
+        AppPaths paths = new(installedRootDirectory: temporaryDirectory.Path, fallbackDirectory: temporaryDirectory.Path);
         IConfiguration configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {

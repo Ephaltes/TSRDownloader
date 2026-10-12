@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using TSRDownloader.Core.Models;
 using TSRDownloader.UI.ViewModels;
 
 namespace TSRDownloader.UI.Views;
@@ -14,29 +15,27 @@ public partial class SettingsWindow : Window
     {
         InitializeComponent();
 
-        // Resolve ViewModel from DI container
-        _viewModel = ((App)Application.Current).Services.GetService<SettingsViewModel>()
-                     ?? throw new InvalidOperationException("SettingsViewModel not registered in DI.");
+        _viewModel = ((App)Application.Current).Services.GetRequiredService<SettingsViewModel>();
 
         _viewModel.CloseRequested += () => DialogResult = true;
         DataContext = _viewModel;
     }
 
-    /// <summary>Restricts input to digits only and validates range 1–10 on each keystroke.</summary>
-    private void MaxDownloadsTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e) =>
-        e.Handled = !IsAcceptedNumberInput(MaxDownloadsTextBox, e.Text,
-            SettingsViewModel.MinActiveDownloads, SettingsViewModel.MaxActiveDownloadsLimit);
+    /// <summary>Restricts input to digits only and validates the allowed range on each keystroke.</summary>
+    private void OnMaxActiveDownloadsPreviewTextInput(object sender, TextCompositionEventArgs eventArgs) =>
+        eventArgs.Handled = !IsAcceptedNumberInput(MaxDownloadsTextBox, eventArgs.Text,
+            AppConfiguration.MinActiveDownloads, AppConfiguration.MaxActiveDownloadsLimit);
 
     /// <summary>Restricts input to digits only and validates the ticket delay range on each keystroke.</summary>
-    private void TicketDelayTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e) =>
-        e.Handled = !IsAcceptedNumberInput(TicketDelayTextBox, e.Text,
-            SettingsViewModel.MinTicketActivationDelaySeconds, SettingsViewModel.MaxTicketActivationDelaySeconds);
+    private void OnTicketDelayPreviewTextInput(object sender, TextCompositionEventArgs eventArgs) =>
+        eventArgs.Handled = !IsAcceptedNumberInput(TicketDelayTextBox, eventArgs.Text,
+            AppConfiguration.MinTicketActivationDelaySeconds, AppConfiguration.MaxTicketActivationDelaySeconds);
 
     /// <summary>
     /// Whether typing <paramref name="input"/> into <paramref name="textBox"/> keeps it a whole
-    /// number within [<paramref name="min"/>, <paramref name="max"/>].
+    /// number within [<paramref name="minimum"/>, <paramref name="maximum"/>].
     /// </summary>
-    private static bool IsAcceptedNumberInput(TextBox textBox, string input, int min, int max)
+    private static bool IsAcceptedNumberInput(TextBox textBox, string input, int minimum, int maximum)
     {
         // Only allow digit characters
         if (!DigitsOnlyRegex().IsMatch(input))
@@ -48,9 +47,9 @@ public partial class SettingsWindow : Window
             ? textBox.Text.Remove(textBox.SelectionStart, textBox.SelectionLength).Insert(textBox.SelectionStart, input)
             : textBox.Text.Insert(textBox.CaretIndex, input);
 
-        return int.TryParse(newText, out int value) && value >= min && value <= max;
+        return int.TryParse(newText, out int value) && value >= minimum && value <= maximum;
     }
 
-    [System.Text.RegularExpressions.GeneratedRegex(@"^\d$")]
+    [GeneratedRegex(@"^\d$")]
     private static partial Regex DigitsOnlyRegex();
 }

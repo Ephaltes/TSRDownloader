@@ -20,47 +20,47 @@ public static class ServiceCompletion
     public static Task WaitAsync(
         IArchiveExtractionService service, Func<bool> condition, TimeSpan? timeout = null)
     {
-        TaskCompletionSource tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnItem(DownloadItem _) => TryComplete();
-        void OnStats() => TryComplete();
+        void OnItemChanged(DownloadItem _) => TryComplete();
+        void OnStatisticsChanged() => TryComplete();
         void TryComplete()
         {
             if (!condition())
                 return;
-            service.ItemChanged -= OnItem;
-            service.StatsChanged -= OnStats;
-            tcs.TrySetResult();
+            service.ItemChanged -= OnItemChanged;
+            service.StatisticsChanged -= OnStatisticsChanged;
+            completion.TrySetResult();
         }
 
-        service.ItemChanged += OnItem;
-        service.StatsChanged += OnStats;
+        service.ItemChanged += OnItemChanged;
+        service.StatisticsChanged += OnStatisticsChanged;
         TryComplete(); // in case the condition already holds
 
-        return tcs.Task.WaitAsync(timeout ?? DefaultTimeout);
+        return completion.Task.WaitAsync(timeout ?? DefaultTimeout);
     }
 
     /// <summary>Completes once <paramref name="condition"/> holds after a download event.</summary>
     public static Task WaitAsync(
         IDownloadService service, Func<bool> condition, TimeSpan? timeout = null)
     {
-        TaskCompletionSource tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnItem(DownloadItem _) => TryComplete();
-        void OnStats() => TryComplete();
+        void OnItemChanged(DownloadItem _) => TryComplete();
+        void OnStatisticsChanged() => TryComplete();
         void TryComplete()
         {
             if (!condition())
                 return;
-            service.ItemChanged -= OnItem;
-            service.QueueStatsChanged -= OnStats;
-            tcs.TrySetResult();
+            service.ItemChanged -= OnItemChanged;
+            service.QueueStatisticsChanged -= OnStatisticsChanged;
+            completion.TrySetResult();
         }
 
-        service.ItemChanged += OnItem;
-        service.QueueStatsChanged += OnStats;
+        service.ItemChanged += OnItemChanged;
+        service.QueueStatisticsChanged += OnStatisticsChanged;
         TryComplete(); // in case the condition already holds
 
-        return tcs.Task.WaitAsync(timeout ?? DefaultTimeout);
+        return completion.Task.WaitAsync(timeout ?? DefaultTimeout);
     }
 }

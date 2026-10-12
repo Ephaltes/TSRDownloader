@@ -18,8 +18,8 @@ public class DownloadQueueStoreTests
     public void Load_Should_ReturnSavedItems_When_RoundTripped()
     {
         // Arrange
-        using TempDir temp = new();
-        string path = temp.Combine("queue.json");
+        using TemporaryDirectory temporaryDirectory = new();
+        string path = temporaryDirectory.Combine("queue.json");
         DateTime added = new(2026, 10, 8, 12, 0, 0);
         DownloadItem saved = new()
         {
@@ -53,8 +53,8 @@ public class DownloadQueueStoreTests
     public void Save_Should_StoreStatusByName_When_Written()
     {
         // Arrange
-        using TempDir temp = new();
-        string path = temp.Combine("queue.json");
+        using TemporaryDirectory temporaryDirectory = new();
+        string path = temporaryDirectory.Combine("queue.json");
 
         // Act
         NewStore(path).Save([new DownloadItem { ItemId = 1, Status = DownloadStatus.WaitingToExtract }]);
@@ -67,10 +67,10 @@ public class DownloadQueueStoreTests
     public void Load_Should_ReturnEmpty_When_FileMissing()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
 
         // Act
-        IReadOnlyList<DownloadItem> loaded = NewStore(temp.Combine("missing.json")).Load();
+        IReadOnlyList<DownloadItem> loaded = NewStore(temporaryDirectory.Combine("missing.json")).Load();
 
         // Assert
         loaded.ShouldBeEmpty();
@@ -80,8 +80,8 @@ public class DownloadQueueStoreTests
     public void Load_Should_ReturnEmpty_When_FileIsCorrupt()
     {
         // Arrange
-        using TempDir temp = new();
-        string path = temp.Combine("queue.json");
+        using TemporaryDirectory temporaryDirectory = new();
+        string path = temporaryDirectory.Combine("queue.json");
         File.WriteAllText(path, "{ not json");
 
         // Act
@@ -95,8 +95,8 @@ public class DownloadQueueStoreTests
     public void Load_Should_MoveCorruptFileAside_When_FileIsUnreadable()
     {
         // Arrange
-        using TempDir temp = new();
-        string path = temp.Combine("queue.json");
+        using TemporaryDirectory temporaryDirectory = new();
+        string path = temporaryDirectory.Combine("queue.json");
         File.WriteAllText(path, "{ not json");
         DownloadQueueStore store = NewStore(path);
 

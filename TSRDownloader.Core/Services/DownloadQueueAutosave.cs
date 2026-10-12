@@ -34,8 +34,8 @@ public sealed class DownloadQueueAutosave : IDisposable
         _delay = delay ?? DefaultDelay;
         _timer = new Timer(_ => Flush());
 
-        _downloadService.QueueStatsChanged += OnQueueChanged;
-        _extractionService.StatsChanged += OnQueueChanged;
+        _downloadService.QueueStatisticsChanged += OnQueueChanged;
+        _extractionService.StatisticsChanged += OnQueueChanged;
     }
 
     private void OnQueueChanged()
@@ -63,8 +63,8 @@ public sealed class DownloadQueueAutosave : IDisposable
 
     public void Dispose()
     {
-        _downloadService.QueueStatsChanged -= OnQueueChanged;
-        _extractionService.StatsChanged -= OnQueueChanged;
+        _downloadService.QueueStatisticsChanged -= OnQueueChanged;
+        _extractionService.StatisticsChanged -= OnQueueChanged;
 
         lock (_lock)
             _isDisposed = true;

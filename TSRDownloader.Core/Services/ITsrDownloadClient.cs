@@ -14,7 +14,7 @@ public interface ITsrDownloadClient
     /// Performs the TSR ticket handshake and resolves the final download URL and
     /// file name for the given item.
     /// </summary>
-    Task<TsrDownloadInfo> ResolveDownloadAsync(int itemId, CancellationToken ct);
+    Task<TsrDownloadInfo> ResolveDownloadAsync(int itemId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Downloads the file described by <paramref name="info"/> into
@@ -26,5 +26,5 @@ public interface ITsrDownloadClient
         TsrDownloadInfo info,
         string destinationDirectory,
         Action<DownloadProgress>? onProgress,
-        CancellationToken ct);
+        CancellationToken cancellationToken);
 }

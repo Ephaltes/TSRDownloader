@@ -384,4 +384,13 @@
   <data name="Settings_CloseToTray" xml:space="preserve">
     <value>Beim Schließen des Fensters im Infobereich weiterlaufen</value>
   </data>
+  <data name="About_ProjectPage" xml:space="preserve">
+    <value>Projektseite auf GitHub</value>
+  </data>
+  <data name="About_ReportProblem" xml:space="preserve">
+    <value>Problem melden</value>
+  </data>
+  <data name="About_Close" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
 </root>

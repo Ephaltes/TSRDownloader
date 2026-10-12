@@ -22,7 +22,7 @@ public class UpdateCoordinatorTests
     private sealed class Fixture
     {
         public IUpdateService Updates { get; } = Substitute.For<IUpdateService>();
-        public IConfigService Config { get; } = Substitute.For<IConfigService>();
+        public IConfigurationService Configuration { get; } = Substitute.For<IConfigurationService>();
         public IDownloadService Downloads { get; } = Substitute.For<IDownloadService>();
         public INotificationService Notifications { get; } = Substitute.For<INotificationService>();
         public IUpdateWindowService Windows { get; } = Substitute.For<IUpdateWindowService>();
@@ -30,7 +30,7 @@ public class UpdateCoordinatorTests
 
         public Fixture(UpdateMode mode, bool isInstalled = true)
         {
-            Config.Config.Returns(new AppConfig { UpdateMode = mode });
+            Configuration.Configuration.Returns(new AppConfiguration { UpdateMode = mode });
             Updates.IsInstalled.Returns(isInstalled);
             Downloads.Items.Returns([]);
             Windows.When(windows => windows.Show(Arg.Any<UpdateViewModel>()))
@@ -40,7 +40,7 @@ public class UpdateCoordinatorTests
         public UpdateCoordinator Create(TimeSpan? checkTimeout = null)
         {
             LocalizationManager.Instance.SetLanguage("en");
-            return new UpdateCoordinator(Updates, Config, Downloads, Notifications, Windows,
+            return new UpdateCoordinator(Updates, Configuration, Downloads, Notifications, Windows,
                 LocalizationManager.Instance, new ImmediateDispatcher(),
                 NullLogger<UpdateCoordinator>.Instance, checkTimeout);
         }

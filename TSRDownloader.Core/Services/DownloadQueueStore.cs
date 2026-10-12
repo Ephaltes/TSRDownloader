@@ -41,11 +41,11 @@ public sealed class DownloadQueueStore : IDownloadQueueStore
             _logger.LogInformation("Restored {Count} download(s) from {Path}", items.Count, _filePath);
             return items;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             // Keep the unreadable file for inspection; otherwise the next save would overwrite it.
             string corruptPath = _filePath + ".corrupt";
-            _logger.LogWarning(ex, "Could not read the saved download queue {Path}; starting empty, moved it to {CorruptPath}",
+            _logger.LogWarning(exception, "Could not read the saved download queue {Path}; starting empty, moved it to {CorruptPath}",
                 _filePath, corruptPath);
             TryMove(_filePath, corruptPath);
             return [];
@@ -55,7 +55,7 @@ public sealed class DownloadQueueStore : IDownloadQueueStore
     private void TryMove(string source, string destination)
     {
         try { File.Move(source, destination, overwrite: true); }
-        catch (Exception ex) { _logger.LogWarning(ex, "Could not move {Path} aside", source); }
+        catch (Exception exception) { _logger.LogWarning(exception, "Could not move {Path} aside", source); }
     }
 
     public void Save(IReadOnlyList<DownloadItem> items)
@@ -65,9 +65,9 @@ public sealed class DownloadQueueStore : IDownloadQueueStore
             string json = JsonSerializer.Serialize(new QueueFile { Items = items.ToList() }, SerializerOptions);
             AtomicFile.WriteAllText(_filePath, json);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _logger.LogWarning(ex, "Could not save the download queue to {Path}", _filePath);
+            _logger.LogWarning(exception, "Could not save the download queue to {Path}", _filePath);
         }
     }
 

@@ -1,0 +1,25 @@
+<!-- Light palette. Dark.xaml defines the same keys; ThemeService swaps the two at runtime,
+     so every colour in the app is referenced as {DynamicResource App.*}. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="App.WindowBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="App.Surface" Color="#FAFAFA"/>
+    <SolidColorBrush x:Key="App.SurfaceAlt" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="App.Control" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="App.SecondaryButton" Color="#E0E0E0"/>
+    <SolidColorBrush x:Key="App.Border" Color="#E0E0E0"/>
+    <SolidColorBrush x:Key="App.InputBorder" Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="App.Divider" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="App.Text" Color="#333333"/>
+    <SolidColorBrush x:Key="App.TextSecondary" Color="#666666"/>
+    <SolidColorBrush x:Key="App.TextMuted" Color="#888888"/>
+    <SolidColorBrush x:Key="App.Accent" Color="#2196F3"/>
+    <SolidColorBrush x:Key="App.OnAccent" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="App.AccentHover" Color="#F0F7FF"/>
+    <SolidColorBrush x:Key="App.AccentPressed" Color="#E3F2FD"/>
+    <SolidColorBrush x:Key="App.Error" Color="#F44336"/>
+    <SolidColorBrush x:Key="App.Success" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="App.ProgressTrack" Color="#E8E8E8"/>
+    <SolidColorBrush x:Key="App.SuccessSurface" Color="#E8F5E9"/>
+    <SolidColorBrush x:Key="App.WarningSurface" Color="#FFF3E0"/>
+</ResourceDictionary>

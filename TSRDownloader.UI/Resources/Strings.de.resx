@@ -312,4 +312,13 @@
   <data name="Toolbar_RetryFailed" xml:space="preserve">
     <value>Fehlgeschlagene wiederholen</value>
   </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Design:</value>
+  </data>
+  <data name="Settings_Theme_Light" xml:space="preserve">
+    <value>Hell</value>
+  </data>
+  <data name="Settings_Theme_Dark" xml:space="preserve">
+    <value>Dunkel</value>
+  </data>
 </root>

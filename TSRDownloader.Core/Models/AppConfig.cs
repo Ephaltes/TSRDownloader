@@ -47,4 +47,7 @@ public class AppConfig
 
     /// <summary>How new application releases are handled at startup.</summary>
     public UpdateMode UpdateMode { get; set; } = UpdateMode.Automatic;
+
+    /// <summary>Light or dark user interface.</summary>
+    public AppTheme Theme { get; set; } = AppTheme.Light;
 }

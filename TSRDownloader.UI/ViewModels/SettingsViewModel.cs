@@ -22,6 +22,7 @@ public partial class SettingsViewModel : ObservableObject
 
     private readonly IConfigService _configService;
     private readonly IStartupService _startupService;
+    private readonly IThemeService _themeService;
     private readonly LocalizationManager _localization;
 
     [ObservableProperty]
@@ -59,6 +60,12 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private UpdateModeOption _selectedUpdateMode = null!;
 
+    [ObservableProperty]
+    private ThemeOption _selectedTheme = null!;
+
+    /// <summary>The themes the user can choose from (localized).</summary>
+    public IReadOnlyList<ThemeOption> Themes { get; }
+
     /// <summary>The languages the user can choose from (shown by their own endonym).</summary>
     public IReadOnlyList<LanguageOption> Languages { get; } =
     [
@@ -76,10 +83,17 @@ public partial class SettingsViewModel : ObservableObject
         IConfigService configService,
         IStartupService startupService,
         IUpdateService updateService,
+        IThemeService themeService,
         LocalizationManager localization)
     {
         _configService = configService;
         _startupService = startupService;
+        _themeService = themeService;
+        Themes =
+        [
+            new(AppTheme.Light, localization.Get("Settings_Theme_Light")),
+            new(AppTheme.Dark, localization.Get("Settings_Theme_Dark")),
+        ];
         UpdateModes =
         [
             new(UpdateMode.Automatic, localization.Get("Settings_UpdateMode_Automatic")),
@@ -106,6 +120,7 @@ public partial class SettingsViewModel : ObservableObject
                              ?? UpdateModes[0];
         SelectedLanguage = Languages.FirstOrDefault(language => language.Code == config.Language)
                            ?? Languages[0];
+        SelectedTheme = Themes.FirstOrDefault(option => option.Theme == config.Theme) ?? Themes[0];
         DownloadDirectoryError = null;
         // The registry is the source of truth for the autostart state.
         StartOnSystemStartup = _startupService.IsEnabled();
@@ -150,12 +165,14 @@ public partial class SettingsViewModel : ObservableObject
             StartOnSystemStartup = StartOnSystemStartup,
             ExtractZipArchives = ExtractZipArchives,
             DeleteZipAfterExtraction = DeleteZipAfterExtraction,
-            UpdateMode = SelectedUpdateMode.Mode
+            UpdateMode = SelectedUpdateMode.Mode,
+            Theme = SelectedTheme.Theme
         };
 
         _configService.Update(config);
         _startupService.SetEnabled(StartOnSystemStartup);
         _localization.SetLanguage(SelectedLanguage.Code);
+        _themeService.Apply(SelectedTheme.Theme);
         CloseRequested?.Invoke();
     }
 

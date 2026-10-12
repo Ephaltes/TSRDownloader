@@ -7,6 +7,7 @@
         xmlns:loc="clr-namespace:TSRDownloader.UI.Localization"
         xmlns:converters="clr-namespace:TSRDownloader.UI.Converters"
         mc:Ignorable="d"
+        Background="{DynamicResource App.WindowBackground}" Foreground="{DynamicResource App.Text}"
         Title="{loc:Loc Settings_Title}"
         Height="600" Width="540"
         MinHeight="600" MinWidth="540"
@@ -19,15 +20,17 @@
         <Style x:Key="SettingLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
             <Setter Property="Margin" Value="0,12,0,4"/>
         </Style>
 
         <!-- Rounded text box matching the app's panel styling -->
         <Style x:Key="RoundedTextBox" TargetType="TextBox">
-            <Setter Property="BorderBrush" Value="#CCC"/>
+            <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource App.Text}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource App.InputBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="#FAFAFA"/>
+            <Setter Property="Background" Value="{DynamicResource App.Surface}"/>
             <Setter Property="Padding" Value="8,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Height" Value="32"/>
@@ -53,8 +56,8 @@
             <Setter Property="Height" Value="34"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="{DynamicResource App.OnAccent}"/>
+            <Setter Property="Background" Value="{DynamicResource App.Accent}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Margin" Value="8,0,0,0"/>
             <Setter Property="Template">
@@ -80,16 +83,50 @@
             </Setter>
         </Style>
 
+        <!-- Rounded check box in the app's colours: blue border on hover like the combo boxes,
+             filled with the accent when checked -->
         <Style x:Key="SettingCheckBox" TargetType="CheckBox">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
             <Setter Property="Margin" Value="0,8,0,0"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" Background="Transparent">
+                            <Border x:Name="Box" Width="16" Height="16" CornerRadius="3"
+                                    BorderThickness="1" VerticalAlignment="Center"
+                                    BorderBrush="{DynamicResource App.InputBorder}"
+                                    Background="{DynamicResource App.Surface}">
+                                <TextBlock x:Name="Check" Text="&#xE73E;" FontSize="10"
+                                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           Foreground="{DynamicResource App.OnAccent}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
+                            </Border>
+                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{DynamicResource App.Accent}"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Dropdown item: rounded with the app's hover/selection blues -->
         <Style x:Key="RoundedComboBoxItem" TargetType="ComboBoxItem">
-            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Padding" Value="10,7"/>
             <Setter Property="Template">
@@ -102,10 +139,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ItemBd" Property="Background" Value="#F0F7FF"/>
+                                <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource App.AccentHover}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemBd" Property="Background" Value="#E3F2FD"/>
+                                <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource App.AccentPressed}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -115,7 +152,7 @@
 
         <!-- Rounded combo box matching the app's text boxes and panel styling -->
         <Style x:Key="RoundedComboBox" TargetType="ComboBox">
-            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -126,23 +163,24 @@
                     <ControlTemplate TargetType="ComboBox">
                         <Grid>
                             <ToggleButton Name="ToggleButton" Focusable="False" ClickMode="Press"
+                                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                           IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
                                 <ToggleButton.Template>
                                     <ControlTemplate TargetType="ToggleButton">
                                         <Border x:Name="Bd" CornerRadius="6"
-                                                Background="#FAFAFA"
-                                                BorderBrush="#CCC" BorderThickness="1">
+                                                Background="{DynamicResource App.Surface}"
+                                                BorderBrush="{DynamicResource App.InputBorder}" BorderThickness="1">
                                             <Path x:Name="Arrow" HorizontalAlignment="Right"
                                                   VerticalAlignment="Center" Margin="0,0,12,0"
-                                                  Fill="#777" Data="M 0 0 L 4 4 L 8 0 Z"/>
+                                                  Fill="{DynamicResource App.TextMuted}" Data="M 0 0 L 4 4 L 8 0 Z"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="BorderBrush" Value="#2196F3"/>
+                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
                                             </Trigger>
                                             <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="Bd" Property="BorderBrush" Value="#2196F3"/>
-                                                <Setter TargetName="Arrow" Property="Fill" Value="#2196F3"/>
+                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                                <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource App.Accent}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -162,7 +200,7 @@
                                         MinWidth="{TemplateBinding ActualWidth}"
                                         MaxHeight="{TemplateBinding MaxDropDownHeight}"
                                         Margin="0,4,0,0"
-                                        Background="White" BorderBrush="#E0E0E0"
+                                        Background="{DynamicResource App.Control}" BorderBrush="{DynamicResource App.Border}"
                                         BorderThickness="1" CornerRadius="6"
                                         SnapsToDevicePixels="True">
                                     <ScrollViewer SnapsToDevicePixels="True">
@@ -181,7 +219,7 @@
         <Style x:Key="SettingsTabItem" TargetType="TabItem">
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="Foreground" Value="{DynamicResource App.TextSecondary}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -195,11 +233,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="#333"/>
+                                <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="BorderBrush" Value="#2196F3"/>
-                                <Setter Property="Foreground" Value="#2196F3"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource App.Accent}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -217,7 +255,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Border Grid.Row="0" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                            <Border Grid.Row="0" BorderBrush="{DynamicResource App.Border}" BorderThickness="0,0,0,1">
                                 <TabPanel IsItemsHost="True"/>
                             </Border>
                             <ContentPresenter Grid.Row="1" ContentSource="SelectedContent" Margin="0,12,0,0"/>
@@ -229,8 +267,8 @@
 
         <!-- Card holding the settings of one tab -->
         <Style x:Key="SettingsCard" TargetType="Border">
-            <Setter Property="Background" Value="#F5F5F5"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="Background" Value="{DynamicResource App.SurfaceAlt}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource App.Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="16,4,16,16"/>
@@ -239,7 +277,7 @@
 
         <Style x:Key="SettingHint" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="#888"/>
+            <Setter Property="Foreground" Value="{DynamicResource App.TextMuted}"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="Margin" Value="0,4,0,0"/>
         </Style>
@@ -259,6 +297,18 @@
                         <TextBlock Text="{loc:Loc Settings_Language}" Style="{StaticResource SettingLabel}"/>
                         <ComboBox ItemsSource="{Binding Languages}"
                                   SelectedItem="{Binding SelectedLanguage}"
+                                  HorizontalAlignment="Left" Width="160"
+                                  Style="{StaticResource RoundedComboBox}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <TextBlock Text="{loc:Loc Settings_Theme}" Style="{StaticResource SettingLabel}"/>
+                        <ComboBox ItemsSource="{Binding Themes}"
+                                  SelectedItem="{Binding SelectedTheme}"
                                   HorizontalAlignment="Left" Width="160"
                                   Style="{StaticResource RoundedComboBox}">
                             <ComboBox.ItemTemplate>
@@ -297,7 +347,7 @@
                                     <Style TargetType="TextBox" BasedOn="{StaticResource RoundedTextBox}">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding HasDownloadDirectoryError}" Value="True">
-                                                <Setter Property="BorderBrush" Value="#F44336"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource App.Error}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -310,7 +360,7 @@
                                     Style="{StaticResource DialogButton}"/>
                         </Grid>
                         <TextBlock Text="{Binding DownloadDirectoryError}"
-                                   Style="{StaticResource SettingHint}" Foreground="#F44336"
+                                   Style="{StaticResource SettingHint}" Foreground="{DynamicResource App.Error}"
                                    Visibility="{Binding HasDownloadDirectoryError, Converter={StaticResource BoolToVisibility}}"/>
 
                         <TextBlock Text="{loc:Loc Settings_MaxDownloads}" Style="{StaticResource SettingLabel}"/>
@@ -369,12 +419,12 @@
             <Button Content="{loc:Loc Settings_Cancel}"
                     Command="{Binding CancelCommand}"
                     Style="{StaticResource DialogButton}"
-                    Background="#E0E0E0" Foreground="#333"/>
+                    Background="{DynamicResource App.SecondaryButton}" Foreground="{DynamicResource App.Text}"/>
 
             <Button Content="{loc:Loc Settings_Save}"
                     Command="{Binding SaveCommand}"
                     Style="{StaticResource DialogButton}"
-                    Background="#2196F3" Foreground="White"/>
+                    Background="{DynamicResource App.Accent}" Foreground="{DynamicResource App.OnAccent}"/>
         </StackPanel>
     </Grid>
 </Window>

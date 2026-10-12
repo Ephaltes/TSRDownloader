@@ -10,6 +10,8 @@
     <DefaultLanguage>en-us</DefaultLanguage>
     <!-- Program.Main runs Velopack's hooks before WPF starts. -->
     <StartupObject>TSRDownloader.UI.Program</StartupObject>
+    <!-- WPF Fluent theme (ThemeMode) is marked experimental. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
 
   </PropertyGroup>
 

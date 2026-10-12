@@ -13,7 +13,7 @@ namespace TSRDownloader.UI.Tests;
 public class SettingsViewModelTests
 {
     private static (SettingsViewModel Vm, IConfigService Config) NewVm(
-        AppConfig config, bool isInstalled = false, string? currentVersion = null)
+        AppConfig config, bool isInstalled = false, string? currentVersion = null, IThemeService? theme = null)
     {
         IConfigService configService = Substitute.For<IConfigService>();
         configService.Config.Returns(config);
@@ -23,8 +23,26 @@ public class SettingsViewModelTests
         updates.IsInstalled.Returns(isInstalled);
         updates.CurrentVersion.Returns(currentVersion);
         LocalizationManager.Instance.SetLanguage("en");
-        SettingsViewModel vm = new(configService, startup, updates, LocalizationManager.Instance);
+        SettingsViewModel vm = new(configService, startup, updates,
+            theme ?? Substitute.For<IThemeService>(), LocalizationManager.Instance);
         return (vm, configService);
+    }
+
+    [Fact]
+    public void Save_Should_PersistAndApplyTheme_When_ThemeChanged()
+    {
+        // Arrange
+        IThemeService theme = Substitute.For<IThemeService>();
+        (SettingsViewModel vm, IConfigService config) = NewVm(new AppConfig { Theme = AppTheme.Light }, theme: theme);
+        vm.SelectedTheme.Theme.ShouldBe(AppTheme.Light);
+
+        // Act
+        vm.SelectedTheme = vm.Themes.Single(option => option.Theme == AppTheme.Dark);
+        vm.SaveCommand.Execute(null);
+
+        // Assert
+        config.Received(1).Update(Arg.Is<AppConfig>(c => c != null && c.Theme == AppTheme.Dark));
+        theme.Received(1).Apply(AppTheme.Dark);
     }
 
     [Fact]

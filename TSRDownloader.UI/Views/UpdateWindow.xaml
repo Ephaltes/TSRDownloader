@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="clr-namespace:TSRDownloader.UI.Localization"
         xmlns:converters="clr-namespace:TSRDownloader.UI.Converters"
+        Background="{DynamicResource App.WindowBackground}" Foreground="{DynamicResource App.Text}"
         Title="{loc:Loc Update_WindowTitle}"
         Width="420" SizeToContent="Height"
         ResizeMode="NoResize"
@@ -20,7 +21,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="{Binding Message}"
-                   TextWrapping="Wrap" FontSize="13" Foreground="#333"/>
+                   TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource App.Text}"/>
 
         <ProgressBar Grid.Row="1" Height="8" Margin="0,16,0,0"
                      Minimum="0" Maximum="100" Value="{Binding Progress, Mode=OneWay}"

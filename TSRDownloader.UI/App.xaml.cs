@@ -95,6 +95,7 @@ public partial class App : Application
         builder.Services.AddSingleton<INotificationService, NotificationService>();
         builder.Services.AddSingleton<IStartupService, StartupService>();
         builder.Services.AddSingleton<IFileConflictResolver, FileConflictResolver>();
+        builder.Services.AddSingleton<IThemeService, ThemeService>();
         builder.Services.AddSingleton(Localization.LocalizationManager.Instance);
 
         // Updates (Velopack / GitHub Releases)
@@ -136,8 +137,9 @@ public partial class App : Application
         IConfigService configService = Services.GetRequiredService<IConfigService>();
         configService.Load();
 
-        // Apply the configured UI language before any window is shown
+        // Apply the configured UI language and theme before any window is shown
         Localization.LocalizationManager.Instance.SetLanguage(configService.Config.Language);
+        Services.GetRequiredService<IThemeService>().Apply(configService.Config.Theme);
 
         // The update window may open and close before the main window exists; keep the app
         // alive until the main window takes over.

@@ -8,6 +8,7 @@
         xmlns:conv="clr-namespace:TSRDownloader.UI.Converters"
         xmlns:loc="clr-namespace:TSRDownloader.UI.Localization"
         mc:Ignorable="d"
+        Background="{DynamicResource App.WindowBackground}" Foreground="{DynamicResource App.Text}"
         Title="TSR Downloader"
         Height="550" Width="960"
         MinHeight="400" MinWidth="860"
@@ -45,10 +46,10 @@
                     HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Border.Style>
                     <Style TargetType="Border">
-                        <Setter Property="Background" Value="#E8F5E9"/>
+                        <Setter Property="Background" Value="{DynamicResource App.SuccessSurface}"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsMonitoring}" Value="False">
-                                <Setter Property="Background" Value="#FFF3E0"/>
+                                <Setter Property="Background" Value="{DynamicResource App.WarningSurface}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -122,12 +123,12 @@
         </DockPanel>
 
         <!-- Row 1: Download List with resizable columns -->
-        <Border Grid.Row="1" BorderBrush="#E0E0E0" BorderThickness="1"
+        <Border Grid.Row="1" BorderBrush="{DynamicResource App.Border}" BorderThickness="1"
                 CornerRadius="6">
             <Grid>
             <ListView ItemsSource="{Binding DownloadItems}"
                       SelectedItem="{Binding SelectedItem}"
-                      BorderThickness="0"
+                      BorderThickness="0" Background="{DynamicResource App.WindowBackground}"
                       behaviors:GridViewColumnSizing.Fill="True"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                       ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -159,7 +160,7 @@
                         <!-- Status Column (fixed) -->
                         <GridViewColumn Width="55">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_Status}" FontWeight="SemiBold" FontSize="12" Foreground="#555"/>
+                                <TextBlock Text="{loc:Loc Column_Status}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -175,12 +176,12 @@
                         <!-- Item ID Column (fixed) -->
                         <GridViewColumn Width="70">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_Id}" FontWeight="SemiBold" FontSize="12" Foreground="#555"/>
+                                <TextBlock Text="{loc:Loc Column_Id}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding ItemId}"
-                                               FontSize="11" Foreground="#888"
+                                               FontSize="11" Foreground="{DynamicResource App.TextMuted}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
                                 </DataTemplate>
@@ -190,7 +191,7 @@
                         <!-- FileName Column (fills) -->
                         <GridViewColumn Width="350" behaviors:GridViewColumnSizing.StarWeight="2">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_FileName}" FontWeight="SemiBold" FontSize="12" Foreground="#555"/>
+                                <TextBlock Text="{loc:Loc Column_FileName}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -207,7 +208,7 @@
                         <!-- URL Column (fills) -->
                         <GridViewColumn Width="220" behaviors:GridViewColumnSizing.StarWeight="3">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_Url}" FontWeight="SemiBold" FontSize="12" Foreground="#555"/>
+                                <TextBlock Text="{loc:Loc Column_Url}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -221,7 +222,7 @@
                                                    TextTrimming="CharacterEllipsis"
                                                    ToolTip="{Binding Url}"/>
                                         <TextBlock Text="{Binding StatusText}"
-                                                   FontSize="11" Foreground="#888"
+                                                   FontSize="11" Foreground="{DynamicResource App.TextMuted}"
                                                    TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
                                 </DataTemplate>
@@ -231,7 +232,7 @@
                         <!-- Progress Column (fills) -->
                         <GridViewColumn Width="260" behaviors:GridViewColumnSizing.StarWeight="2">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_Progress}" FontWeight="SemiBold" FontSize="12" Foreground="#555"/>
+                                <TextBlock Text="{loc:Loc Column_Progress}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -250,13 +251,13 @@
                                                      Value="{Binding Progress}"
                                                      IsIndeterminate="{Binding IsIndeterminate}"
                                                      Foreground="{Binding StatusColor}"
-                                                     Background="#E8E8E8"
+                                                     Background="{DynamicResource App.ProgressTrack}"
                                                      BorderThickness="0"
                                                      Margin="8,4,8,2"/>
 
                                         <TextBlock Grid.Row="1"
                                                    Text="{Binding ProgressText}"
-                                                   FontSize="11" Foreground="#666"
+                                                   FontSize="11" Foreground="{DynamicResource App.TextSecondary}"
                                                    HorizontalAlignment="Center"
                                                    TextTrimming="CharacterEllipsis"
                                                    Margin="0,0,0,2"/>
@@ -277,7 +278,7 @@
                                 <ControlTemplate TargetType="ListViewItem">
                                     <Border x:Name="Bd"
                                             Background="{TemplateBinding Background}"
-                                            BorderBrush="#F0F0F0"
+                                            BorderBrush="{DynamicResource App.Divider}"
                                             BorderThickness="0,0,0,1"
                                             Padding="0">
                                         <GridViewRowPresenter HorizontalAlignment="Stretch"
@@ -287,7 +288,7 @@
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
                                             <Setter TargetName="Bd" Property="Background"
-                                                    Value="#F0F7FF"/>
+                                                    Value="{DynamicResource App.AccentHover}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -301,7 +302,7 @@
             <TextBlock Text="{loc:Loc Main_EmptyHint}"
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420"
-                       FontSize="14" Foreground="#888" IsHitTestVisible="False">
+                       FontSize="14" Foreground="{DynamicResource App.TextMuted}" IsHitTestVisible="False">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -318,7 +319,7 @@
 
         <!-- Row 2: Overall Progress -->
         <Border Grid.Row="2" Margin="0,10,0,0" Padding="10,8"
-                Background="#FAFAFA" BorderBrush="#E0E0E0"
+                Background="{DynamicResource App.Surface}" BorderBrush="{DynamicResource App.Border}"
                 BorderThickness="1" CornerRadius="6">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -333,15 +334,15 @@
                 <ProgressBar Grid.Column="1" Height="16"
                              Minimum="0" Maximum="100"
                              Value="{Binding OverallProgress}"
-                             Background="#E8E8E8"
-                             Foreground="#4CAF50"
+                             Background="{DynamicResource App.ProgressTrack}"
+                             Foreground="{DynamicResource App.Success}"
                              BorderThickness="0"
                              VerticalAlignment="Center"/>
 
                 <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="10,0,0,0"
                            FontSize="13">
                     <Run Text="{Binding CompletedCount}"/><Run Text=" + "/>
-                    <Run Text="{Binding FailedCount}" Foreground="#F44336"/>
+                    <Run Text="{Binding FailedCount}" Foreground="{DynamicResource App.Error}"/>
                     <Run Text=" / "/><Run Text="{Binding TotalCount}"/>
                     <Run Text=" "/><Run Text="{loc:Loc Overall_Done}"/>
                 </TextBlock>
@@ -350,22 +351,22 @@
 
         <!-- Row 3: Status Bar -->
         <Border Grid.Row="3" Margin="0,8,0,0" Padding="10,4"
-                Background="#F5F5F5" CornerRadius="4">
+                Background="{DynamicResource App.SurfaceAlt}" CornerRadius="4">
             <DockPanel>
             <TextBlock DockPanel.Dock="Right" Text="{Binding VersionText}"
-                       FontSize="12" Foreground="#999" VerticalAlignment="Center"/>
+                       FontSize="12" Foreground="{DynamicResource App.TextMuted}" VerticalAlignment="Center"/>
             <StackPanel Orientation="Horizontal">
-                <TextBlock FontSize="12" Foreground="#666">
+                <TextBlock FontSize="12" Foreground="{DynamicResource App.TextSecondary}">
                     <Run Text="{loc:Loc StatusBar_Queue}"/>
                     <Run Text="{Binding QueuedCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>
-                <Separator Width="1" Margin="15,2" Background="#CCC"/>
-                <TextBlock FontSize="12" Foreground="#2196F3">
+                <Separator Width="1" Margin="15,2" Background="{DynamicResource App.InputBorder}"/>
+                <TextBlock FontSize="12" Foreground="{DynamicResource App.Accent}">
                     <Run Text="{loc:Loc StatusBar_Active}"/>
                     <Run Text="{Binding ActiveCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>
-                <Separator Width="1" Margin="15,2" Background="#CCC"/>
-                <TextBlock FontSize="12" Foreground="#F44336">
+                <Separator Width="1" Margin="15,2" Background="{DynamicResource App.InputBorder}"/>
+                <TextBlock FontSize="12" Foreground="{DynamicResource App.Error}">
                     <Run Text="{loc:Loc StatusBar_Errors}"/>
                     <Run Text="{Binding FailedCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>

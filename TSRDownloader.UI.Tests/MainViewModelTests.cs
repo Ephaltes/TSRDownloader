@@ -113,7 +113,7 @@ public class MainViewModelTests
         vm.CompletedCount.ShouldBe(1);
         vm.FailedCount.ShouldBe(1);
         vm.OverallProgress.ShouldBe(100);
-        notifications.Received(1).Notify(Arg.Any<string>(), Arg.Any<string>());
+        notifications.Received(1).Notify(Arg.Any<string>(), Arg.Any<string>(), INotificationService.StatusTag);
     }
 
     private static MainViewModel VmWithFiles()
@@ -181,7 +181,7 @@ public class MainViewModelTests
 
         // Assert
         vm.TotalCount.ShouldBe(1);
-        notifications.DidNotReceive().Notify(Arg.Any<string>(), Arg.Any<string>());
+        notifications.DidNotReceiveWithAnyArgs().Notify(default!, default!);
     }
 
     [Fact]

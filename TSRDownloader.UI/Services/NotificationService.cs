@@ -24,14 +24,18 @@ public sealed class NotificationService : INotificationService
         ToastNotificationManagerCompat.OnActivated += OnToastActivated;
     }
 
-    public void Notify(string title, string message)
+    public void Notify(string title, string message, string? tag = null)
     {
         try
         {
             new ToastContentBuilder()
                 .AddText(title)
                 .AddText(message)
-                .Show();
+                .Show(toast =>
+                {
+                    if (tag is not null)
+                        toast.Tag = tag;
+                });
         }
         catch (Exception ex)
         {

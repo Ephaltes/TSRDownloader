@@ -165,6 +165,7 @@ public partial class DownloadItemViewModel : ObservableObject
         LocalizationManager loc = LocalizationManager.Instance;
         _notificationService.Notify(
             loc.Get("App_Name"),
-            loc.Format("Notify_UrlCopied", FileName));
+            loc.Format("Notify_UrlCopied", FileName),
+            INotificationService.StatusTag);
     }
 }

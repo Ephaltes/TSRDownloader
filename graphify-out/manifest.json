@@ -366,9 +366,9 @@
     "semantic_hash": "21f21ebb57a3b533eef690df917aeeb7"
   },
   "TSRDownloader.UI.Tests/MainViewModelTests.cs": {
-    "mtime": 1791826450.19599,
-    "seen": 1791827024.6414037,
-    "ast_hash": "b314195be09563609117aad05800aa6a",
+    "mtime": 1791827784.8770497,
+    "seen": 1791827800.4568493,
+    "ast_hash": "376b0ecc81b7164849c48fe862ba77e1",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/SettingsViewModelTests.cs": {
@@ -510,10 +510,10 @@
     "semantic_hash": "368bc43c52704d2192b528e159d8f56b"
   },
   "TSRDownloader.UI/Services/INotificationService.cs": {
-    "mtime": 1791476420.2808094,
-    "seen": 1791817707.071074,
-    "ast_hash": "faeade387518eef4e49ce76ad9c8d146",
-    "semantic_hash": "faeade387518eef4e49ce76ad9c8d146"
+    "mtime": 1791827779.7450035,
+    "seen": 1791827800.4568727,
+    "ast_hash": "3210321a397d1d5c691bef7fe8031630",
+    "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/IStartupService.cs": {
     "mtime": 1791476374.912514,
@@ -540,10 +540,10 @@
     "semantic_hash": "fe22200c45c71bc6e9affd471218158c"
   },
   "TSRDownloader.UI/Services/NotificationService.cs": {
-    "mtime": 1791476420.2818122,
-    "seen": 1791817707.0710769,
-    "ast_hash": "8095f180c747611f361e07d2373286ce",
-    "semantic_hash": "8095f180c747611f361e07d2373286ce"
+    "mtime": 1791827524.8573227,
+    "seen": 1791827561.937639,
+    "ast_hash": "30390b4c413fc36d99914a34510f7aee",
+    "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/StartupService.cs": {
     "mtime": 1791476420.2818122,
@@ -582,15 +582,15 @@
     "semantic_hash": ""
   },
   "TSRDownloader.UI/ViewModels/DownloadItemViewModel.cs": {
-    "mtime": 1791826393.524427,
-    "seen": 1791827024.641435,
-    "ast_hash": "b5037cf05ceb53c339f3389f602ab193",
+    "mtime": 1791827783.1554363,
+    "seen": 1791827800.4568858,
+    "ast_hash": "bb252a0e70dffd6a7db82d507d8f70cb",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/ViewModels/MainViewModel.cs": {
-    "mtime": 1791826616.8746383,
-    "seen": 1791827024.6414356,
-    "ast_hash": "ee10494b7dc130813be1c23c0e678267",
+    "mtime": 1791827782.30488,
+    "seen": 1791827800.4568863,
+    "ast_hash": "630d912b1e3facc868ff4ed3a98882ef",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/ViewModels/SettingsViewModel.cs": {

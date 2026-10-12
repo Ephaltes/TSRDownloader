@@ -205,7 +205,8 @@ public partial class MainViewModel : ObservableObject
         string message = added == 1
             ? _localization.Get("Notify_LinkFound_One")
             : _localization.Format("Notify_LinkFound_Many", added);
-        _notificationService.Notify(_localization.Get("App_Name"), message);
+        // One shared tag: each new link replaces the last toast instead of queuing behind it.
+        _notificationService.Notify(_localization.Get("App_Name"), message, INotificationService.LinkFoundTag);
     }
 
     /// <summary>
@@ -497,7 +498,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         _notificationService.Notify(_localization.Get("App_Name"),
-            _localization.Format("Notify_UrlsCopied", SelectedItems.Count));
+            _localization.Format("Notify_UrlsCopied", SelectedItems.Count), INotificationService.StatusTag);
     }
 
     private bool HasSelection() => SelectedItems.Count > 0;
@@ -612,6 +613,6 @@ public partial class MainViewModel : ObservableObject
         string message = FailedCount == 0
             ? _localization.Format("Notify_QueueFinished", CompletedCount)
             : _localization.Format("Notify_QueueFinishedWithErrors", CompletedCount, FailedCount);
-        _notificationService.Notify(_localization.Get("App_Name"), message);
+        _notificationService.Notify(_localization.Get("App_Name"), message, INotificationService.StatusTag);
     }
 }

@@ -1,7 +1,7 @@
 # Graph Report - TSRDownloader  (2026-10-12)
 
 ## Corpus Check
-- 126 files · ~43,409 words
+- 126 files · ~43,500 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 9 file(s) not represented in the graph (top: .props 2, .ico 2, .psd 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `58702a6d`
+- Built from commit: `96d9f776`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -278,7 +278,7 @@ Nodes (4): UpdateMode, Automatic, Disabled, NotifyOnly
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `MainViewModel` connect `MainViewModel` to `TSRDownloader.Core.Models`, `ClipboardHookService`, `DownloadService`, `UpdateCoordinator`, `LocalizationManager`, `Fixture`, `.Get`, `.BuildHost`, `Window`, `DownloadItemViewModel`, `IReadOnlyList`, `Fact`, `List`, `RelayCommand`, `ListSort`, `.OnStartup`, `.Open`, `UpdateViewModel`?**
-  _High betweenness centrality (0.195) - this node is a cross-community bridge._
+  _High betweenness centrality (0.194) - this node is a cross-community bridge._
 - **Are the 32 inferred relationships involving `MainViewModel` (e.g. with `Window` and `ActiveCount`) actually correct?**
   _`MainViewModel` has 32 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Microsoft.NET.Test.Sdk`, `xunit`, `xunit.runner.visualstudio` to the rest of the system?**
@@ -286,7 +286,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `TSRDownloader.Core.Models` be split into smaller, more focused modules?**
   _Cohesion score 0.1048780487804878 - nodes in this community are weakly interconnected._
 - **Why does `DownloadItem` connect `Fact` to `CancellationToken`, `TsrDownloadClientTests.cs`, `.Combine`, `DownloadService`, `Task`, `InlineData`, `DownloadItemViewModel`, `IReadOnlyList`, `DownloadQueueAutosave`, `MainViewModel`, `DownloadStatus`, `RelayCommand`, `List`?**
-  _High betweenness centrality (0.103) - this node is a cross-community bridge._
+  _High betweenness centrality (0.102) - this node is a cross-community bridge._
 - **Are the 9 inferred relationships involving `DownloadItem` (e.g. with `.Save_Should_StoreStatusByName_When_Written()` and `.Restore_Should_FinishQueuedDownloads_When_AppRestarts()`) actually correct?**
   _`DownloadItem` has 9 INFERRED edges - model-reasoned connections that need verification._
 - **Should `ClipboardHookService` be split into smaller, more focused modules?**

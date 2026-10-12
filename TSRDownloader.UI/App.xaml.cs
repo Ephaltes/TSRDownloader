@@ -96,6 +96,7 @@ public partial class App : Application
         builder.Services.AddSingleton<IStartupService, StartupService>();
         builder.Services.AddSingleton<IFileConflictResolver, FileConflictResolver>();
         builder.Services.AddSingleton<IThemeService, ThemeService>();
+        builder.Services.AddSingleton<TrayIconService>();
         builder.Services.AddSingleton(Localization.LocalizationManager.Instance);
 
         // Updates (Velopack / GitHub Releases)
@@ -179,10 +180,16 @@ public partial class App : Application
         mainViewModel.RestoreDownloads(Services.GetRequiredService<IDownloadQueueStore>().Load());
 
         // Launch main window
-        MainWindow mainWindow = new(mainViewModel, Services.GetRequiredService<ClipboardHookService>());
+        TrayIconService trayIcon = Services.GetRequiredService<TrayIconService>();
+        MainWindow mainWindow = new(mainViewModel, Services.GetRequiredService<ClipboardHookService>(),
+            configService, trayIcon);
         // Set explicitly: an update window created earlier would otherwise be Application.MainWindow.
         MainWindow = mainWindow;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
+        trayIcon.OpenRequested += ShowMainWindow;
+        trayIcon.ExitRequested += mainWindow.RequestExit;
+        // Logging off quits for real (and saves the queue) instead of hiding to the tray.
+        SessionEnding += (_, _) => mainWindow.RequestExit();
         mainWindow.Show();
 
         // Notify-only mode checks in the background once the app is usable.

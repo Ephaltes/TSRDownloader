@@ -375,4 +375,13 @@
   <data name="Sort_Name" xml:space="preserve">
     <value>Nach Name</value>
   </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>TSR Downloader öffnen</value>
+  </data>
+  <data name="Tray_StillRunning" xml:space="preserve">
+    <value>TSR Downloader läuft im Infobereich weiter. Zum Beenden in seinem Menü „Beenden“ wählen.</value>
+  </data>
+  <data name="Settings_CloseToTray" xml:space="preserve">
+    <value>Beim Schließen des Fensters im Infobereich weiterlaufen</value>
+  </data>
 </root>

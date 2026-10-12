@@ -49,6 +49,9 @@ public partial class SettingsViewModel : ObservableObject
     private bool _startOnSystemStartup;
 
     [ObservableProperty]
+    private bool _closeToTray = true;
+
+    [ObservableProperty]
     private bool _extractZipArchives = true;
 
     [ObservableProperty]
@@ -114,6 +117,7 @@ public partial class SettingsViewModel : ObservableObject
         MaxActiveDownloads = config.MaxActiveDownloads;
         TicketActivationDelaySeconds = config.TicketActivationDelaySeconds;
         NotifyOnLinkFound = config.NotifyOnLinkFound;
+        CloseToTray = config.CloseToTray;
         ExtractZipArchives = config.ExtractZipArchives;
         DeleteZipAfterExtraction = config.DeleteZipAfterExtraction;
         SelectedUpdateMode = UpdateModes.FirstOrDefault(option => option.Mode == config.UpdateMode)
@@ -163,6 +167,7 @@ public partial class SettingsViewModel : ObservableObject
             Language = SelectedLanguage.Code,
             NotifyOnLinkFound = NotifyOnLinkFound,
             StartOnSystemStartup = StartOnSystemStartup,
+            CloseToTray = CloseToTray,
             ExtractZipArchives = ExtractZipArchives,
             DeleteZipAfterExtraction = DeleteZipAfterExtraction,
             UpdateMode = SelectedUpdateMode.Mode,

@@ -375,4 +375,13 @@
   <data name="Sort_Name" xml:space="preserve">
     <value>By name</value>
   </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Open TSR Downloader</value>
+  </data>
+  <data name="Tray_StillRunning" xml:space="preserve">
+    <value>TSR Downloader keeps running in the notification area. Choose Exit in its menu to quit.</value>
+  </data>
+  <data name="Settings_CloseToTray" xml:space="preserve">
+    <value>Keep running in the notification area when the window is closed</value>
+  </data>
 </root>

@@ -29,6 +29,21 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void Save_Should_PersistCloseToTray_When_Changed()
+    {
+        // Arrange
+        (SettingsViewModel vm, IConfigService config) = NewVm(new AppConfig { CloseToTray = true });
+        vm.CloseToTray.ShouldBeTrue();
+
+        // Act
+        vm.CloseToTray = false;
+        vm.SaveCommand.Execute(null);
+
+        // Assert
+        config.Received(1).Update(Arg.Is<AppConfig>(c => c != null && !c.CloseToTray));
+    }
+
+    [Fact]
     public void Save_Should_PersistAndApplyTheme_When_ThemeChanged()
     {
         // Arrange

@@ -305,9 +305,9 @@ public partial class MainViewModel : ObservableObject
         _downloadService.Stop();
     }
 
-    // Closing the main window (rather than Application.Shutdown) lets it ask for confirmation.
+    // Quits for real (closing the window may only hide it to the tray); RequestExit runs the window's shutdown steps.
     [RelayCommand]
-    private static void Exit() => System.Windows.Application.Current.MainWindow?.Close();
+    private static void Exit() => (System.Windows.Application.Current.MainWindow as MainWindow)?.RequestExit();
 
     [RelayCommand]
     private void OpenSettings()

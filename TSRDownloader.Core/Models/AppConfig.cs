@@ -33,6 +33,9 @@ public class AppConfig
     /// <summary>Whether the application should launch automatically when the user logs in.</summary>
     public bool StartOnSystemStartup { get; set; }
 
+    /// <summary>Whether closing the window keeps the app running in the notification area.</summary>
+    public bool CloseToTray { get; set; } = true;
+
     /// <summary>Whether downloaded .zip archives are extracted automatically.</summary>
     public bool ExtractZipArchives { get; set; } = true;
 

@@ -1,3 +1,4 @@
+using TSRDownloader.Core.Services;
 using TSRDownloader.UI.Localization;
 using TSRDownloader.UI.Services;
 using TSRDownloader.UI.ViewModels;
@@ -12,12 +13,18 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private readonly ClipboardHookService _clipboardHook;
+    private readonly IConfigService _configService;
+    private readonly TrayIconService _trayIcon;
+    private bool _isExiting;
 
-    public MainWindow(MainViewModel viewModel, ClipboardHookService clipboardHook)
+    public MainWindow(MainViewModel viewModel, ClipboardHookService clipboardHook,
+        IConfigService configService, TrayIconService trayIcon)
     {
         InitializeComponent();
         _viewModel = viewModel;
         _clipboardHook = clipboardHook;
+        _configService = configService;
+        _trayIcon = trayIcon;
         DataContext = _viewModel;
 
         Loaded += OnLoaded;
@@ -40,8 +47,24 @@ public partial class MainWindow : Window
             _viewModel.OnClipboardContentChanged(currentClipboardText);
     }
 
+    /// <summary>Closes the window and quits, even when closing normally only hides it to the tray.</summary>
+    public void RequestExit()
+    {
+        _isExiting = true;
+        Close();
+    }
+
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        if (!_isExiting && _configService.Config.CloseToTray)
+        {
+            // Keep watching the clipboard and downloading in the background.
+            e.Cancel = true;
+            Hide();
+            _trayIcon.ShowStillRunningHint();
+            return;
+        }
+
         // Unfinished downloads are saved and continue on the next start.
         _viewModel.StopMonitoringCommand.Execute(null);
         _clipboardHook.Dispose();

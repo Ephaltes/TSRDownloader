@@ -235,6 +235,10 @@
                         <CheckBox Content="{loc:Loc Settings_StartOnStartup}"
                                   IsChecked="{Binding StartOnSystemStartup}"
                                   Style="{StaticResource SettingCheckBox}"/>
+
+                        <CheckBox Content="{loc:Loc Settings_CloseToTray}"
+                                  IsChecked="{Binding CloseToTray}"
+                                  Style="{StaticResource SettingCheckBox}"/>
                     </StackPanel>
                 </Border>
             </TabItem>

@@ -420,15 +420,15 @@
     "semantic_hash": "1c1522d2c51ec7a2d086706de7c6c0f2"
   },
   "TSRDownloader.UI/MainWindow.xaml": {
-    "mtime": 1791829747.9431653,
-    "seen": 1791829760.5589843,
-    "ast_hash": "b9d6e427ff3c1694dc0c76fcff0368b5",
+    "mtime": 1791829846.0488825,
+    "seen": 1791830120.4297428,
+    "ast_hash": "d2103b592a86632ba00aa9b85d9f5390",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/MainWindow.xaml.cs": {
-    "mtime": 1791829103.427364,
-    "seen": 1791829123.6504636,
-    "ast_hash": "c5209ce7b1abf223c25b49df0be02e90",
+    "mtime": 1791830027.1158192,
+    "seen": 1791830120.4297442,
+    "ast_hash": "3e56d86050edc4b4ffbbb8411f86582c",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Presentation/DownloadStatusPresenter.cs": {
@@ -522,10 +522,10 @@
     "semantic_hash": "3e0ff82b2eebfe71601fd1ce9b21a7df"
   },
   "TSRDownloader.UI/Services/VelopackUpdateService.cs": {
-    "mtime": 1791829103.4713202,
-    "seen": 1791829123.6504786,
-    "ast_hash": "c605b4dbe7a4407e34506399119c3f97",
-    "semantic_hash": "c605b4dbe7a4407e34506399119c3f97"
+    "mtime": 1791830000.1289618,
+    "seen": 1791830120.4297593,
+    "ast_hash": "2a057e7052e50982c2660324ca8bc94e",
+    "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/WpfDispatcher.cs": {
     "mtime": 1791829103.4733255,
@@ -534,9 +534,9 @@
     "semantic_hash": "eece095d1fb62132a68fd224b6bdff28"
   },
   "TSRDownloader.UI/TSRDownloader.UI.csproj": {
-    "mtime": 1791826572.3160832,
-    "seen": 1791827024.6414332,
-    "ast_hash": "82ca27edbfbeaa329d19127927f9015a",
+    "mtime": 1791830096.8067763,
+    "seen": 1791830120.4297605,
+    "ast_hash": "c7cfd8b510ccf5b0f4429de432c08ffd",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/ViewModels/DownloadItemViewModel.cs": {
@@ -789,6 +789,18 @@
     "mtime": 1791828947.710659,
     "seen": 1791829123.650464,
     "ast_hash": "cd7b2c653a972305ef263994223470e2",
+    "semantic_hash": ""
+  },
+  "TSRDownloader.UI/Views/AboutWindow.xaml": {
+    "mtime": 1791830078.4393733,
+    "seen": 1791830120.4297652,
+    "ast_hash": "4eb52b2d2673ad47f7a992f876c91618",
+    "semantic_hash": ""
+  },
+  "TSRDownloader.UI/Views/AboutWindow.xaml.cs": {
+    "mtime": 1791830018.0985398,
+    "seen": 1791830120.429766,
+    "ast_hash": "ab0591acd5c7386321b956e2aafee537",
     "semantic_hash": ""
   }
 }

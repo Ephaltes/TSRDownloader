@@ -384,4 +384,13 @@
   <data name="Settings_CloseToTray" xml:space="preserve">
     <value>Keep running in the notification area when the window is closed</value>
   </data>
+  <data name="About_ProjectPage" xml:space="preserve">
+    <value>Project page on GitHub</value>
+  </data>
+  <data name="About_ReportProblem" xml:space="preserve">
+    <value>Report a problem</value>
+  </data>
+  <data name="About_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
 </root>

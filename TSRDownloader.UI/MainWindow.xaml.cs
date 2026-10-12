@@ -1,9 +1,9 @@
 using TSRDownloader.Core.Models;
 using TSRDownloader.Core.Services;
 using TSRDownloader.UI.Behaviors;
-using TSRDownloader.UI.Localization;
 using TSRDownloader.UI.Services;
 using TSRDownloader.UI.ViewModels;
+using TSRDownloader.UI.Views;
 
 namespace TSRDownloader.UI;
 
@@ -140,13 +140,6 @@ public partial class MainWindow : Window
             _viewModel.AddLinks(text);
     }
 
-    private void OnAboutClick(object sender, RoutedEventArgs eventArgs)
-    {
-        LocalizationManager localization = LocalizationManager.Instance;
-        MessageBox.Show(this,
-            $"{localization.Get("App_Name")}\n\n{localization.Get("About_Message")}",
-            localization.Get("Menu_About"),
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-    }
+    private void OnAboutClick(object sender, RoutedEventArgs eventArgs) =>
+        new AboutWindow(_viewModel.VersionText) { Owner = this }.ShowDialog();
 }

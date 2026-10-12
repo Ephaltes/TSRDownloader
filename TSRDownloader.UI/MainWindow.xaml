@@ -158,14 +158,16 @@
                          remaining width and resize with the window (see GridViewColumnSizing). -->
                     <GridView>
                         <!-- Status Column (fixed) -->
-                        <GridViewColumn Width="55">
+                        <GridViewColumn Width="64">
                             <GridViewColumn.Header>
                                 <TextBlock Text="{loc:Loc Column_Status}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding StatusIcon}"
-                                               FontSize="20"
+                                               FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                               FontSize="18"
+                                               Foreground="{Binding StatusColor}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
                                                ToolTip="{Binding StatusText}"/>

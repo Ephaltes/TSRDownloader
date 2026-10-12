@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using TSRDownloader.Core.Helpers;
 using TSRDownloader.Core.Models;
 
 namespace TSRDownloader.Core.Services;
@@ -11,24 +12,24 @@ namespace TSRDownloader.Core.Services;
 public sealed class DownloadService : IDownloadService, IDisposable
 {
     /// <summary>Minimum time between two progress notifications for the same download.</summary>
-    private const long ProgressNotifyIntervalMs = 100;
+    private const long ProgressNotifyIntervalMilliseconds = 100;
 
     /// <summary>How often a failed download is retried automatically before it is marked failed.</summary>
     public const int MaxAutomaticRetries = 3;
 
     private readonly ITsrDownloadClient _tsrClient;
     private readonly Func<int, TimeSpan> _retryDelay;
-    private readonly IConfigService _configService;
+    private readonly IConfigurationService _configurationService;
     private readonly IArchiveExtractionService _extractionService;
     private readonly List<DownloadItem> _items = [];
-    private readonly ConcurrentDictionary<int, CancellationTokenSource> _activeTokens = new();
+    private readonly ConcurrentDictionary<int, CancellationTokenSource> _activeDownloadCancellations = new();
     private readonly Lock _lock = new();
 
     private volatile int _maxActiveDownloads;
     private volatile bool _isRunning;
 
     public event Action<DownloadItem>? ItemChanged;
-    public event Action? QueueStatsChanged;
+    public event Action? QueueStatisticsChanged;
 
     public IReadOnlyList<DownloadItem> Items
     {
@@ -41,15 +42,15 @@ public sealed class DownloadService : IDownloadService, IDisposable
     /// </param>
     public DownloadService(
         ITsrDownloadClient tsrClient,
-        IConfigService configService,
+        IConfigurationService configurationService,
         IArchiveExtractionService extractionService,
         Func<int, TimeSpan>? retryDelay = null)
     {
         _tsrClient = tsrClient;
-        _configService = configService;
+        _configurationService = configurationService;
         _extractionService = extractionService;
         _retryDelay = retryDelay ?? DefaultRetryDelay;
-        _maxActiveDownloads = Math.Max(1, configService.Config.MaxActiveDownloads);
+        _maxActiveDownloads = Math.Max(1, configurationService.Configuration.MaxActiveDownloads);
     }
 
     /// <summary>5, 15, then 45 seconds: gives TSR or the network increasingly more time to recover.</summary>
@@ -72,7 +73,7 @@ public sealed class DownloadService : IDownloadService, IDisposable
 
         foreach (DownloadItem item in added)
             NotifyItemChanged(item);
-        NotifyStatsChanged();
+        NotifyStatisticsChanged();
         StartQueuedDownloads();
     }
 
@@ -95,7 +96,7 @@ public sealed class DownloadService : IDownloadService, IDisposable
 
         foreach (DownloadItem item in restored)
             NotifyItemChanged(item);
-        NotifyStatsChanged();
+        NotifyStatisticsChanged();
         StartQueuedDownloads();
     }
 
@@ -119,7 +120,7 @@ public sealed class DownloadService : IDownloadService, IDisposable
                     Requeue(item);
                     return false;
                 }
-                if (!_configService.Config.ExtractZipArchives)
+                if (!_configurationService.Configuration.ExtractZipArchives)
                 {
                     item.Status = DownloadStatus.Completed;
                     return false;
@@ -145,14 +146,14 @@ public sealed class DownloadService : IDownloadService, IDisposable
     {
         lock (_lock)
         {
-            if (!_items.Contains(item) || item.Status is not (DownloadStatus.Failed or DownloadStatus.ExtractionFailed))
+            if (!_items.Contains(item) || !item.Status.IsFailed())
                 return false;
 
             Requeue(item);
         }
 
         NotifyItemChanged(item);
-        NotifyStatsChanged();
+        NotifyStatisticsChanged();
         StartQueuedDownloads();
         return true;
     }
@@ -162,16 +163,14 @@ public sealed class DownloadService : IDownloadService, IDisposable
         lock (_lock)
         {
             // Items handed to the extraction queue are owned by it until extraction finishes.
-            if (item.Status is DownloadStatus.WaitingToExtract or DownloadStatus.Extracting || !_items.Remove(item))
+            if (item.Status.IsInExtraction() || !_items.Remove(item))
                 return false;
         }
 
-        if (_activeTokens.TryGetValue(item.ItemId, out CancellationTokenSource? cts))
-        {
-            try { cts.Cancel(); } catch (ObjectDisposedException) { /* finished meanwhile */ }
-        }
+        if (_activeDownloadCancellations.TryGetValue(item.ItemId, out CancellationTokenSource? cancellation))
+            TryCancel(cancellation);
 
-        NotifyStatsChanged();
+        NotifyStatisticsChanged();
         return true;
     }
 
@@ -186,11 +185,9 @@ public sealed class DownloadService : IDownloadService, IDisposable
     {
         _isRunning = false;
 
-        foreach (CancellationTokenSource cts in _activeTokens.Values)
-        {
-            try { cts.Cancel(); } catch (ObjectDisposedException) { /* finished meanwhile */ }
-        }
-        NotifyStatsChanged();
+        foreach (CancellationTokenSource cancellation in _activeDownloadCancellations.Values)
+            TryCancel(cancellation);
+        NotifyStatisticsChanged();
     }
 
     /// <summary>
@@ -207,7 +204,7 @@ public sealed class DownloadService : IDownloadService, IDisposable
             if (!_isRunning)
                 return;
 
-            int activeCount = _items.Count(i => i.Status == DownloadStatus.Downloading);
+            int activeCount = _items.Count(item => item.Status == DownloadStatus.Downloading);
             foreach (DownloadItem item in _items)
             {
                 if (activeCount >= _maxActiveDownloads)
@@ -231,35 +228,35 @@ public sealed class DownloadService : IDownloadService, IDisposable
     private async Task RunDownloadAsync(DownloadItem item)
     {
         NotifyItemChanged(item);
-        NotifyStatsChanged();
+        NotifyStatisticsChanged();
 
-        CancellationTokenSource cts = new();
-        _activeTokens[item.ItemId] = cts;
+        CancellationTokenSource cancellation = new();
+        _activeDownloadCancellations[item.ItemId] = cancellation;
 
         try
         {
-            await DownloadWithRetriesAsync(item, cts.Token);
+            await DownloadWithRetriesAsync(item, cancellation.Token);
         }
-        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
             // Stopped (or removed): back to the queue; a partial .part file is resumed later.
             item.Status = DownloadStatus.Queued;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             // Includes HTTP timeouts, which surface as OperationCanceledException without our token
             // being cancelled — re-queueing those would retry forever.
             item.Status = DownloadStatus.Failed;
-            item.ErrorMessage = ex.Message;
+            item.ErrorMessage = exception.Message;
         }
         finally
         {
             // Only remove our own entry; a restart may already have registered a new one.
-            _activeTokens.TryRemove(new KeyValuePair<int, CancellationTokenSource>(item.ItemId, cts));
-            cts.Dispose();
+            _activeDownloadCancellations.TryRemove(new KeyValuePair<int, CancellationTokenSource>(item.ItemId, cancellation));
+            cancellation.Dispose();
             item.RetryAttempt = 0;
             NotifyItemChanged(item);
-            NotifyStatsChanged();
+            NotifyStatisticsChanged();
             StartQueuedDownloads();
         }
     }
@@ -268,57 +265,57 @@ public sealed class DownloadService : IDownloadService, IDisposable
     /// Downloads the item, retrying failures up to <see cref="MaxAutomaticRetries"/> times with
     /// increasing waits. The item keeps its download slot while waiting; stopping cancels the wait.
     /// </summary>
-    private async Task DownloadWithRetriesAsync(DownloadItem item, CancellationToken ct)
+    private async Task DownloadWithRetriesAsync(DownloadItem item, CancellationToken cancellationToken)
     {
         while (true)
         {
             try
             {
-                await DownloadItemAsync(item, ct);
+                await DownloadItemAsync(item, cancellationToken);
                 return;
             }
-            catch (Exception) when (item.RetryAttempt < MaxAutomaticRetries && !ct.IsCancellationRequested)
+            catch (Exception) when (item.RetryAttempt < MaxAutomaticRetries && !cancellationToken.IsCancellationRequested)
             {
                 item.RetryAttempt++;
                 item.DownloadedBytes = 0;
                 item.TotalBytes = 0;
                 NotifyItemChanged(item);
-                await Task.Delay(_retryDelay(item.RetryAttempt), ct);
+                await Task.Delay(_retryDelay(item.RetryAttempt), cancellationToken);
             }
         }
     }
 
-    private async Task DownloadItemAsync(DownloadItem item, CancellationToken ct)
+    private async Task DownloadItemAsync(DownloadItem item, CancellationToken cancellationToken)
     {
-        TsrDownloadInfo info = await _tsrClient.ResolveDownloadAsync(item.ItemId, ct);
+        TsrDownloadInfo downloadInfo = await _tsrClient.ResolveDownloadAsync(item.ItemId, cancellationToken);
 
-        item.FileName = info.FileName;
+        item.FileName = downloadInfo.FileName;
         NotifyItemChanged(item);
 
         // Progress arrives per network chunk; throttle so the UI is not flooded.
-        long lastNotifyMs = 0;
+        long lastNotifyMilliseconds = 0;
         string filePath = await _tsrClient.DownloadFileAsync(
-            info,
-            _configService.Config.DownloadDirectory,
+            downloadInfo,
+            _configurationService.Configuration.DownloadDirectory,
             progress =>
             {
                 item.DownloadedBytes = progress.DownloadedBytes;
                 item.TotalBytes = progress.TotalBytes;
                 item.Progress = progress.Percentage;
 
-                long nowMs = Environment.TickCount64;
-                if (nowMs - lastNotifyMs < ProgressNotifyIntervalMs)
+                long nowMilliseconds = Environment.TickCount64;
+                if (nowMilliseconds - lastNotifyMilliseconds < ProgressNotifyIntervalMilliseconds)
                     return;
-                lastNotifyMs = nowMs;
+                lastNotifyMilliseconds = nowMilliseconds;
                 NotifyItemChanged(item);
             },
-            ct);
+            cancellationToken);
 
         item.FilePath = filePath;
         item.CompletedAt = DateTime.Now;
         item.Progress = 100;
 
-        if (_configService.Config.ExtractZipArchives && IsZipFile(filePath))
+        if (_configurationService.Configuration.ExtractZipArchives && ArchivePaths.IsZip(filePath))
         {
             item.Status = DownloadStatus.WaitingToExtract;
             _extractionService.Enqueue(item);
@@ -329,12 +326,15 @@ public sealed class DownloadService : IDownloadService, IDisposable
         }
     }
 
-    private static bool IsZipFile(string path) =>
-        Path.GetExtension(path).Equals(".zip", StringComparison.OrdinalIgnoreCase);
+    private static void TryCancel(CancellationTokenSource cancellation)
+    {
+        try { cancellation.Cancel(); }
+        catch (ObjectDisposedException) { /* the download finished meanwhile */ }
+    }
 
     private void NotifyItemChanged(DownloadItem item) => ItemChanged?.Invoke(item);
 
-    private void NotifyStatsChanged() => QueueStatsChanged?.Invoke();
+    private void NotifyStatisticsChanged() => QueueStatisticsChanged?.Invoke();
 
     public void Dispose() => Stop();
 }

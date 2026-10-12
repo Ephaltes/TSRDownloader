@@ -12,7 +12,7 @@ namespace TSRDownloader.UI.Services;
 public sealed class FileConflictResolver : IFileConflictResolver
 {
     public Task<FileConflictResolution> ResolveAsync(
-        string relativeEntryName, string destinationPath, CancellationToken ct)
+        string relativeEntryName, string destinationPath, CancellationToken cancellationToken)
     {
         return Application.Current.Dispatcher.InvokeAsync(() =>
         {

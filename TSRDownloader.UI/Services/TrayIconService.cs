@@ -22,7 +22,7 @@ public sealed class TrayIconService : IDisposable
     public event Action? ExitRequested;
 
     [DllImport("user32.dll")]
-    private static extern bool SetForegroundWindow(IntPtr hWnd);
+    private static extern bool SetForegroundWindow(IntPtr windowHandle);
 
     public TrayIconService(LocalizationManager localization, INotificationService notificationService)
     {
@@ -37,11 +37,11 @@ public sealed class TrayIconService : IDisposable
         _icon.MouseUp += OnMouseUp;
     }
 
-    private void OnMouseUp(object? sender, Forms.MouseEventArgs e)
+    private void OnMouseUp(object? sender, Forms.MouseEventArgs eventArgs)
     {
-        if (e.Button == Forms.MouseButtons.Left)
+        if (eventArgs.Button == Forms.MouseButtons.Left)
             OpenRequested?.Invoke();
-        else if (e.Button == Forms.MouseButtons.Right)
+        else if (eventArgs.Button == Forms.MouseButtons.Right)
             ShowMenu();
     }
 

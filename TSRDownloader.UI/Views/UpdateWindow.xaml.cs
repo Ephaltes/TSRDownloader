@@ -27,13 +27,9 @@ public partial class UpdateWindow : Window
         Close();
     }
 
-    private void OnCloseRequested()
-    {
-        _closeRequested = true;
-        Close();
-    }
+    private void OnCloseRequested() => CloseQuietly();
 
-    private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs eventArgs)
     {
         // Closing via the title bar during a download counts as Cancel.
         if (!_closeRequested && !_viewModel.IsBlocked)

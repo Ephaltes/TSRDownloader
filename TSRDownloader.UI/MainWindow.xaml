@@ -3,10 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:TSRDownloader.UI.ViewModels"
+        xmlns:viewModels="clr-namespace:TSRDownloader.UI.ViewModels"
         xmlns:behaviors="clr-namespace:TSRDownloader.UI.Behaviors"
-        xmlns:conv="clr-namespace:TSRDownloader.UI.Converters"
-        xmlns:loc="clr-namespace:TSRDownloader.UI.Localization"
+        xmlns:converters="clr-namespace:TSRDownloader.UI.Converters"
+        xmlns:localization="clr-namespace:TSRDownloader.UI.Localization"
         mc:Ignorable="d"
         Background="{DynamicResource App.WindowBackground}" Foreground="{DynamicResource App.Text}"
         Title="TSR Downloader"
@@ -16,7 +16,7 @@
         AllowDrop="True" DragOver="OnDragOver" Drop="OnDrop">
 
     <Window.Resources>
-        <conv:ColumnWidthToCellWidthConverter x:Key="ColumnWidthToCellWidthConverter"/>
+        <converters:ColumnWidthToCellWidthConverter x:Key="ColumnWidthToCellWidthConverter"/>
     </Window.Resources>
 
     <!-- Ctrl+V adds the links on the clipboard; a focused text box handles its own paste first. -->
@@ -37,14 +37,14 @@
         <DockPanel Grid.Row="0" Margin="0,0,0,8">
             <Menu DockPanel.Dock="Left" Background="Transparent" FontSize="13"
                   VerticalAlignment="Center">
-                <MenuItem Header="{loc:Loc Menu_File}">
-                    <MenuItem Header="{loc:Loc Menu_Settings}"
+                <MenuItem Header="{localization:Localize Menu_File}">
+                    <MenuItem Header="{localization:Localize Menu_Settings}"
                               Command="{Binding OpenSettingsCommand}"/>
                     <Separator/>
-                    <MenuItem Header="{loc:Loc Menu_Exit}" Command="{Binding ExitCommand}"/>
+                    <MenuItem Header="{localization:Localize Menu_Exit}" Command="{Binding ExitCommand}"/>
                 </MenuItem>
-                <MenuItem Header="{loc:Loc Menu_Help}">
-                    <MenuItem Header="{loc:Loc Menu_About}" Click="OnAboutClick"/>
+                <MenuItem Header="{localization:Localize Menu_Help}">
+                    <MenuItem Header="{localization:Localize Menu_About}" Click="OnAboutClick"/>
                 </MenuItem>
             </Menu>
 
@@ -52,15 +52,15 @@
                  Pausing downloads keeps adding copied links to the list. -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button Command="{Binding ToggleClipboardCommand}" Tag="{Binding IsMonitoring}"
-                        ToolTip="{loc:Loc Toolbar_ClipboardHint}"
+                        ToolTip="{localization:Localize Toolbar_ClipboardHint}"
                         Style="{StaticResource StatusToggleStyle}">
                     <TextBlock>
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Text" Value="{loc:Loc Main_Status_Monitoring}"/>
+                                <Setter Property="Text" Value="{localization:Localize Main_Status_Monitoring}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsMonitoring}" Value="False">
-                                        <Setter Property="Text" Value="{loc:Loc Main_Status_Paused}"/>
+                                        <Setter Property="Text" Value="{localization:Localize Main_Status_Paused}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -68,15 +68,15 @@
                     </TextBlock>
                 </Button>
                 <Button Command="{Binding ToggleDownloadsCommand}" Tag="{Binding IsDownloading}"
-                        ToolTip="{loc:Loc Toolbar_DownloadsHint}"
+                        ToolTip="{localization:Localize Toolbar_DownloadsHint}"
                         Style="{StaticResource StatusToggleStyle}">
                     <TextBlock>
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Text" Value="{loc:Loc Main_Status_Downloading}"/>
+                                <Setter Property="Text" Value="{localization:Localize Main_Status_Downloading}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsDownloading}" Value="False">
-                                        <Setter Property="Text" Value="{loc:Loc Main_Status_DownloadsPaused}"/>
+                                        <Setter Property="Text" Value="{localization:Localize Main_Status_DownloadsPaused}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -99,30 +99,30 @@
                         Margin="0">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE72C;" Style="{StaticResource ToolbarIcon}"/>
-                        <TextBlock Text="{loc:Loc Toolbar_RetryFailed}"/>
+                        <TextBlock Text="{localization:Localize Toolbar_RetryFailed}"/>
                     </StackPanel>
                 </Button>
                 <Button Command="{Binding ClearFinishedCommand}" Style="{StaticResource ToolbarButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE74D;" Style="{StaticResource ToolbarIcon}"/>
-                        <TextBlock Text="{loc:Loc Toolbar_ClearFinished}"/>
+                        <TextBlock Text="{localization:Localize Toolbar_ClearFinished}"/>
                     </StackPanel>
                 </Button>
                 <Button Command="{Binding OpenDownloadFolderCommand}" Style="{StaticResource ToolbarButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE838;" Style="{StaticResource ToolbarIcon}"/>
-                        <TextBlock Text="{loc:Loc Toolbar_OpenFolder}"/>
+                        <TextBlock Text="{localization:Localize Toolbar_OpenFolder}"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
 
             <!-- Filter and order of the list; the search box gives way when the window is narrow -->
             <TextBox Grid.Column="2" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     Tag="{loc:Loc Toolbar_Search}" Margin="12,0,0,0"
+                     Tag="{localization:Localize Toolbar_Search}" Margin="12,0,0,0"
                      HorizontalAlignment="Stretch" VerticalAlignment="Center"
                      Style="{StaticResource SearchTextBox}"/>
             <ComboBox Grid.Column="3" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}"
-                      ToolTip="{loc:Loc Toolbar_SortHint}" Width="140" Margin="6,0,0,0"
+                      ToolTip="{localization:Localize Toolbar_SortHint}" Width="140" Margin="6,0,0,0"
                       VerticalAlignment="Center"
                       Style="{StaticResource ToolbarComboBox}">
                 <ComboBox.Resources>
@@ -158,13 +158,13 @@
                 <!-- Right-clicking a row selects it; the commands act on all selected rows. -->
                 <ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="{loc:Loc Context_Retry}" Command="{Binding RetryCommand}"/>
-                        <MenuItem Header="{loc:Loc Context_Open}" Command="{Binding OpenCommand}"/>
-                        <MenuItem Header="{loc:Loc Context_ShowInFolder}" Command="{Binding ShowInFolderCommand}"/>
-                        <MenuItem Header="{loc:Loc Context_OpenOnTsr}" Command="{Binding OpenOnTsrCommand}"/>
-                        <MenuItem Header="{loc:Loc Context_CopyUrl}" Command="{Binding CopyUrlsCommand}"/>
+                        <MenuItem Header="{localization:Localize Context_Retry}" Command="{Binding RetryCommand}"/>
+                        <MenuItem Header="{localization:Localize Context_Open}" Command="{Binding OpenCommand}"/>
+                        <MenuItem Header="{localization:Localize Context_ShowInFolder}" Command="{Binding ShowInFolderCommand}"/>
+                        <MenuItem Header="{localization:Localize Context_OpenOnTsr}" Command="{Binding OpenOnTsrCommand}"/>
+                        <MenuItem Header="{localization:Localize Context_CopyUrl}" Command="{Binding CopyUrlsCommand}"/>
                         <Separator/>
-                        <MenuItem Header="{loc:Loc Context_Remove}" Command="{Binding RemoveCommand}"
+                        <MenuItem Header="{localization:Localize Context_Remove}" Command="{Binding RemoveCommand}"
                                   InputGestureText="Del"/>
                     </ContextMenu>
                 </ListView.ContextMenu>
@@ -176,7 +176,7 @@
                         <!-- Status Column (fixed) -->
                         <GridViewColumn Width="64">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_Status}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
+                                <TextBlock Text="{localization:Localize Column_Status}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -194,7 +194,7 @@
                         <!-- Item ID Column (fixed) -->
                         <GridViewColumn Width="70">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_Id}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
+                                <TextBlock Text="{localization:Localize Column_Id}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -209,7 +209,7 @@
                         <!-- FileName Column (fills) -->
                         <GridViewColumn Width="350" behaviors:GridViewColumnSizing.StarWeight="2">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_FileName}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
+                                <TextBlock Text="{localization:Localize Column_FileName}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -226,7 +226,7 @@
                         <!-- URL Column (fills) -->
                         <GridViewColumn Width="220" behaviors:GridViewColumnSizing.StarWeight="3">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_Url}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
+                                <TextBlock Text="{localization:Localize Column_Url}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -250,7 +250,7 @@
                         <!-- Progress Column (fills) -->
                         <GridViewColumn Width="260" behaviors:GridViewColumnSizing.StarWeight="2">
                             <GridViewColumn.Header>
-                                <TextBlock Text="{loc:Loc Column_Progress}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
+                                <TextBlock Text="{localization:Localize Column_Progress}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource App.TextSecondary}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -317,7 +317,7 @@
             </ListView>
 
             <!-- Empty state: explains how to start, since the app has no "add" button -->
-            <TextBlock Text="{loc:Loc Main_EmptyHint}"
+            <TextBlock Text="{localization:Localize Main_EmptyHint}"
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420"
                        FontSize="14" Foreground="{DynamicResource App.TextMuted}" IsHitTestVisible="False">
@@ -346,7 +346,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="{loc:Loc Overall_Total}" FontWeight="SemiBold"
+                <TextBlock Grid.Column="0" Text="{localization:Localize Overall_Total}" FontWeight="SemiBold"
                            VerticalAlignment="Center" Margin="0,0,10,0"/>
 
                 <ProgressBar Grid.Column="1" Height="16"
@@ -359,10 +359,8 @@
 
                 <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="10,0,0,0"
                            FontSize="13">
-                    <Run Text="{Binding CompletedCount}"/><Run Text=" + "/>
-                    <Run Text="{Binding FailedCount}" Foreground="{DynamicResource App.Error}"/>
-                    <Run Text=" / "/><Run Text="{Binding TotalCount}"/>
-                    <Run Text=" "/><Run Text="{loc:Loc Overall_Done}"/>
+                    <Run Text="{Binding FinishedCount, Mode=OneWay}"/><Run Text="/"/><Run Text="{Binding TotalCount}"/>
+                    <Run Text=" "/><Run Text="{localization:Localize Overall_Done}"/>
                 </TextBlock>
             </Grid>
         </Border>
@@ -375,22 +373,22 @@
                        FontSize="12" Foreground="{DynamicResource App.TextMuted}" VerticalAlignment="Center"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock FontSize="12" Foreground="{DynamicResource App.TextSecondary}">
-                    <Run Text="{loc:Loc StatusBar_Queue}"/>
+                    <Run Text="{localization:Localize StatusBar_Queue}"/>
                     <Run Text="{Binding QueuedCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>
                 <Separator Width="1" Margin="15,2" Background="{DynamicResource App.InputBorder}"/>
                 <TextBlock FontSize="12" Foreground="{DynamicResource App.Accent}">
-                    <Run Text="{loc:Loc StatusBar_Active}"/>
+                    <Run Text="{localization:Localize StatusBar_Active}"/>
                     <Run Text="{Binding ActiveCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>
                 <Separator Width="1" Margin="15,2" Background="{DynamicResource App.InputBorder}"/>
                 <TextBlock FontSize="12" Foreground="{DynamicResource App.Extracting}">
-                    <Run Text="{loc:Loc StatusBar_Extracting}"/>
+                    <Run Text="{localization:Localize StatusBar_Extracting}"/>
                     <Run Text="{Binding ExtractingCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>
                 <Separator Width="1" Margin="15,2" Background="{DynamicResource App.InputBorder}"/>
                 <TextBlock FontSize="12" Foreground="{DynamicResource App.Error}">
-                    <Run Text="{loc:Loc StatusBar_Errors}"/>
+                    <Run Text="{localization:Localize StatusBar_Errors}"/>
                     <Run Text="{Binding ErrorCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>
             </StackPanel>

@@ -6,41 +6,41 @@ namespace TSRDownloader.UI.Presentation;
 /// </summary>
 public sealed class TransferRateMeter
 {
-    private const long WindowMs = 1000;
+    private const long WindowMilliseconds = 1000;
     private const double Smoothing = 0.3;
 
-    private long _windowStartMs = -1;
+    private long _windowStartMilliseconds = -1;
     private long _windowStartBytes;
 
     /// <summary>Bytes per second, or null until a full window has been measured.</summary>
     public double? BytesPerSecond { get; private set; }
 
-    public void Sample(long bytes, long nowMs)
+    public void Sample(long bytes, long nowMilliseconds)
     {
         // First sample, or the download restarted from fewer bytes: start measuring again.
-        if (_windowStartMs < 0 || bytes < _windowStartBytes)
+        if (_windowStartMilliseconds < 0 || bytes < _windowStartBytes)
         {
             Reset();
-            _windowStartMs = nowMs;
+            _windowStartMilliseconds = nowMilliseconds;
             _windowStartBytes = bytes;
             return;
         }
 
-        long elapsedMs = nowMs - _windowStartMs;
-        if (elapsedMs < WindowMs)
+        long elapsedMilliseconds = nowMilliseconds - _windowStartMilliseconds;
+        if (elapsedMilliseconds < WindowMilliseconds)
             return;
 
-        double rate = (bytes - _windowStartBytes) * 1000.0 / elapsedMs;
+        double rate = (bytes - _windowStartBytes) * 1000.0 / elapsedMilliseconds;
         BytesPerSecond = BytesPerSecond is { } previous
             ? previous + Smoothing * (rate - previous)
             : rate;
-        _windowStartMs = nowMs;
+        _windowStartMilliseconds = nowMilliseconds;
         _windowStartBytes = bytes;
     }
 
     public void Reset()
     {
-        _windowStartMs = -1;
+        _windowStartMilliseconds = -1;
         BytesPerSecond = null;
     }
 }

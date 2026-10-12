@@ -22,11 +22,11 @@ public sealed class FakeTsrDownloadClient : ITsrDownloadClient
         _fileName = fileName;
     }
 
-    public Task<TsrDownloadInfo> ResolveDownloadAsync(int itemId, CancellationToken ct) =>
+    public Task<TsrDownloadInfo> ResolveDownloadAsync(int itemId, CancellationToken cancellationToken) =>
         Task.FromResult(new TsrDownloadInfo(itemId, "https://cdn.example.test/file.zip", _fileName));
 
     public Task<string> DownloadFileAsync(
-        TsrDownloadInfo info, string destinationDirectory, Action<DownloadProgress>? onProgress, CancellationToken ct)
+        TsrDownloadInfo info, string destinationDirectory, Action<DownloadProgress>? onProgress, CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(destinationDirectory);
         string target = Path.Combine(destinationDirectory, info.FileName);

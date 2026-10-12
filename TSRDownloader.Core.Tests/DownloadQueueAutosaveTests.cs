@@ -19,7 +19,7 @@ public class DownloadQueueAutosaveTests
     public DownloadQueueAutosaveTests() => _downloads.Items.Returns(_items);
 
     [Fact]
-    public async Task QueueStatsChanged_Should_SaveOnceAfterDelay_When_RaisedRepeatedly()
+    public async Task QueueStatisticsChanged_Should_SaveOnceAfterDelay_When_RaisedRepeatedly()
     {
         // Arrange
         TaskCompletionSource saved = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -27,9 +27,9 @@ public class DownloadQueueAutosaveTests
         using DownloadQueueAutosave autosave = new(_downloads, _extraction, _store, TimeSpan.FromMilliseconds(50));
 
         // Act
-        _downloads.QueueStatsChanged += Raise.Event<Action>();
-        _downloads.QueueStatsChanged += Raise.Event<Action>();
-        _extraction.StatsChanged += Raise.Event<Action>();
+        _downloads.QueueStatisticsChanged += Raise.Event<Action>();
+        _downloads.QueueStatisticsChanged += Raise.Event<Action>();
+        _extraction.StatisticsChanged += Raise.Event<Action>();
         await saved.Task.WaitAsync(TimeSpan.FromSeconds(5));
         await Task.Delay(150);
 
@@ -42,7 +42,7 @@ public class DownloadQueueAutosaveTests
     {
         // Arrange
         DownloadQueueAutosave autosave = new(_downloads, _extraction, _store, TimeSpan.FromHours(1));
-        _downloads.QueueStatsChanged += Raise.Event<Action>();
+        _downloads.QueueStatisticsChanged += Raise.Event<Action>();
 
         // Act
         autosave.Dispose();

@@ -15,7 +15,7 @@ public sealed class RecordingConflictResolver : IFileConflictResolver
     public RecordingConflictResolver(FileConflictResolution result) => _result = result;
 
     public Task<FileConflictResolution> ResolveAsync(
-        string relativeEntryName, string destinationPath, CancellationToken ct)
+        string relativeEntryName, string destinationPath, CancellationToken cancellationToken)
     {
         Calls++;
         return Task.FromResult(_result);

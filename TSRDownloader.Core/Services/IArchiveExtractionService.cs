@@ -12,7 +12,7 @@ public interface IArchiveExtractionService
     event Action<DownloadItem>? ItemChanged;
 
     /// <summary>Raised when an item reaches a terminal extraction state (for stats refresh).</summary>
-    event Action? StatsChanged;
+    event Action? StatisticsChanged;
 
     /// <summary>Adds a downloaded archive item to the extraction queue.</summary>
     void Enqueue(DownloadItem item);

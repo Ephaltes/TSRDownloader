@@ -14,5 +14,5 @@ public interface IFileConflictResolver
     /// <param name="relativeEntryName">The archive-relative entry name (e.g. "sub/file.package").</param>
     /// <param name="destinationPath">The absolute path that already exists on disk.</param>
     Task<FileConflictResolution> ResolveAsync(
-        string relativeEntryName, string destinationPath, CancellationToken ct);
+        string relativeEntryName, string destinationPath, CancellationToken cancellationToken);
 }

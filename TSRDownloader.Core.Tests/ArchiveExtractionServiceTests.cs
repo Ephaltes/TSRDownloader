@@ -15,11 +15,11 @@ namespace TSRDownloader.Core.Tests;
 
 public class ArchiveExtractionServiceTests
 {
-    private static IConfigService ConfigWith(bool deleteZip)
+    private static IConfigurationService ConfigurationWith(bool deleteZipAfterExtraction)
     {
-        IConfigService config = Substitute.For<IConfigService>();
-        config.Config.Returns(new AppConfig { DeleteZipAfterExtraction = deleteZip });
-        return config;
+        IConfigurationService configuration = Substitute.For<IConfigurationService>();
+        configuration.Configuration.Returns(new AppConfiguration { DeleteZipAfterExtraction = deleteZipAfterExtraction });
+        return configuration;
     }
 
     private static DownloadItem ItemWithFile(string path)
@@ -32,11 +32,11 @@ public class ArchiveExtractionServiceTests
     public async Task Enqueue_Should_CompleteAndDeleteZip_When_ExtractionSucceedsAndDeleteEnabled()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         IArchiveExtractor extractor = Substitute.For<IArchiveExtractor>();
-        DownloadItem item = ItemWithFile(temp.Combine("a.zip"));
+        DownloadItem item = ItemWithFile(temporaryDirectory.Combine("a.zip"));
         using ArchiveExtractionService service = new(
-            extractor, ConfigWith(deleteZip: true), Substitute.For<IFileConflictResolver>());
+            extractor, ConfigurationWith(deleteZipAfterExtraction: true), Substitute.For<IFileConflictResolver>());
 
         // Act
         service.Enqueue(item);
@@ -44,17 +44,17 @@ public class ArchiveExtractionServiceTests
 
         // Assert
         item.Progress.ShouldBe(100);
-        File.Exists(temp.Combine("a.zip")).ShouldBeFalse();
+        File.Exists(temporaryDirectory.Combine("a.zip")).ShouldBeFalse();
     }
 
     [Fact]
     public async Task Enqueue_Should_KeepZip_When_DeleteDisabled()
     {
         // Arrange
-        using TempDir temp = new();
-        DownloadItem item = ItemWithFile(temp.Combine("a.zip"));
+        using TemporaryDirectory temporaryDirectory = new();
+        DownloadItem item = ItemWithFile(temporaryDirectory.Combine("a.zip"));
         using ArchiveExtractionService service = new(
-            Substitute.For<IArchiveExtractor>(), ConfigWith(deleteZip: false),
+            Substitute.For<IArchiveExtractor>(), ConfigurationWith(deleteZipAfterExtraction: false),
             Substitute.For<IFileConflictResolver>());
 
         // Act
@@ -62,21 +62,21 @@ public class ArchiveExtractionServiceTests
         await ServiceCompletion.WaitAsync(service, () => item.Status == DownloadStatus.ExtractionCompleted);
 
         // Assert
-        File.Exists(temp.Combine("a.zip")).ShouldBeTrue();
+        File.Exists(temporaryDirectory.Combine("a.zip")).ShouldBeTrue();
     }
 
     [Fact]
     public async Task Enqueue_Should_FailWithMessage_When_ExtractorThrows()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         IArchiveExtractor extractor = Substitute.For<IArchiveExtractor>();
         extractor.ExtractAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IFileConflictResolver>(),
                 Arg.Any<Action<double>>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new IOException("boom"));
-        DownloadItem item = ItemWithFile(temp.Combine("a.zip"));
+        DownloadItem item = ItemWithFile(temporaryDirectory.Combine("a.zip"));
         using ArchiveExtractionService service = new(
-            extractor, ConfigWith(deleteZip: true), Substitute.For<IFileConflictResolver>());
+            extractor, ConfigurationWith(deleteZipAfterExtraction: true), Substitute.For<IFileConflictResolver>());
 
         // Act
         service.Enqueue(item);
@@ -84,14 +84,14 @@ public class ArchiveExtractionServiceTests
 
         // Assert
         item.ErrorMessage.ShouldBe("boom");
-        File.Exists(temp.Combine("a.zip")).ShouldBeTrue();
+        File.Exists(temporaryDirectory.Combine("a.zip")).ShouldBeTrue();
     }
 
     [Fact]
     public async Task Enqueue_Should_ExtractInOrder_When_MultipleArchivesQueued()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         ConcurrentQueue<string> order = new();
         IArchiveExtractor extractor = Substitute.For<IArchiveExtractor>();
         extractor.ExtractAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IFileConflictResolver>(),
@@ -101,10 +101,10 @@ public class ArchiveExtractionServiceTests
                 order.Enqueue(callInfo.ArgAt<string>(0));
                 return Task.CompletedTask;
             });
-        DownloadItem first = ItemWithFile(temp.Combine("first.zip"));
-        DownloadItem second = ItemWithFile(temp.Combine("second.zip"));
+        DownloadItem first = ItemWithFile(temporaryDirectory.Combine("first.zip"));
+        DownloadItem second = ItemWithFile(temporaryDirectory.Combine("second.zip"));
         using ArchiveExtractionService service = new(
-            extractor, ConfigWith(deleteZip: false), Substitute.For<IFileConflictResolver>());
+            extractor, ConfigurationWith(deleteZipAfterExtraction: false), Substitute.For<IFileConflictResolver>());
 
         // Act
         service.Enqueue(first);
@@ -114,21 +114,21 @@ public class ArchiveExtractionServiceTests
             second.Status == DownloadStatus.ExtractionCompleted);
 
         // Assert
-        order.ShouldBe(new[] { temp.Combine("first.zip"), temp.Combine("second.zip") });
+        order.ShouldBe(new[] { temporaryDirectory.Combine("first.zip"), temporaryDirectory.Combine("second.zip") });
     }
 
     [Fact]
-    public async Task Enqueue_Should_RaiseItemAndStatsEvents_When_ExtractionCompletes()
+    public async Task Enqueue_Should_RaiseItemAndStatisticsEvents_When_ExtractionCompletes()
     {
         // Arrange
-        using TempDir temp = new();
-        DownloadItem item = ItemWithFile(temp.Combine("a.zip"));
+        using TemporaryDirectory temporaryDirectory = new();
+        DownloadItem item = ItemWithFile(temporaryDirectory.Combine("a.zip"));
         bool itemChanged = false, statsChanged = false;
         using ArchiveExtractionService service = new(
-            Substitute.For<IArchiveExtractor>(), ConfigWith(deleteZip: false),
+            Substitute.For<IArchiveExtractor>(), ConfigurationWith(deleteZipAfterExtraction: false),
             Substitute.For<IFileConflictResolver>());
         service.ItemChanged += _ => itemChanged = true;
-        service.StatsChanged += () => statsChanged = true;
+        service.StatisticsChanged += () => statsChanged = true;
 
         // Act
         service.Enqueue(item);

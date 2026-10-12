@@ -17,7 +17,7 @@ public partial class DownloadItemViewModel : ObservableObject
 {
     private readonly DownloadItem _model;
     private readonly INotificationService _notificationService;
-    private readonly TransferRateMeter _rateMeter = new();
+    private readonly TransferRateMeter _transferRateMeter = new();
 
     public DownloadItem Model => _model;
 
@@ -47,31 +47,31 @@ public partial class DownloadItemViewModel : ObservableObject
     {
         _model = model;
         _notificationService = notificationService;
-        SyncFromModel();
+        UpdateFromModel();
     }
 
     /// <summary>
-    /// Synchronizes ViewModel properties from the underlying model.
-    /// Called when the download service reports changes.
+    /// Refreshes every displayed property from the underlying model.
+    /// Called when the download service reports changes and when the language changes.
     /// </summary>
-    public void SyncFromModel()
+    public void UpdateFromModel()
     {
         DownloadStatusPresentation presentation = DownloadStatusPresenter.For(_model.Status);
 
         if (IsTransferring)
-            _rateMeter.Sample(_model.DownloadedBytes, Environment.TickCount64);
+            _transferRateMeter.Sample(_model.DownloadedBytes, Environment.TickCount64);
         else
-            _rateMeter.Reset();
+            _transferRateMeter.Reset();
 
         StatusIcon = presentation.Icon;
         StatusText = LocalizationManager.Instance.Get(presentation.LabelKey);
         StatusColor = presentation.Color;
         IsIndeterminate = presentation.IsIndeterminate || IsWaitingForTransfer;
 
-        Progress = _model.Status is DownloadStatus.Completed or DownloadStatus.ExtractionCompleted
-            ? 100
-            : _model.Progress;
+        Progress = _model.Status.IsSucceeded() ? 100 : _model.Progress;
         ProgressText = BuildProgressText();
+        OnPropertyChanged(nameof(FileName));
+        OnPropertyChanged(nameof(StatusSortOrder));
     }
 
     /// <summary>Position among the queued items (1 = next to start); 0 when not queued.</summary>
@@ -103,37 +103,30 @@ public partial class DownloadItemViewModel : ObservableObject
 
     private string WaitingText()
     {
-        LocalizationManager loc = LocalizationManager.Instance;
+        LocalizationManager localization = LocalizationManager.Instance;
         return _model.RetryAttempt > 0
-            ? loc.Format("Progress_Retrying", _model.RetryAttempt, DownloadService.MaxAutomaticRetries)
-            : loc.Get("Progress_WaitingForTsr");
+            ? localization.Format("Progress_Retrying", _model.RetryAttempt, DownloadService.MaxAutomaticRetries)
+            : localization.Get("Progress_WaitingForTsr");
     }
 
     /// <summary>"1.2 / 4.2 MB · 1.1 MB/s · 0:03 left"; size only until the speed is known.</summary>
     private string TransferText()
     {
-        LocalizationManager loc = LocalizationManager.Instance;
-        CultureInfo culture = loc.Culture;
+        LocalizationManager localization = LocalizationManager.Instance;
+        CultureInfo culture = localization.Culture;
         string size = _model.TotalBytes > 0
             ? TransferFormat.Progress(_model.DownloadedBytes, _model.TotalBytes, culture)
             : TransferFormat.Size(_model.DownloadedBytes, culture);
 
-        if (_rateMeter.BytesPerSecond is not { } rate || rate <= 0)
+        if (_transferRateMeter.BytesPerSecond is not { } rate || rate <= 0)
             return size;
 
         string speed = TransferFormat.Size((long)rate, culture);
         if (_model.TotalBytes <= 0)
-            return loc.Format("Progress_TransferNoTotal", size, speed);
+            return localization.Format("Progress_TransferNoTotal", size, speed);
 
         TimeSpan left = TimeSpan.FromSeconds(Math.Ceiling((_model.TotalBytes - _model.DownloadedBytes) / rate));
-        return loc.Format("Progress_Transfer", size, speed, TransferFormat.Duration(left));
-    }
-
-    public void UpdateFromModel()
-    {
-        SyncFromModel();
-        OnPropertyChanged(nameof(FileName));
-        OnPropertyChanged(nameof(StatusSortOrder));
+        return localization.Format("Progress_Transfer", size, speed, TransferFormat.Duration(left));
     }
 
     /// <summary>Order in which the item was added to the list; set by the main view model.</summary>
@@ -143,7 +136,7 @@ public partial class DownloadItemViewModel : ObservableObject
     public int StatusSortOrder => _model.Status switch
     {
         DownloadStatus.Downloading => 0,
-        DownloadStatus.Extracting or DownloadStatus.WaitingToExtract => 1,
+        DownloadStatus.WaitingToExtract or DownloadStatus.Extracting => 1,
         DownloadStatus.Failed or DownloadStatus.ExtractionFailed => 2,
         DownloadStatus.Queued => 3,
         _ => 4
@@ -162,10 +155,10 @@ public partial class DownloadItemViewModel : ObservableObject
             return;
         }
 
-        LocalizationManager loc = LocalizationManager.Instance;
+        LocalizationManager localization = LocalizationManager.Instance;
         _notificationService.Notify(
-            loc.Get("App_Name"),
-            loc.Format("Notify_UrlCopied", FileName),
+            localization.Get("App_Name"),
+            localization.Format("Notify_UrlCopied", FileName),
             INotificationService.StatusTag);
     }
 }

@@ -11,34 +11,34 @@ namespace TSRDownloader.UI.Services;
 /// </summary>
 public class ClipboardHookService : IDisposable
 {
-    private const int WM_CLIPBOARUPDATE = 0x031D;
-    private const uint CF_UNICODETEXT = 13;
+    private const int ClipboardUpdateMessage = 0x031D; // WM_CLIPBOARDUPDATE
+    private const uint UnicodeTextFormat = 13; // CF_UNICODETEXT
 
     [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool AddClipboardFormatListener(IntPtr hwnd);
+    private static extern bool AddClipboardFormatListener(IntPtr windowHandle);
 
     [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
+    private static extern bool RemoveClipboardFormatListener(IntPtr windowHandle);
 
     [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool OpenClipboard(IntPtr hWndNewOwner);
+    private static extern bool OpenClipboard(IntPtr newOwnerWindowHandle);
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool CloseClipboard();
 
     [DllImport("user32.dll", SetLastError = true)]
-    private static extern IntPtr GetClipboardData(uint uFormat);
+    private static extern IntPtr GetClipboardData(uint format);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr GlobalLock(IntPtr hMem);
+    private static extern IntPtr GlobalLock(IntPtr memoryHandle);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool GlobalUnlock(IntPtr hMem);
+    private static extern bool GlobalUnlock(IntPtr memoryHandle);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern UIntPtr GlobalSize(IntPtr hMem);
+    private static extern UIntPtr GlobalSize(IntPtr memoryHandle);
 
-    private HwndSource? _hwndSource;
+    private HwndSource? _windowSource;
     private readonly MainViewModel _mainViewModel;
     private string _lastClipboardText = string.Empty;
 
@@ -53,8 +53,8 @@ public class ClipboardHookService : IDisposable
     public void Attach(Window window)
     {
         IntPtr handle = new WindowInteropHelper(window).Handle;
-        _hwndSource = HwndSource.FromHwnd(handle);
-        _hwndSource?.AddHook(WndProc);
+        _windowSource = HwndSource.FromHwnd(handle);
+        _windowSource?.AddHook(WindowProcedure);
 
         if (!AddClipboardFormatListener(handle))
         {
@@ -64,9 +64,9 @@ public class ClipboardHookService : IDisposable
         }
     }
 
-    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    private IntPtr WindowProcedure(IntPtr windowHandle, int message, IntPtr wordParameter, IntPtr longParameter, ref bool handled)
     {
-        if (msg == WM_CLIPBOARUPDATE)
+        if (message == ClipboardUpdateMessage)
         {
             OnClipboardUpdate();
             handled = true;
@@ -106,25 +106,25 @@ public class ClipboardHookService : IDisposable
 
         try
         {
-            IntPtr hData = GetClipboardData(CF_UNICODETEXT);
-            if (hData == IntPtr.Zero)
+            IntPtr dataHandle = GetClipboardData(UnicodeTextFormat);
+            if (dataHandle == IntPtr.Zero)
                 return null;
 
-            IntPtr hGlobal = GlobalLock(hData);
-            if (hGlobal == IntPtr.Zero)
+            IntPtr textPointer = GlobalLock(dataHandle);
+            if (textPointer == IntPtr.Zero)
                 return null;
 
             try
             {
                 // The buffer is NUL-terminated but may be larger than the text; stop at the terminator.
-                int maxChars = (int)Math.Min((ulong)GlobalSize(hData) / 2, int.MaxValue);
-                string text = Marshal.PtrToStringUni(hGlobal, maxChars);
+                int characterCapacity = (int)Math.Min((ulong)GlobalSize(dataHandle) / 2, int.MaxValue);
+                string text = Marshal.PtrToStringUni(textPointer, characterCapacity);
                 int terminator = text.IndexOf('\0');
                 return terminator >= 0 ? text[..terminator] : text;
             }
             finally
             {
-                GlobalUnlock(hData);
+                GlobalUnlock(dataHandle);
             }
         }
         catch
@@ -139,14 +139,14 @@ public class ClipboardHookService : IDisposable
 
     public void Dispose()
     {
-        if (_hwndSource is not null)
+        if (_windowSource is not null)
         {
-            IntPtr handle = _hwndSource.Handle;
+            IntPtr handle = _windowSource.Handle;
             RemoveClipboardFormatListener(handle);
-            _hwndSource.RemoveHook(WndProc);
-            _hwndSource.Dispose();
+            _windowSource.RemoveHook(WindowProcedure);
+            _windowSource.Dispose();
             // Disposed again by the DI container on shutdown; make that a no-op.
-            _hwndSource = null;
+            _windowSource = null;
         }
     }
 }

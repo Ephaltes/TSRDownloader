@@ -25,19 +25,17 @@ public static partial class TSRUrlParser
     /// </summary>
     public static int? ExtractItemId(string url)
     {
-        // TryParse: a digit run longer than int.MaxValue must not throw out of clipboard handling.
-        Match m = ItemIdFromIdRegex().Match(url);
-        if (m.Success) return ParseId(m.Value);
-
-        m = ItemIdFromItemIdRegex().Match(url);
-        if (m.Success) return ParseId(m.Value);
-
-        m = ItemIdFromDownloadsRegex().Match(url);
-        if (m.Success) return ParseId(m.Value);
+        foreach (Regex itemIdRegex in (Regex[])[ItemIdFromIdRegex(), ItemIdFromItemIdRegex(), ItemIdFromDownloadsRegex()])
+        {
+            Match match = itemIdRegex.Match(url);
+            if (match.Success)
+                return ParseId(match.Value);
+        }
 
         return null;
     }
 
+    // TryParse: a digit run longer than int.MaxValue must not throw out of clipboard handling.
     private static int? ParseId(string digits) => int.TryParse(digits, out int id) ? id : null;
 
     /// <summary>

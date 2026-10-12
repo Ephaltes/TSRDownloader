@@ -11,7 +11,7 @@ public interface IDownloadService
     event Action<DownloadItem>? ItemChanged;
 
     /// <summary>Event raised when overall queue stats change.</summary>
-    event Action? QueueStatsChanged;
+    event Action? QueueStatisticsChanged;
 
     /// <summary>All download items currently tracked.</summary>
     IReadOnlyList<DownloadItem> Items { get; }

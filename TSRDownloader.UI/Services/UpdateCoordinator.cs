@@ -19,7 +19,7 @@ public sealed class UpdateCoordinator
     private static readonly TimeSpan DefaultCheckTimeout = TimeSpan.FromSeconds(5);
 
     private readonly IUpdateService _updateService;
-    private readonly IConfigService _configService;
+    private readonly IConfigurationService _configurationService;
     private readonly IDownloadService _downloadService;
     private readonly INotificationService _notificationService;
     private readonly IUpdateWindowService _windowService;
@@ -33,7 +33,7 @@ public sealed class UpdateCoordinator
 
     public UpdateCoordinator(
         IUpdateService updateService,
-        IConfigService configService,
+        IConfigurationService configurationService,
         IDownloadService downloadService,
         INotificationService notificationService,
         IUpdateWindowService windowService,
@@ -43,7 +43,7 @@ public sealed class UpdateCoordinator
         TimeSpan? checkTimeout = null)
     {
         _updateService = updateService;
-        _configService = configService;
+        _configurationService = configurationService;
         _downloadService = downloadService;
         _notificationService = notificationService;
         _windowService = windowService;
@@ -55,7 +55,7 @@ public sealed class UpdateCoordinator
         _notificationService.ActionInvoked += OnNotificationActionInvoked;
     }
 
-    private UpdateMode Mode => _configService.Config.UpdateMode;
+    private UpdateMode Mode => _configurationService.Configuration.UpdateMode;
 
     /// <summary>
     /// Automatic mode, before the main window opens: downloads and applies a newer release.
@@ -122,9 +122,7 @@ public sealed class UpdateCoordinator
     }
 
     private bool HasActiveDownloads() =>
-        _downloadService.Items.Any(downloadItem => downloadItem.Status is
-            DownloadStatus.Queued or DownloadStatus.Downloading or
-            DownloadStatus.WaitingToExtract or DownloadStatus.Extracting);
+        _downloadService.Items.Any(item => !item.Status.IsFinished());
 
     private async Task<AvailableUpdate?> TryCheckAsync()
     {
@@ -147,9 +145,9 @@ public sealed class UpdateCoordinator
             _logger.LogWarning("Update check timed out after {Timeout}", _checkTimeout);
             return null;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _logger.LogWarning(ex, "Update check failed");
+            _logger.LogWarning(exception, "Update check failed");
             return null;
         }
     }
@@ -175,9 +173,9 @@ public sealed class UpdateCoordinator
         {
             _logger.LogInformation("Update {Version} cancelled by the user", update.Version);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _logger.LogWarning(ex, "Update {Version} failed", update.Version);
+            _logger.LogWarning(exception, "Update {Version} failed", update.Version);
         }
         finally
         {

@@ -6,18 +6,18 @@ namespace TSRDownloader.UI.Localization;
 /// <summary>
 /// Provides localized strings from the embedded <c>Strings</c> resources and supports
 /// switching the UI language at runtime. XAML binds to the indexer via the
-/// <see cref="LocExtension"/>; raising <c>Item[]</c> on a language change refreshes all
+/// <see cref="LocalizeExtension"/>; raising <c>Item[]</c> on a language change refreshes all
 /// of those bindings live.
 /// </summary>
 public partial class LocalizationManager : ObservableObject
 {
-    /// <summary>Shared instance used by the <see cref="LocExtension"/> markup extension.</summary>
+    /// <summary>Shared instance used by the <see cref="LocalizeExtension"/> markup extension.</summary>
     public static LocalizationManager Instance { get; } = new();
 
     private readonly ResourceManager _resourceManager =
         new("TSRDownloader.UI.Resources.Strings", typeof(LocalizationManager).Assembly);
 
-    /// <summary>Used until a language is set, and for an empty code; matches the AppConfig default.</summary>
+    /// <summary>Used until a language is set, and for an empty code; matches the AppConfiguration default.</summary>
     private const string DefaultLanguage = "en";
 
     private CultureInfo _culture = CultureInfo.GetCultureInfo(DefaultLanguage);
@@ -38,8 +38,8 @@ public partial class LocalizationManager : ObservableObject
     public string Get(string key) => this[key];
 
     /// <summary>Returns the localized format string for <paramref name="key"/> with arguments applied.</summary>
-    public string Format(string key, params object[] args) =>
-        string.Format(_culture, this[key], args);
+    public string Format(string key, params object[] arguments) =>
+        string.Format(_culture, this[key], arguments);
 
     /// <summary>Switches the active language (by two-letter code) and notifies bindings.</summary>
     public void SetLanguage(string twoLetterCode)

@@ -5,10 +5,10 @@ namespace TSRDownloader.Core.Services;
 /// <summary>
 /// Service for managing and persisting application configuration.
 /// </summary>
-public interface IConfigService
+public interface IConfigurationService
 {
     /// <summary>Gets the current configuration.</summary>
-    AppConfig Config { get; }
+    AppConfiguration Configuration { get; }
 
     /// <summary>Loads configuration from disk.</summary>
     void Load();
@@ -17,5 +17,5 @@ public interface IConfigService
     void Save();
 
     /// <summary>Updates and persists the configuration.</summary>
-    void Update(AppConfig config);
+    void Update(AppConfiguration configuration);
 }

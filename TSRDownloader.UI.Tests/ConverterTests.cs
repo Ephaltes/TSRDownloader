@@ -9,25 +9,10 @@ namespace TSRDownloader.UI.Tests;
 public class ConverterTests
 {
     [Fact]
-    public void Convert_Should_MapBoolToVisibility_When_UsingBoolToVisibilityConverter()
+    public void Convert_Should_InvertBooleanToVisibility_When_UsingInverseConverter()
     {
         // Arrange
-        BoolToVisibilityConverter converter = new();
-
-        // Act
-        object whenTrue = converter.Convert(true, typeof(Visibility), null, CultureInfo.InvariantCulture);
-        object whenFalse = converter.Convert(false, typeof(Visibility), null, CultureInfo.InvariantCulture);
-
-        // Assert
-        whenTrue.ShouldBe(Visibility.Visible);
-        whenFalse.ShouldBe(Visibility.Collapsed);
-    }
-
-    [Fact]
-    public void Convert_Should_InvertBoolToVisibility_When_UsingInverseConverter()
-    {
-        // Arrange
-        InverseBoolToVisibilityConverter converter = new();
+        InverseBooleanToVisibilityConverter converter = new();
 
         // Act
         object whenTrue = converter.Convert(true, typeof(Visibility), null, CultureInfo.InvariantCulture);
@@ -42,7 +27,7 @@ public class ConverterTests
     public void ConvertBack_Should_Throw_When_NotSupported()
     {
         // Arrange
-        BoolToVisibilityConverter converter = new();
+        InverseBooleanToVisibilityConverter converter = new();
 
         // Act / Assert
         Should.Throw<System.NotSupportedException>(() =>

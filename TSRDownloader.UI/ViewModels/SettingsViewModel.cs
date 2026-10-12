@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using TSRDownloader.Core.Models;
 using TSRDownloader.Core.Services;
 using TSRDownloader.UI.Localization;
+using TSRDownloader.UI.Presentation;
 using TSRDownloader.UI.Services;
 
 namespace TSRDownloader.UI.ViewModels;
@@ -12,15 +13,7 @@ namespace TSRDownloader.UI.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
-    /// <summary>Allowed range (seconds) for the ticket activation delay.</summary>
-    public const int MinTicketActivationDelaySeconds = AppConfig.MinTicketActivationDelaySeconds;
-    public const int MaxTicketActivationDelaySeconds = AppConfig.MaxTicketActivationDelaySeconds;
-
-    /// <summary>Allowed range for the number of parallel downloads.</summary>
-    public const int MinActiveDownloads = AppConfig.MinActiveDownloads;
-    public const int MaxActiveDownloadsLimit = AppConfig.MaxActiveDownloadsLimit;
-
-    private readonly IConfigService _configService;
+    private readonly IConfigurationService _configurationService;
     private readonly IStartupService _startupService;
     private readonly IThemeService _themeService;
     private readonly LocalizationManager _localization;
@@ -83,15 +76,16 @@ public partial class SettingsViewModel : ObservableObject
     public string VersionText { get; }
 
     public SettingsViewModel(
-        IConfigService configService,
+        IConfigurationService configurationService,
         IStartupService startupService,
         IUpdateService updateService,
         IThemeService themeService,
         LocalizationManager localization)
     {
-        _configService = configService;
+        _configurationService = configurationService;
         _startupService = startupService;
         _themeService = themeService;
+        _localization = localization;
         Themes =
         [
             new(AppTheme.Light, localization.Get("Settings_Theme_Light")),
@@ -103,28 +97,25 @@ public partial class SettingsViewModel : ObservableObject
             new(UpdateMode.NotifyOnly, localization.Get("Settings_UpdateMode_NotifyOnly")),
             new(UpdateMode.Disabled, localization.Get("Settings_UpdateMode_Disabled")),
         ];
-        VersionText = updateService.IsInstalled
-            ? localization.Format("Settings_Version", updateService.CurrentVersion ?? string.Empty)
-            : localization.Get("Settings_DevelopmentBuild");
-        _localization = localization;
-        LoadFromConfig();
+        VersionText = AppVersionText.Format(updateService, localization);
+        LoadFromConfiguration();
     }
 
-    private void LoadFromConfig()
+    private void LoadFromConfiguration()
     {
-        AppConfig config = _configService.Config;
-        DownloadDirectory = config.DownloadDirectory;
-        MaxActiveDownloads = config.MaxActiveDownloads;
-        TicketActivationDelaySeconds = config.TicketActivationDelaySeconds;
-        NotifyOnLinkFound = config.NotifyOnLinkFound;
-        CloseToTray = config.CloseToTray;
-        ExtractZipArchives = config.ExtractZipArchives;
-        DeleteZipAfterExtraction = config.DeleteZipAfterExtraction;
-        SelectedUpdateMode = UpdateModes.FirstOrDefault(option => option.Mode == config.UpdateMode)
+        AppConfiguration configuration = _configurationService.Configuration;
+        DownloadDirectory = configuration.DownloadDirectory;
+        MaxActiveDownloads = configuration.MaxActiveDownloads;
+        TicketActivationDelaySeconds = configuration.TicketActivationDelaySeconds;
+        NotifyOnLinkFound = configuration.NotifyOnLinkFound;
+        CloseToTray = configuration.CloseToTray;
+        ExtractZipArchives = configuration.ExtractZipArchives;
+        DeleteZipAfterExtraction = configuration.DeleteZipAfterExtraction;
+        SelectedUpdateMode = UpdateModes.FirstOrDefault(option => option.Mode == configuration.UpdateMode)
                              ?? UpdateModes[0];
-        SelectedLanguage = Languages.FirstOrDefault(language => language.Code == config.Language)
+        SelectedLanguage = Languages.FirstOrDefault(language => language.Code == configuration.Language)
                            ?? Languages[0];
-        SelectedTheme = Themes.FirstOrDefault(option => option.Theme == config.Theme) ?? Themes[0];
+        SelectedTheme = Themes.FirstOrDefault(option => option.Theme == configuration.Theme) ?? Themes[0];
         DownloadDirectoryError = null;
         // The registry is the source of truth for the autostart state.
         StartOnSystemStartup = _startupService.IsEnabled();
@@ -154,16 +145,16 @@ public partial class SettingsViewModel : ObservableObject
             return;
 
         // Clamp numeric settings to their valid ranges before saving
-        int clampedDownloads = Math.Clamp(MaxActiveDownloads, MinActiveDownloads, MaxActiveDownloadsLimit);
-        MaxActiveDownloads = clampedDownloads;
+        MaxActiveDownloads = Math.Clamp(MaxActiveDownloads,
+            AppConfiguration.MinActiveDownloads, AppConfiguration.MaxActiveDownloadsLimit);
         TicketActivationDelaySeconds = Math.Clamp(TicketActivationDelaySeconds,
-            MinTicketActivationDelaySeconds, MaxTicketActivationDelaySeconds);
+            AppConfiguration.MinTicketActivationDelaySeconds, AppConfiguration.MaxTicketActivationDelaySeconds);
 
-        // Copy the current config so values this dialog does not edit (window layout) survive.
-        AppConfig config = _configService.Config with
+        // Copy the current configuration so values this dialog does not edit (window layout) survive.
+        AppConfiguration configuration = _configurationService.Configuration with
         {
             DownloadDirectory = DownloadDirectory,
-            MaxActiveDownloads = clampedDownloads,
+            MaxActiveDownloads = MaxActiveDownloads,
             TicketActivationDelaySeconds = TicketActivationDelaySeconds,
             Language = SelectedLanguage.Code,
             NotifyOnLinkFound = NotifyOnLinkFound,
@@ -175,7 +166,7 @@ public partial class SettingsViewModel : ObservableObject
             Theme = SelectedTheme.Theme
         };
 
-        _configService.Update(config);
+        _configurationService.Update(configuration);
         _startupService.SetEnabled(StartOnSystemStartup);
         _localization.SetLanguage(SelectedLanguage.Code);
         _themeService.Apply(SelectedTheme.Theme);
@@ -203,7 +194,7 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void Cancel()
     {
-        LoadFromConfig();
+        LoadFromConfiguration();
         CloseRequested?.Invoke();
     }
 

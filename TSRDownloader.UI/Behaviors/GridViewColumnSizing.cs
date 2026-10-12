@@ -42,26 +42,26 @@ public static class GridViewColumnSizing
     public static void SetStarWeight(DependencyObject element, double value) => element.SetValue(StarWeightProperty, value);
     public static double GetStarWeight(DependencyObject element) => (double)element.GetValue(StarWeightProperty);
 
-    private static void OnFillChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnFillChanged(DependencyObject element, DependencyPropertyChangedEventArgs eventArgs)
     {
-        if (d is not ListView listView)
+        if (element is not ListView listView)
             return;
 
         listView.Loaded -= OnListViewLoaded;
         listView.SizeChanged -= OnListViewSizeChanged;
 
-        if (e.NewValue is true)
+        if (eventArgs.NewValue is true)
         {
             listView.Loaded += OnListViewLoaded;
             listView.SizeChanged += OnListViewSizeChanged;
         }
     }
 
-    private static void OnListViewLoaded(object sender, RoutedEventArgs e) => DistributeWidths((ListView)sender);
+    private static void OnListViewLoaded(object sender, RoutedEventArgs eventArgs) => DistributeWidths((ListView)sender);
 
-    private static void OnListViewSizeChanged(object sender, SizeChangedEventArgs e)
+    private static void OnListViewSizeChanged(object sender, SizeChangedEventArgs eventArgs)
     {
-        if (e.WidthChanged)
+        if (eventArgs.WidthChanged)
             DistributeWidths((ListView)sender);
     }
 

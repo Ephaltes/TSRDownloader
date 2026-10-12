@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using TSRDownloader.Core.Helpers;
 using TSRDownloader.Core.Models;
 
 namespace TSRDownloader.Core.Services;
@@ -11,23 +12,23 @@ namespace TSRDownloader.Core.Services;
 public sealed class ArchiveExtractionService : IArchiveExtractionService, IDisposable
 {
     private readonly IArchiveExtractor _extractor;
-    private readonly IConfigService _configService;
+    private readonly IConfigurationService _configurationService;
     private readonly IFileConflictResolver _conflictResolver;
 
     private readonly Channel<DownloadItem> _queue =
         Channel.CreateUnbounded<DownloadItem>(new UnboundedChannelOptions { SingleReader = true });
-    private readonly CancellationTokenSource _cts = new();
+    private readonly CancellationTokenSource _cancellation = new();
 
     public event Action<DownloadItem>? ItemChanged;
-    public event Action? StatsChanged;
+    public event Action? StatisticsChanged;
 
     public ArchiveExtractionService(
         IArchiveExtractor extractor,
-        IConfigService configService,
+        IConfigurationService configurationService,
         IFileConflictResolver conflictResolver)
     {
         _extractor = extractor;
-        _configService = configService;
+        _configurationService = configurationService;
         _conflictResolver = conflictResolver;
         _ = Task.Run(ProcessQueueAsync);
     }
@@ -38,7 +39,7 @@ public sealed class ArchiveExtractionService : IArchiveExtractionService, IDispo
     {
         try
         {
-            await foreach (DownloadItem item in _queue.Reader.ReadAllAsync(_cts.Token))
+            await foreach (DownloadItem item in _queue.Reader.ReadAllAsync(_cancellation.Token))
                 await ExtractItemAsync(item);
         }
         catch (OperationCanceledException)
@@ -54,42 +55,39 @@ public sealed class ArchiveExtractionService : IArchiveExtractionService, IDispo
         NotifyItemChanged(item);
 
         string archivePath = item.FilePath!;
-        string destination = Path.Combine(
-            Path.GetDirectoryName(archivePath)!,
-            Path.GetFileNameWithoutExtension(archivePath));
 
         try
         {
             await _extractor.ExtractAsync(
                 archivePath,
-                destination,
+                ArchivePaths.ExtractionFolder(archivePath),
                 _conflictResolver,
                 percent =>
                 {
                     item.Progress = percent;
                     NotifyItemChanged(item);
                 },
-                _cts.Token);
+                _cancellation.Token);
 
             item.Status = DownloadStatus.ExtractionCompleted;
             item.Progress = 100;
 
-            if (_configService.Config.DeleteZipAfterExtraction)
+            if (_configurationService.Configuration.DeleteZipAfterExtraction)
                 TryDeleteArchive(archivePath);
         }
         catch (OperationCanceledException)
         {
             return; // shutting down — leave the item as-is
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             item.Status = DownloadStatus.ExtractionFailed;
-            item.ErrorMessage = ex.Message;
+            item.ErrorMessage = exception.Message;
         }
         finally
         {
             NotifyItemChanged(item);
-            NotifyStatsChanged();
+            NotifyStatisticsChanged();
         }
     }
 
@@ -100,12 +98,12 @@ public sealed class ArchiveExtractionService : IArchiveExtractionService, IDispo
     }
 
     private void NotifyItemChanged(DownloadItem item) => ItemChanged?.Invoke(item);
-    private void NotifyStatsChanged() => StatsChanged?.Invoke();
+    private void NotifyStatisticsChanged() => StatisticsChanged?.Invoke();
 
     public void Dispose()
     {
         _queue.Writer.TryComplete();
-        _cts.Cancel();
-        _cts.Dispose();
+        _cancellation.Cancel();
+        _cancellation.Dispose();
     }
 }

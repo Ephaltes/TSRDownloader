@@ -16,16 +16,16 @@ namespace TSRDownloader.Core.Tests;
 
 public class DownloadServiceTests
 {
-    private static IConfigService Config(string dir, bool extract)
+    private static IConfigurationService ConfigurationFor(string directory, bool extract)
     {
-        IConfigService config = Substitute.For<IConfigService>();
-        config.Config.Returns(new AppConfig
+        IConfigurationService configuration = Substitute.For<IConfigurationService>();
+        configuration.Configuration.Returns(new AppConfiguration
         {
-            DownloadDirectory = dir,
+            DownloadDirectory = directory,
             ExtractZipArchives = extract,
             MaxActiveDownloads = 1
         });
-        return config;
+        return configuration;
     }
 
     private static ITsrDownloadClient ClientReturning(string fileName)
@@ -43,9 +43,9 @@ public class DownloadServiceTests
     public async Task Start_Should_RouteToExtraction_When_DownloadedFileIsZipAndExtractionEnabled()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         IArchiveExtractionService extraction = Substitute.For<IArchiveExtractionService>();
-        using DownloadService service = new(ClientReturning("mod.zip"), Config(temp.Path, extract: true), extraction);
+        using DownloadService service = new(ClientReturning("mod.zip"), ConfigurationFor(temporaryDirectory.Path, extract: true), extraction);
         DownloadItem item = new() { ItemId = 1, Url = "u" };
 
         // Act
@@ -56,16 +56,16 @@ public class DownloadServiceTests
 
         // Assert
         extraction.Received(1).Enqueue(item);
-        item.FilePath.ShouldBe(Path.Combine(temp.Path, "mod.zip"));
+        item.FilePath.ShouldBe(Path.Combine(temporaryDirectory.Path, "mod.zip"));
     }
 
     [Fact]
     public async Task Start_Should_Complete_When_DownloadedFileIsNotZip()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         IArchiveExtractionService extraction = Substitute.For<IArchiveExtractionService>();
-        using DownloadService service = new(ClientReturning("readme.txt"), Config(temp.Path, extract: true), extraction);
+        using DownloadService service = new(ClientReturning("readme.txt"), ConfigurationFor(temporaryDirectory.Path, extract: true), extraction);
         DownloadItem item = new() { ItemId = 1 };
 
         // Act
@@ -82,9 +82,9 @@ public class DownloadServiceTests
     public async Task Start_Should_Complete_When_ExtractionDisabled()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         IArchiveExtractionService extraction = Substitute.For<IArchiveExtractionService>();
-        using DownloadService service = new(ClientReturning("mod.zip"), Config(temp.Path, extract: false), extraction);
+        using DownloadService service = new(ClientReturning("mod.zip"), ConfigurationFor(temporaryDirectory.Path, extract: false), extraction);
         DownloadItem item = new() { ItemId = 1 };
 
         // Act
@@ -103,7 +103,7 @@ public class DownloadServiceTests
     public async Task Start_Should_RetryAutomatically_When_DownloadFailsTransiently()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         int attempts = 0;
         ITsrDownloadClient client = ClientReturning("readme.txt");
         client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
@@ -111,7 +111,7 @@ public class DownloadServiceTests
                 ? Task.FromException<TsrDownloadInfo>(new InvalidOperationException("flaky"))
                 : Task.FromResult(new TsrDownloadInfo(1, "url", "readme.txt")));
         List<int> retryDelaysRequested = [];
-        using DownloadService service = new(client, Config(temp.Path, extract: true),
+        using DownloadService service = new(client, ConfigurationFor(temporaryDirectory.Path, extract: true),
             Substitute.For<IArchiveExtractionService>(), attempt =>
             {
                 retryDelaysRequested.Add(attempt);
@@ -135,11 +135,11 @@ public class DownloadServiceTests
     public async Task Start_Should_Fail_When_AllAutomaticRetriesFail()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         ITsrDownloadClient client = Substitute.For<ITsrDownloadClient>();
         client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("down"));
-        using DownloadService service = new(client, Config(temp.Path, extract: true),
+        using DownloadService service = new(client, ConfigurationFor(temporaryDirectory.Path, extract: true),
             Substitute.For<IArchiveExtractionService>(), NoRetryDelay);
         DownloadItem item = new() { ItemId = 1 };
 
@@ -167,11 +167,11 @@ public class DownloadServiceTests
     public async Task Start_Should_FailWithMessage_When_ClientThrows()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         ITsrDownloadClient client = Substitute.For<ITsrDownloadClient>();
         client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("nope"));
-        using DownloadService service = new(client, Config(temp.Path, extract: true),
+        using DownloadService service = new(client, ConfigurationFor(temporaryDirectory.Path, extract: true),
             Substitute.For<IArchiveExtractionService>(), NoRetryDelay);
         DownloadItem item = new() { ItemId = 1 };
 
@@ -204,11 +204,11 @@ public class DownloadServiceTests
     public async Task Start_Should_RunDownloadsConcurrently_When_MaxActiveDownloadsAllows()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         TaskCompletionSource release = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        IConfigService config = Substitute.For<IConfigService>();
-        config.Config.Returns(new AppConfig { DownloadDirectory = temp.Path, MaxActiveDownloads = 2 });
-        using DownloadService service = new(ClientBlockingUntil(release.Task), config,
+        IConfigurationService configuration = Substitute.For<IConfigurationService>();
+        configuration.Configuration.Returns(new AppConfiguration { DownloadDirectory = temporaryDirectory.Path, MaxActiveDownloads = 2 });
+        using DownloadService service = new(ClientBlockingUntil(release.Task), configuration,
             Substitute.For<IArchiveExtractionService>());
         DownloadItem[] items = [new() { ItemId = 1 }, new() { ItemId = 2 }, new() { ItemId = 3 }];
 
@@ -216,10 +216,10 @@ public class DownloadServiceTests
         service.EnqueueRange(items);
         service.Start();
         await ServiceCompletion.WaitAsync(service,
-            () => items.Count(i => i.Status == DownloadStatus.Downloading) == 2);
-        int downloadingWhileBlocked = items.Count(i => i.Status == DownloadStatus.Downloading);
+            () => items.Count(item => item.Status == DownloadStatus.Downloading) == 2);
+        int downloadingWhileBlocked = items.Count(item => item.Status == DownloadStatus.Downloading);
         release.SetResult();
-        await ServiceCompletion.WaitAsync(service, () => items.All(i => i.Status == DownloadStatus.Completed));
+        await ServiceCompletion.WaitAsync(service, () => items.All(item => item.Status == DownloadStatus.Completed));
         service.Stop();
 
         // Assert
@@ -230,11 +230,11 @@ public class DownloadServiceTests
     public async Task Start_Should_FailItem_When_ClientTimesOutWithoutStop()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         ITsrDownloadClient client = Substitute.For<ITsrDownloadClient>();
         client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new TaskCanceledException("timed out"));
-        using DownloadService service = new(client, Config(temp.Path, extract: true),
+        using DownloadService service = new(client, ConfigurationFor(temporaryDirectory.Path, extract: true),
             Substitute.For<IArchiveExtractionService>(), NoRetryDelay);
         DownloadItem item = new() { ItemId = 1 };
 
@@ -252,14 +252,14 @@ public class DownloadServiceTests
     public async Task Retry_Should_RequeueAndDownload_When_ItemFailed()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         int attempts = 0;
         ITsrDownloadClient client = ClientReturning("readme.txt");
         client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(_ => ++attempts <= 1 + DownloadService.MaxAutomaticRetries
                 ? Task.FromException<TsrDownloadInfo>(new InvalidOperationException("first"))
                 : Task.FromResult(new TsrDownloadInfo(1, "url", "readme.txt")));
-        using DownloadService service = new(client, Config(temp.Path, extract: true),
+        using DownloadService service = new(client, ConfigurationFor(temporaryDirectory.Path, extract: true),
             Substitute.For<IArchiveExtractionService>(), NoRetryDelay);
         DownloadItem item = new() { ItemId = 1 };
         service.Enqueue(item);
@@ -280,8 +280,8 @@ public class DownloadServiceTests
     public void Remove_Should_DropItem_When_ItemIsNotActive()
     {
         // Arrange
-        using TempDir temp = new();
-        using DownloadService service = new(ClientReturning("a.txt"), Config(temp.Path, extract: true),
+        using TemporaryDirectory temporaryDirectory = new();
+        using DownloadService service = new(ClientReturning("a.txt"), ConfigurationFor(temporaryDirectory.Path, extract: true),
             Substitute.For<IArchiveExtractionService>());
         DownloadItem item = new() { ItemId = 1 };
         service.Enqueue(item);
@@ -297,8 +297,8 @@ public class DownloadServiceTests
     public void Restore_Should_RequeueInterruptedDownloadAndKeepHistory_When_NotStarted()
     {
         // Arrange
-        using TempDir temp = new();
-        using DownloadService service = new(ClientReturning("a.txt"), Config(temp.Path, extract: true),
+        using TemporaryDirectory temporaryDirectory = new();
+        using DownloadService service = new(ClientReturning("a.txt"), ConfigurationFor(temporaryDirectory.Path, extract: true),
             Substitute.For<IArchiveExtractionService>());
         DownloadItem interrupted = new() { ItemId = 1, Status = DownloadStatus.Downloading, Progress = 40 };
         DownloadItem done = new() { ItemId = 2, Status = DownloadStatus.Completed, Progress = 100 };
@@ -322,11 +322,11 @@ public class DownloadServiceTests
     public void Restore_Should_ReturnArchiveToExtractionQueue_When_ArchiveStillExists(DownloadStatus savedStatus)
     {
         // Arrange
-        using TempDir temp = new();
-        string archive = temp.Combine("mod.zip");
+        using TemporaryDirectory temporaryDirectory = new();
+        string archive = temporaryDirectory.Combine("mod.zip");
         File.WriteAllText(archive, "zip");
         IArchiveExtractionService extraction = Substitute.For<IArchiveExtractionService>();
-        using DownloadService service = new(ClientReturning("a.txt"), Config(temp.Path, extract: true), extraction);
+        using DownloadService service = new(ClientReturning("a.txt"), ConfigurationFor(temporaryDirectory.Path, extract: true), extraction);
         DownloadItem item = new() { ItemId = 1, Status = savedStatus, FilePath = archive };
 
         // Act
@@ -341,12 +341,12 @@ public class DownloadServiceTests
     public void Restore_Should_RequeueDownload_When_ArchiveToExtractIsMissing()
     {
         // Arrange
-        using TempDir temp = new();
+        using TemporaryDirectory temporaryDirectory = new();
         IArchiveExtractionService extraction = Substitute.For<IArchiveExtractionService>();
-        using DownloadService service = new(ClientReturning("a.txt"), Config(temp.Path, extract: true), extraction);
+        using DownloadService service = new(ClientReturning("a.txt"), ConfigurationFor(temporaryDirectory.Path, extract: true), extraction);
         DownloadItem item = new()
         {
-            ItemId = 1, Status = DownloadStatus.WaitingToExtract, FilePath = temp.Combine("gone.zip")
+            ItemId = 1, Status = DownloadStatus.WaitingToExtract, FilePath = temporaryDirectory.Combine("gone.zip")
         };
 
         // Act
@@ -361,8 +361,8 @@ public class DownloadServiceTests
     public async Task Start_Should_DownloadRestoredItem_When_ItWasInterrupted()
     {
         // Arrange
-        using TempDir temp = new();
-        using DownloadService service = new(ClientReturning("a.txt"), Config(temp.Path, extract: true),
+        using TemporaryDirectory temporaryDirectory = new();
+        using DownloadService service = new(ClientReturning("a.txt"), ConfigurationFor(temporaryDirectory.Path, extract: true),
             Substitute.For<IArchiveExtractionService>());
         DownloadItem item = new() { ItemId = 1, Status = DownloadStatus.Downloading };
         service.Restore([item]);
@@ -373,6 +373,6 @@ public class DownloadServiceTests
         service.Stop();
 
         // Assert
-        item.FilePath.ShouldBe(Path.Combine(temp.Path, "a.txt"));
+        item.FilePath.ShouldBe(Path.Combine(temporaryDirectory.Path, "a.txt"));
     }
 }

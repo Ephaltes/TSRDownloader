@@ -132,7 +132,7 @@ public class TsrDownloadClientTests
     {
         // Arrange
         using TempDir temp = new();
-        File.WriteAllText(Path.Combine(temp.Path, "mod.zip.part"), "file-");
+        File.WriteAllText(Path.Combine(temp.Path, "mod.zip.1.part"), "file-");
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
             .When(r => r.Headers.Range is not null,
                   _ => new HttpResponseMessage(HttpStatusCode.PartialContent)
@@ -150,7 +150,7 @@ public class TsrDownloadClientTests
     {
         // Arrange
         using TempDir temp = new();
-        File.WriteAllText(Path.Combine(temp.Path, "mod.zip.part"), "stale-");
+        File.WriteAllText(Path.Combine(temp.Path, "mod.zip.1.part"), "stale-");
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
             .When(_ => true, _ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("full") });
 
@@ -166,7 +166,7 @@ public class TsrDownloadClientTests
     {
         // Arrange
         using TempDir temp = new();
-        File.WriteAllText(Path.Combine(temp.Path, "mod.zip.part"), "stale-and-too-long");
+        File.WriteAllText(Path.Combine(temp.Path, "mod.zip.1.part"), "stale-and-too-long");
         StubHttpMessageHandler handler = new StubHttpMessageHandler()
             .When(r => r.Headers.Range is not null,
                   _ => new HttpResponseMessage(HttpStatusCode.RequestedRangeNotSatisfiable))
@@ -177,6 +177,41 @@ public class TsrDownloadClientTests
 
         // Assert
         File.ReadAllText(path).ShouldBe("full");
+    }
+
+    [Fact]
+    public async Task DownloadFileAsync_Should_AddNumberSuffix_When_FileAlreadyExists()
+    {
+        // Arrange
+        using TempDir temp = new();
+        File.WriteAllText(Path.Combine(temp.Path, "mod.zip"), "other item");
+        File.WriteAllText(Path.Combine(temp.Path, "mod (2).zip"), "another item");
+        StubHttpMessageHandler handler = new StubHttpMessageHandler()
+            .When(_ => true, _ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("new") });
+
+        // Act
+        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temp.Path, null, CancellationToken.None);
+
+        // Assert
+        path.ShouldBe(Path.Combine(temp.Path, "mod (3).zip"));
+        File.ReadAllText(path).ShouldBe("new");
+        File.ReadAllText(Path.Combine(temp.Path, "mod.zip")).ShouldBe("other item");
+    }
+
+    [Fact]
+    public async Task DownloadFileAsync_Should_AddNumberSuffix_When_ExtractedFolderOfSameNameExists()
+    {
+        // Arrange
+        using TempDir temp = new();
+        Directory.CreateDirectory(Path.Combine(temp.Path, "mod"));
+        StubHttpMessageHandler handler = new StubHttpMessageHandler()
+            .When(_ => true, _ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("new") });
+
+        // Act
+        string path = await ClientWith(handler).DownloadFileAsync(CdnInfo(), temp.Path, null, CancellationToken.None);
+
+        // Assert
+        path.ShouldBe(Path.Combine(temp.Path, "mod (2).zip"));
     }
 
     [Theory]

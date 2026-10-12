@@ -20,6 +20,7 @@ public partial class TsrDownloadClient : ITsrDownloadClient, IDisposable
 
     private readonly HttpClient _httpClient;
     private readonly Func<TimeSpan> _ticketActivationDelay;
+    private readonly Lock _fileNameLock = new();
 
     [GeneratedRegex(@"[\\<>/:""|?*]")]
     private static partial Regex ForbiddenFileNameCharsRegex();
@@ -66,8 +67,8 @@ public partial class TsrDownloadClient : ITsrDownloadClient, IDisposable
     {
         Directory.CreateDirectory(destinationDirectory);
 
-        string filePath = Path.Combine(destinationDirectory, info.FileName);
-        string partPath = filePath + ".part";
+        // Keyed by item, so two items with the same file name never share (and corrupt) a partial file.
+        string partPath = Path.Combine(destinationDirectory, $"{info.FileName}.{info.ItemId}.part");
 
         long startingBytes = File.Exists(partPath) ? new FileInfo(partPath).Length : 0;
 
@@ -99,10 +100,34 @@ public partial class TsrDownloadClient : ITsrDownloadClient, IDisposable
             }
         }
 
-        // Replace any existing file with the freshly completed .part file.
-        File.Move(partPath, filePath, overwrite: true);
+        // Never replace an existing download: pick a free name. Locked so two downloads finishing
+        // at once cannot both claim the same name.
+        lock (_fileNameLock)
+        {
+            string filePath = FreeFilePath(destinationDirectory, info.FileName);
+            File.Move(partPath, filePath);
+            return filePath;
+        }
+    }
 
-        return filePath;
+    /// <summary>
+    /// Returns <paramref name="fileName"/> in <paramref name="directory"/>, or "name (2).ext",
+    /// "name (3).ext", … for the first name that is free. For a .zip the folder it would be
+    /// extracted to must be free as well, so archives never extract into each other's folder.
+    /// </summary>
+    private static string FreeFilePath(string directory, string fileName)
+    {
+        string stem = Path.GetFileNameWithoutExtension(fileName);
+        string extension = Path.GetExtension(fileName);
+        bool isZip = extension.Equals(".zip", StringComparison.OrdinalIgnoreCase);
+
+        for (int number = 1; ; number++)
+        {
+            string candidateStem = number == 1 ? stem : $"{stem} ({number})";
+            string path = Path.Combine(directory, candidateStem + extension);
+            if (!File.Exists(path) && !(isZip && Directory.Exists(Path.Combine(directory, candidateStem))))
+                return path;
+        }
     }
 
     private async Task<string> RequestTicketAsync(int itemId, CancellationToken ct)

@@ -359,9 +359,14 @@
                     <Run Text="{Binding ActiveCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>
                 <Separator Width="1" Margin="15,2" Background="{DynamicResource App.InputBorder}"/>
+                <TextBlock FontSize="12" Foreground="{DynamicResource App.Extracting}">
+                    <Run Text="{loc:Loc StatusBar_Extracting}"/>
+                    <Run Text="{Binding ExtractingCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
+                </TextBlock>
+                <Separator Width="1" Margin="15,2" Background="{DynamicResource App.InputBorder}"/>
                 <TextBlock FontSize="12" Foreground="{DynamicResource App.Error}">
                     <Run Text="{loc:Loc StatusBar_Errors}"/>
-                    <Run Text="{Binding FailedCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
+                    <Run Text="{Binding ErrorCount, StringFormat={} {0}}" FontWeight="SemiBold"/>
                 </TextBlock>
             </StackPanel>
             </DockPanel>

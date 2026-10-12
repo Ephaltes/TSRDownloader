@@ -348,4 +348,13 @@
   <data name="Notify_UrlsCopied" xml:space="preserve">
     <value>{0} URLs kopiert</value>
   </data>
+  <data name="StatusBar_Extracting" xml:space="preserve">
+    <value>Entpacken:</value>
+  </data>
+  <data name="Notify_QueueFinished" xml:space="preserve">
+    <value>Alle Downloads abgeschlossen ({0} fertig)</value>
+  </data>
+  <data name="Notify_QueueFinishedWithErrors" xml:space="preserve">
+    <value>Alle Downloads abgeschlossen: {0} fertig, {1} fehlgeschlagen</value>
+  </data>
 </root>

@@ -15,14 +15,14 @@ public class MainViewModelTests
 {
     private static MainViewModel NewVm(
         IDownloadService download, IClipboardService clipboard, IConfigService config,
-        IUpdateService? updates = null)
+        IUpdateService? updates = null, INotificationService? notifications = null)
     {
         return new MainViewModel(
             download,
             Substitute.For<IArchiveExtractionService>(),
             clipboard,
             config,
-            Substitute.For<INotificationService>(),
+            notifications ?? Substitute.For<INotificationService>(),
             updates ?? Substitute.For<IUpdateService>(),
             LocalizationManager.Instance,
             new ImmediateDispatcher());
@@ -84,6 +84,54 @@ public class MainViewModelTests
         vm.CompletedCount.ShouldBe(2);
         vm.FailedCount.ShouldBe(2);
         vm.OverallProgress.ShouldBe(100);
+    }
+
+    [Fact]
+    public void QueueStatsChanged_Should_CountOnlyTheCurrentBatchAndNotifyOnce_When_QueueFinishes()
+    {
+        // Arrange: one finished item from earlier, then two new downloads
+        IDownloadService download = Substitute.For<IDownloadService>();
+        INotificationService notifications = Substitute.For<INotificationService>();
+        DownloadItem history = new() { ItemId = 1, Status = DownloadStatus.Completed };
+        DownloadItem first = new() { ItemId = 2, Status = DownloadStatus.Queued };
+        DownloadItem second = new() { ItemId = 3, Status = DownloadStatus.Downloading, Progress = 50 };
+        download.Items.Returns(new List<DownloadItem> { history, first, second });
+        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>(),
+            notifications: notifications);
+        download.QueueStatsChanged += Raise.Event<System.Action>();
+        double progressWhileRunning = vm.OverallProgress;
+
+        // Act
+        first.Status = DownloadStatus.Completed;
+        second.Status = DownloadStatus.Failed;
+        download.QueueStatsChanged += Raise.Event<System.Action>();
+        download.QueueStatsChanged += Raise.Event<System.Action>();
+
+        // Assert
+        progressWhileRunning.ShouldBe(25);
+        vm.TotalCount.ShouldBe(2);
+        vm.CompletedCount.ShouldBe(1);
+        vm.FailedCount.ShouldBe(1);
+        vm.OverallProgress.ShouldBe(100);
+        notifications.Received(1).Notify(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void QueueStatsChanged_Should_NotNotify_When_OnlyFinishedHistoryIsRestored()
+    {
+        // Arrange
+        IDownloadService download = Substitute.For<IDownloadService>();
+        INotificationService notifications = Substitute.For<INotificationService>();
+        download.Items.Returns(new List<DownloadItem> { new() { ItemId = 1, Status = DownloadStatus.Completed } });
+        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>(),
+            notifications: notifications);
+
+        // Act
+        download.QueueStatsChanged += Raise.Event<System.Action>();
+
+        // Assert
+        vm.TotalCount.ShouldBe(1);
+        notifications.DidNotReceive().Notify(Arg.Any<string>(), Arg.Any<string>());
     }
 
     [Fact]

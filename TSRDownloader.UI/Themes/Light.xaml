@@ -19,6 +19,7 @@
     <SolidColorBrush x:Key="App.AccentPressed" Color="#E3F2FD"/>
     <SolidColorBrush x:Key="App.Error" Color="#F44336"/>
     <SolidColorBrush x:Key="App.Success" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="App.Extracting" Color="#7E57C2"/>
     <SolidColorBrush x:Key="App.ProgressTrack" Color="#E8E8E8"/>
     <SolidColorBrush x:Key="App.SuccessSurface" Color="#E8F5E9"/>
     <SolidColorBrush x:Key="App.WarningSurface" Color="#FFF3E0"/>

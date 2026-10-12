@@ -44,9 +44,21 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private int _completedCount;
 
+    /// <summary>Failed items of the current batch (see <see cref="BatchItems"/>).</summary>
+    [ObservableProperty]
+    private int _failedCount;
+
+    /// <summary>Failed items in the whole list.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
-    private int _failedCount;
+    private int _errorCount;
+
+    /// <summary>Items waiting for or in extraction.</summary>
+    [ObservableProperty]
+    private int _extractingCount;
+
+    private readonly HashSet<int> _batch = [];
+    private bool _wasBusy;
 
     [ObservableProperty]
     private int _queuedCount;
@@ -250,8 +262,7 @@ public partial class MainViewModel : ObservableObject
         CopyUrlsCommand.NotifyCanExecuteChanged();
     }
 
-    private static bool IsFailed(DownloadItemViewModel vm) =>
-        vm.Model.Status is DownloadStatus.Failed or DownloadStatus.ExtractionFailed;
+    private static bool IsFailed(DownloadItemViewModel vm) => IsFailed(vm.Model);
 
     // Items owned by the extraction queue cannot be removed until extraction has finished.
     private static bool IsRemovable(DownloadItemViewModel vm) =>
@@ -271,12 +282,11 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanRetryFailed))]
     private void RetryFailed()
     {
-        foreach (DownloadItem item in _downloadService.Items
-                     .Where(item => item.Status is DownloadStatus.Failed or DownloadStatus.ExtractionFailed))
+        foreach (DownloadItem item in _downloadService.Items.Where(IsFailed))
             _downloadService.Retry(item);
     }
 
-    private bool CanRetryFailed() => FailedCount > 0;
+    private bool CanRetryFailed() => ErrorCount > 0;
 
     /// <summary>Removes the selected items that are not being extracted.</summary>
     [RelayCommand(CanExecute = nameof(CanRemove))]
@@ -448,7 +458,37 @@ public partial class MainViewModel : ObservableObject
             vm.UpdateFromModel();
             if (SelectedItems.Contains(vm))
                 NotifySelectionCommandsChanged();
+
+            // Keeps the overall bar moving with the running downloads' byte progress.
+            if (item.Status == DownloadStatus.Downloading)
+                UpdateOverallProgress(_downloadService.Items);
         });
+    }
+
+    private static bool IsFinished(DownloadItem item) => item.Status is DownloadStatus.Completed
+        or DownloadStatus.ExtractionCompleted or DownloadStatus.Failed or DownloadStatus.ExtractionFailed;
+
+    private static bool IsFailed(DownloadItem item) =>
+        item.Status is DownloadStatus.Failed or DownloadStatus.ExtractionFailed;
+
+    /// <summary>
+    /// The items of the current batch: everything that was pending at some point since the queue
+    /// last became busy. Empty when nothing has been pending since startup; then all items count.
+    /// </summary>
+    private List<DownloadItem> BatchItems(IReadOnlyList<DownloadItem> items) =>
+        _batch.Count == 0 ? items.ToList() : items.Where(item => _batch.Contains(item.ItemId)).ToList();
+
+    private void UpdateOverallProgress(IReadOnlyList<DownloadItem> items)
+    {
+        List<DownloadItem> batch = BatchItems(items);
+        // A finished download counts fully once it reached extraction; a running one by its bytes.
+        double done = batch.Sum(item => item.Status switch
+        {
+            DownloadStatus.Queued => 0,
+            DownloadStatus.Downloading => item.Progress / 100,
+            _ => 1
+        });
+        OverallProgress = batch.Count > 0 ? done / batch.Count * 100 : 0;
     }
 
     private void OnQueueStatsChanged()
@@ -456,17 +496,30 @@ public partial class MainViewModel : ObservableObject
         _dispatcher.Invoke(() =>
         {
             IReadOnlyList<DownloadItem> items = _downloadService.Items;
-            TotalCount = items.Count;
-            CompletedCount = items.Count(downloadItem =>
-                downloadItem.Status is DownloadStatus.Completed or DownloadStatus.ExtractionCompleted);
-            FailedCount = items.Count(downloadItem =>
-                downloadItem.Status is DownloadStatus.Failed or DownloadStatus.ExtractionFailed);
+            bool isBusy = items.Any(item => !IsFinished(item));
+
+            // A new batch starts when work arrives on an idle queue; everything pending joins it.
+            if (isBusy && !_wasBusy)
+                _batch.Clear();
+            foreach (DownloadItem item in items.Where(item => !IsFinished(item)))
+                _batch.Add(item.ItemId);
+            _batch.IntersectWith(items.Select(item => item.ItemId)); // drop removed items
+
+            List<DownloadItem> batch = BatchItems(items);
+            TotalCount = batch.Count;
+            CompletedCount = batch.Count(item =>
+                item.Status is DownloadStatus.Completed or DownloadStatus.ExtractionCompleted);
+            FailedCount = batch.Count(IsFailed);
+            ErrorCount = items.Count(IsFailed);
             QueuedCount = items.Count(downloadItem => downloadItem.Status == DownloadStatus.Queued);
             ActiveCount = items.Count(downloadItem => downloadItem.Status == DownloadStatus.Downloading);
+            ExtractingCount = items.Count(downloadItem =>
+                downloadItem.Status is DownloadStatus.WaitingToExtract or DownloadStatus.Extracting);
+            UpdateOverallProgress(items);
 
-            OverallProgress = TotalCount > 0
-                ? (double)(CompletedCount + FailedCount) / TotalCount * 100
-                : 0;
+            if (_wasBusy && !isBusy && CompletedCount + FailedCount > 0)
+                NotifyQueueFinished();
+            _wasBusy = isBusy;
 
             // Queued items start in the service's order, whatever order the list is shown in.
             int position = 0;
@@ -476,5 +529,13 @@ public partial class MainViewModel : ObservableObject
                     vm.QueuePosition = item.Status == DownloadStatus.Queued ? ++position : 0;
             }
         });
+    }
+
+    private void NotifyQueueFinished()
+    {
+        string message = FailedCount == 0
+            ? _localization.Format("Notify_QueueFinished", CompletedCount)
+            : _localization.Format("Notify_QueueFinishedWithErrors", CompletedCount, FailedCount);
+        _notificationService.Notify(_localization.Get("App_Name"), message);
     }
 }

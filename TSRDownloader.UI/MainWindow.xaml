@@ -87,8 +87,14 @@
         </DockPanel>
 
         <!-- Row 1: Toolbar (actions on the list) -->
-        <DockPanel Grid.Row="1" Margin="0,0,0,8" LastChildFill="False">
-            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+        <Grid Grid.Row="1" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" MaxWidth="220"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Command="{Binding RetryFailedCommand}" Style="{StaticResource ToolbarButtonStyle}"
                         Margin="0">
                     <StackPanel Orientation="Horizontal">
@@ -110,25 +116,25 @@
                 </Button>
             </StackPanel>
 
-            <!-- Filter and order of the list -->
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         Tag="{loc:Loc Toolbar_Search}" Width="200"
-                         Style="{StaticResource SearchTextBox}"/>
-                <ComboBox ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}"
-                          ToolTip="{loc:Loc Toolbar_SortHint}" Width="140" Margin="6,0,0,0"
-                          Style="{StaticResource ToolbarComboBox}">
-                    <ComboBox.Resources>
-                        <CornerRadius x:Key="ComboCornerRadius">4</CornerRadius>
-                    </ComboBox.Resources>
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DisplayName}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </StackPanel>
-        </DockPanel>
+            <!-- Filter and order of the list; the search box gives way when the window is narrow -->
+            <TextBox Grid.Column="2" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     Tag="{loc:Loc Toolbar_Search}" Margin="12,0,0,0"
+                     HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                     Style="{StaticResource SearchTextBox}"/>
+            <ComboBox Grid.Column="3" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}"
+                      ToolTip="{loc:Loc Toolbar_SortHint}" Width="140" Margin="6,0,0,0"
+                      VerticalAlignment="Center"
+                      Style="{StaticResource ToolbarComboBox}">
+                <ComboBox.Resources>
+                    <CornerRadius x:Key="ComboCornerRadius">4</CornerRadius>
+                </ComboBox.Resources>
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DisplayName}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
 
         <!-- Row 2: Download List with resizable columns -->
         <Border Grid.Row="2" BorderBrush="{DynamicResource App.Border}" BorderThickness="1"

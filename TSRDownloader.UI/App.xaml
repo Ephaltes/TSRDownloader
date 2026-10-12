@@ -253,6 +253,80 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <!-- Rounded button; per-button Background/Foreground can override -->
+            <Style x:Key="DialogButton" TargetType="Button">
+                <Setter Property="Width" Value="110"/>
+                <Setter Property="Height" Value="34"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{DynamicResource App.OnAccent}"/>
+                <Setter Property="Background" Value="{DynamicResource App.Accent}"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Margin" Value="8,0,0,0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="6"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.88"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.75"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Rounded check box in the app's colours: blue border on hover like the combo boxes,
+                 filled with the accent when checked -->
+            <Style x:Key="SettingCheckBox" TargetType="CheckBox">
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
+                <Setter Property="Margin" Value="0,8,0,0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <StackPanel Orientation="Horizontal" Background="Transparent">
+                                <Border x:Name="Box" Width="16" Height="16" CornerRadius="3"
+                                        BorderThickness="1" VerticalAlignment="Center"
+                                        BorderBrush="{DynamicResource App.InputBorder}"
+                                        Background="{DynamicResource App.Surface}">
+                                    <TextBlock x:Name="Check" Text="&#xE73E;" FontSize="10"
+                                               FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                               Foreground="{DynamicResource App.OnAccent}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Visibility="Collapsed"/>
+                                </Border>
+                                <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Box" Property="Background" Value="{DynamicResource App.Accent}"/>
+                                    <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                    <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

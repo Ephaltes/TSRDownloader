@@ -20,15 +20,16 @@
 
         <CheckBox x:Name="ApplyToAllCheckBox" Grid.Row="1"
                   Content="{loc:Loc Conflict_ApplyToAll}"
-                  Margin="0,16,0,0" FontSize="13" Foreground="{DynamicResource App.Text}"/>
+                  Margin="0,16,0,0" Style="{StaticResource SettingCheckBox}"/>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right" Margin="0,20,0,0">
             <Button Content="{loc:Loc Conflict_Skip}"
-                    Click="OnSkip" IsCancel="True"
+                    Click="OnSkip" IsCancel="True" Style="{StaticResource DialogButton}"
+                    Background="{DynamicResource App.SecondaryButton}" Foreground="{DynamicResource App.Text}"
                     Width="120" Height="34" Margin="8,0,0,0"/>
             <Button Content="{loc:Loc Conflict_Overwrite}"
-                    Click="OnOverwrite" IsDefault="True"
+                    Click="OnOverwrite" IsDefault="True" Style="{StaticResource DialogButton}"
                     Width="120" Height="34" Margin="8,0,0,0"/>
         </StackPanel>
     </Grid>

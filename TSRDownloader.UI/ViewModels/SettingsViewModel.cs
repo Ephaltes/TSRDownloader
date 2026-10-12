@@ -159,7 +159,8 @@ public partial class SettingsViewModel : ObservableObject
         TicketActivationDelaySeconds = Math.Clamp(TicketActivationDelaySeconds,
             MinTicketActivationDelaySeconds, MaxTicketActivationDelaySeconds);
 
-        AppConfig config = new()
+        // Copy the current config so values this dialog does not edit (window layout) survive.
+        AppConfig config = _configService.Config with
         {
             DownloadDirectory = DownloadDirectory,
             MaxActiveDownloads = clampedDownloads,

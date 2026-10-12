@@ -4,7 +4,7 @@ namespace TSRDownloader.Core.Models;
 /// Application configuration. Defaults come from appsettings.json; the user's values are
 /// persisted to settings.json in the data directory.
 /// </summary>
-public class AppConfig
+public record AppConfig
 {
     /// <summary>Allowed range for <see cref="MaxActiveDownloads"/>.</summary>
     public const int MinActiveDownloads = 1;
@@ -53,4 +53,7 @@ public class AppConfig
 
     /// <summary>Light or dark user interface.</summary>
     public AppTheme Theme { get; set; } = AppTheme.Light;
+
+    /// <summary>The main window's last size, position and column widths; null until it was first closed.</summary>
+    public WindowLayout? MainWindowLayout { get; set; }
 }

@@ -49,6 +49,44 @@ public class ConfigServiceTests
     }
 
     [Fact]
+    public void Update_Should_RoundTripWindowLayout_When_ReloadedFromDisk()
+    {
+        // Arrange
+        using TempDir temp = new();
+        string path = temp.Combine("settings.json");
+
+        // Act
+        NewService(path).Update(new AppConfig
+        {
+            MainWindowLayout = new WindowLayout
+            {
+                Left = 10, Top = 20, Width = 1000, Height = 600, IsMaximized = true, ColumnWidths = [64, 70, 300]
+            }
+        });
+        ConfigService reader = NewService(path);
+        reader.Load();
+
+        // Assert
+        WindowLayout layout = reader.Config.MainWindowLayout.ShouldNotBeNull();
+        (layout.Left, layout.Top, layout.Width, layout.Height, layout.IsMaximized).ShouldBe((10d, 20d, 1000d, 600d, true));
+        layout.ColumnWidths.ShouldBe([64, 70, 300]);
+    }
+
+    [Theory]
+    [InlineData(100, 100, true)]      // on the screen
+    [InlineData(-3000, 100, false)]   // on a monitor that is gone
+    [InlineData(100, 2000, false)]    // below the screen
+    [InlineData(-30, 0, true)]        // slightly off the left edge, title bar still reachable
+    public void IsReachableOn_Should_RequireTheTitleBarOnScreen_When_Checked(double left, double top, bool expected)
+    {
+        // Arrange
+        WindowLayout layout = new() { Left = left, Top = top, Width = 900, Height = 500 };
+
+        // Act & Assert
+        layout.IsReachableOn(0, 0, 1920, 1080).ShouldBe(expected);
+    }
+
+    [Fact]
     public void Load_Should_KeepDefaults_When_FileMissing()
     {
         // Arrange

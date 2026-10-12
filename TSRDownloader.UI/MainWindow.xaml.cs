@@ -1,4 +1,6 @@
+using TSRDownloader.Core.Models;
 using TSRDownloader.Core.Services;
+using TSRDownloader.UI.Behaviors;
 using TSRDownloader.UI.Localization;
 using TSRDownloader.UI.Services;
 using TSRDownloader.UI.ViewModels;
@@ -26,6 +28,7 @@ public partial class MainWindow : Window
         _configService = configService;
         _trayIcon = trayIcon;
         DataContext = _viewModel;
+        RestoreLayout();
 
         Loaded += OnLoaded;
         Closing += OnClosing;
@@ -54,8 +57,59 @@ public partial class MainWindow : Window
         Close();
     }
 
+    /// <summary>Applies the size, position and column widths saved by <see cref="SaveLayout"/>.</summary>
+    private void RestoreLayout()
+    {
+        if (_configService.Config.MainWindowLayout is not { } layout)
+            return;
+
+        if (layout.IsReachableOn(SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop,
+                SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight))
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = layout.Left;
+            Top = layout.Top;
+            Width = Math.Max(layout.Width, MinWidth);
+            Height = Math.Max(layout.Height, MinHeight);
+        }
+        if (layout.IsMaximized)
+            WindowState = WindowState.Maximized;
+
+        GridViewColumnCollection columns = ((GridView)DownloadList.View).Columns;
+        if (layout.ColumnWidths.Count != columns.Count || layout.ColumnWidths.Any(width => width <= 0))
+            return;
+        for (int i = 0; i < columns.Count; i++)
+        {
+            // Filling columns keep their share of the width: the saved widths become their weights.
+            if (GridViewColumnSizing.GetStarWeight(columns[i]) > 0)
+                GridViewColumnSizing.SetStarWeight(columns[i], layout.ColumnWidths[i]);
+            else
+                columns[i].Width = layout.ColumnWidths[i];
+        }
+    }
+
+    private void SaveLayout()
+    {
+        Rect bounds = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;
+        if (bounds.IsEmpty)
+            return;
+
+        _configService.Config.MainWindowLayout = new WindowLayout
+        {
+            Left = bounds.Left,
+            Top = bounds.Top,
+            Width = bounds.Width,
+            Height = bounds.Height,
+            IsMaximized = WindowState == WindowState.Maximized,
+            ColumnWidths = ((GridView)DownloadList.View).Columns.Select(column => column.ActualWidth).ToList()
+        };
+        _configService.Save();
+    }
+
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        SaveLayout();
+
         if (!_isExiting && _configService.Config.CloseToTray)
         {
             // Keep watching the clipboard and downloading in the background.

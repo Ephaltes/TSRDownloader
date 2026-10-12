@@ -29,6 +29,20 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void Save_Should_KeepTheWindowLayout_When_Executed()
+    {
+        // Arrange
+        WindowLayout layout = new() { Width = 1000, Height = 600 };
+        (SettingsViewModel vm, IConfigService config) = NewVm(new AppConfig { MainWindowLayout = layout });
+
+        // Act
+        vm.SaveCommand.Execute(null);
+
+        // Assert
+        config.Received(1).Update(Arg.Is<AppConfig>(c => c != null && c.MainWindowLayout == layout));
+    }
+
+    [Fact]
     public void Save_Should_PersistCloseToTray_When_Changed()
     {
         // Arrange

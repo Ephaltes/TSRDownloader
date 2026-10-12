@@ -254,7 +254,7 @@ public class MainViewModelTests
     }
 
     [Fact]
-    public void ToggleMonitoringCommand_Should_PauseAndResume_When_ExecutedTwice()
+    public void ToggleDownloadsCommand_Should_PauseAndResumeDownloadsOnly_When_ExecutedTwice()
     {
         // Arrange
         IDownloadService download = Substitute.For<IDownloadService>();
@@ -262,13 +262,77 @@ public class MainViewModelTests
         vm.StartMonitoringCommand.Execute(null);
 
         // Act
-        vm.ToggleMonitoringCommand.Execute(null);
-        bool pausedState = vm.IsMonitoring;
-        vm.ToggleMonitoringCommand.Execute(null);
+        vm.ToggleDownloadsCommand.Execute(null);
+        bool pausedState = vm.IsDownloading;
+        vm.ToggleDownloadsCommand.Execute(null);
 
         // Assert
         pausedState.ShouldBeFalse();
+        vm.IsDownloading.ShouldBeTrue();
         vm.IsMonitoring.ShouldBeTrue();
         download.Received(1).Stop();
+        download.Received(2).Start();
+    }
+
+    [Fact]
+    public void OnClipboardContentChanged_Should_StillQueueLinks_When_DownloadsPaused()
+    {
+        // Arrange
+        IDownloadService download = Substitute.For<IDownloadService>();
+        IClipboardService clipboard = Substitute.For<IClipboardService>();
+        clipboard.ProcessClipboardContent(Arg.Any<string>())
+            .Returns(new List<DownloadItem> { new() { ItemId = 9, Url = "u" } });
+        IConfigService config = Substitute.For<IConfigService>();
+        config.Config.Returns(new AppConfig { NotifyOnLinkFound = false });
+        MainViewModel vm = NewVm(download, clipboard, config);
+        vm.StartMonitoringCommand.Execute(null);
+        vm.ToggleDownloadsCommand.Execute(null);
+
+        // Act
+        vm.OnClipboardContentChanged("links");
+
+        // Assert
+        vm.IsDownloading.ShouldBeFalse();
+        vm.DownloadItems.Count.ShouldBe(1);
+        download.Received(1).EnqueueRange(Arg.Any<IEnumerable<DownloadItem>>());
+    }
+
+    [Fact]
+    public void ToggleClipboardCommand_Should_StopPickingUpLinksButKeepDownloading_When_Executed()
+    {
+        // Arrange
+        IDownloadService download = Substitute.For<IDownloadService>();
+        IClipboardService clipboard = Substitute.For<IClipboardService>();
+        MainViewModel vm = NewVm(download, clipboard, Substitute.For<IConfigService>());
+        vm.StartMonitoringCommand.Execute(null);
+
+        // Act
+        vm.ToggleClipboardCommand.Execute(null);
+        vm.OnClipboardContentChanged("links");
+
+        // Assert
+        vm.IsMonitoring.ShouldBeFalse();
+        vm.IsDownloading.ShouldBeTrue();
+        clipboard.DidNotReceive().ProcessClipboardContent(Arg.Any<string>());
+        download.DidNotReceive().Stop();
+    }
+
+    [Fact]
+    public void AddLinks_Should_QueueLinks_When_ClipboardWatchingIsPaused()
+    {
+        // Arrange
+        IDownloadService download = Substitute.For<IDownloadService>();
+        IClipboardService clipboard = Substitute.For<IClipboardService>();
+        clipboard.ProcessClipboardContent("dropped text")
+            .Returns(new List<DownloadItem> { new() { ItemId = 5, Url = "u" } });
+        MainViewModel vm = NewVm(download, clipboard, Substitute.For<IConfigService>());
+
+        // Act
+        int added = vm.AddLinks("dropped text");
+
+        // Assert
+        added.ShouldBe(1);
+        vm.DownloadItems.Single().ItemId.ShouldBe(5);
+        download.Received(1).EnqueueRange(Arg.Any<IEnumerable<DownloadItem>>());
     }
 }

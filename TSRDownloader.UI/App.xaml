@@ -1,6 +1,7 @@
 <Application x:Class="TSRDownloader.UI.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              ThemeMode="Light">
     <Application.Resources>
         <ResourceDictionary>
@@ -8,6 +9,15 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Themes/Light.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Glyph from the Windows icon font (Fluent on Windows 11, MDL2 on Windows 10) -->
+            <Style x:Key="ToolbarIcon" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Foreground" Value="{DynamicResource App.Accent}"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="0,0,6,0"/>
+            </Style>
 
             <!-- Toolbar button: outlined and quiet like the app's panels; blue only on hover,
                  matching the hover treatment of the settings combo boxes. -->
@@ -47,13 +57,50 @@
                 </Setter>
             </Style>
 
-            <!-- Glyph from the Windows icon font (Fluent on Windows 11, MDL2 on Windows 10) -->
-            <Style x:Key="ToolbarIcon" TargetType="TextBlock">
-                <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+            <!-- Status pill that toggles its state: green with a pause glyph while active
+                 (Tag = true), orange with a play glyph while paused. Outlined in blue on hover
+                 like the toolbar buttons. -->
+            <Style x:Key="StatusToggleStyle" TargetType="Button">
+                <Setter Property="Background" Value="{DynamicResource App.WarningSurface}"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
                 <Setter Property="FontSize" Value="12"/>
-                <Setter Property="Foreground" Value="{DynamicResource App.Accent}"/>
-                <Setter Property="VerticalAlignment" Value="Center"/>
-                <Setter Property="Margin" Value="0,0,6,0"/>
+                <Setter Property="Padding" Value="8,4"/>
+                <Setter Property="Margin" Value="6,0,0,0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="1" CornerRadius="4"
+                                    Padding="{TemplateBinding Padding}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="Glyph" Text="&#xE768;"
+                                               Style="{StaticResource ToolbarIcon}"
+                                               Foreground="{DynamicResource App.Text}"/>
+                                    <ContentPresenter VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="Tag">
+                                    <Trigger.Value>
+                                        <sys:Boolean>True</sys:Boolean>
+                                    </Trigger.Value>
+                                    <Setter Property="Background" Value="{DynamicResource App.SuccessSurface}"/>
+                                    <Setter TargetName="Glyph" Property="Text" Value="&#xE769;"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.8"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
         </ResourceDictionary>
     </Application.Resources>

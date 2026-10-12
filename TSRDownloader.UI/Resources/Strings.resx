@@ -77,7 +77,7 @@
     <value>About TSR Downloader</value>
   </data>
   <data name="Main_Status_Monitoring" xml:space="preserve">
-    <value>Clipboard: ✅ Monitoring active</value>
+    <value>Clipboard: watching</value>
   </data>
   <data name="Column_Status" xml:space="preserve">
     <value>Status</value>
@@ -271,16 +271,7 @@
     <value>TSR requires a short wait after a download is requested. Increase it if downloads fail.</value>
   </data>
   <data name="Main_Status_Paused" xml:space="preserve">
-    <value>Clipboard: ⏸ Monitoring paused</value>
-  </data>
-  <data name="Toolbar_Pause" xml:space="preserve">
-    <value>Pause</value>
-  </data>
-  <data name="Toolbar_Resume" xml:space="preserve">
-    <value>Resume</value>
-  </data>
-  <data name="Toolbar_PauseHint" xml:space="preserve">
-    <value>Pauses clipboard monitoring and all running downloads</value>
+    <value>Clipboard: paused</value>
   </data>
   <data name="Toolbar_ClearFinished" xml:space="preserve">
     <value>Clear finished</value>
@@ -307,7 +298,7 @@
     <value>Please enter a complete folder path, e.g. C:\Users\Name\Downloads\TSR.</value>
   </data>
   <data name="Main_EmptyHint" xml:space="preserve">
-    <value>Copy a link from thesimsresource.com — it will be downloaded automatically.</value>
+    <value>Copy a link from thesimsresource.com — it will be downloaded automatically. You can also paste links here with Ctrl+V or drag them in.</value>
   </data>
   <data name="Toolbar_RetryFailed" xml:space="preserve">
     <value>Retry failed</value>
@@ -320,5 +311,17 @@
   </data>
   <data name="Settings_Theme_Dark" xml:space="preserve">
     <value>Dark</value>
+  </data>
+  <data name="Main_Status_Downloading" xml:space="preserve">
+    <value>Downloads: running</value>
+  </data>
+  <data name="Main_Status_DownloadsPaused" xml:space="preserve">
+    <value>Downloads: paused</value>
+  </data>
+  <data name="Toolbar_ClipboardHint" xml:space="preserve">
+    <value>Copied TSR links are added to the list. Click to pause or resume.</value>
+  </data>
+  <data name="Toolbar_DownloadsHint" xml:space="preserve">
+    <value>Pauses or resumes all downloads. Links are still added to the list while paused.</value>
   </data>
 </root>

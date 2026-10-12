@@ -76,6 +76,10 @@ public class ClipboardHookService : IDisposable
 
     private void OnClipboardUpdate()
     {
+        // Ignored while paused, so copying the same link again after resuming still counts.
+        if (!_mainViewModel.IsMonitoring)
+            return;
+
         string? clipboardText = TryReadClipboardText();
         if (clipboardText is null)
         {

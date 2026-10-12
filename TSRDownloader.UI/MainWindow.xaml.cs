@@ -47,6 +47,19 @@ public partial class MainWindow : Window
         _clipboardHook.Dispose();
     }
 
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = e.Data.GetDataPresent(DataFormats.UnicodeText) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    /// <summary>Links dragged in from a browser or text editor are added like pasted ones.</summary>
+    private void OnDrop(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetData(DataFormats.UnicodeText) is string text)
+            _viewModel.AddLinks(text);
+    }
+
     private void OnAboutClick(object sender, RoutedEventArgs e)
     {
         LocalizationManager loc = LocalizationManager.Instance;

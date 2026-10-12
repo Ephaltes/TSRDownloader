@@ -77,7 +77,7 @@
     <value>Über TSR Downloader</value>
   </data>
   <data name="Main_Status_Monitoring" xml:space="preserve">
-    <value>Zwischenablage: ✅ Überwachung aktiv</value>
+    <value>Zwischenablage: aktiv</value>
   </data>
   <data name="Column_Status" xml:space="preserve">
     <value>Status</value>
@@ -271,16 +271,7 @@
     <value>TSR verlangt nach dem Anfordern eines Downloads eine kurze Wartezeit. Erhöhe sie, wenn Downloads fehlschlagen.</value>
   </data>
   <data name="Main_Status_Paused" xml:space="preserve">
-    <value>Zwischenablage: ⏸ Überwachung pausiert</value>
-  </data>
-  <data name="Toolbar_Pause" xml:space="preserve">
-    <value>Pausieren</value>
-  </data>
-  <data name="Toolbar_Resume" xml:space="preserve">
-    <value>Fortsetzen</value>
-  </data>
-  <data name="Toolbar_PauseHint" xml:space="preserve">
-    <value>Pausiert die Überwachung der Zwischenablage und alle laufenden Downloads</value>
+    <value>Zwischenablage: pausiert</value>
   </data>
   <data name="Toolbar_ClearFinished" xml:space="preserve">
     <value>Fertige entfernen</value>
@@ -307,7 +298,7 @@
     <value>Bitte einen vollständigen Ordnerpfad angeben, z. B. C:\Users\Name\Downloads\TSR.</value>
   </data>
   <data name="Main_EmptyHint" xml:space="preserve">
-    <value>Kopiere einen Link von thesimsresource.com – er wird automatisch heruntergeladen.</value>
+    <value>Kopiere einen Link von thesimsresource.com – er wird automatisch heruntergeladen. Du kannst Links auch mit Strg+V hier einfügen oder hineinziehen.</value>
   </data>
   <data name="Toolbar_RetryFailed" xml:space="preserve">
     <value>Fehlgeschlagene wiederholen</value>
@@ -320,5 +311,17 @@
   </data>
   <data name="Settings_Theme_Dark" xml:space="preserve">
     <value>Dunkel</value>
+  </data>
+  <data name="Main_Status_Downloading" xml:space="preserve">
+    <value>Downloads: laufen</value>
+  </data>
+  <data name="Main_Status_DownloadsPaused" xml:space="preserve">
+    <value>Downloads: pausiert</value>
+  </data>
+  <data name="Toolbar_ClipboardHint" xml:space="preserve">
+    <value>Kopierte TSR-Links werden zur Liste hinzugefügt. Klicken zum Pausieren oder Fortsetzen.</value>
+  </data>
+  <data name="Toolbar_DownloadsHint" xml:space="preserve">
+    <value>Pausiert alle Downloads oder setzt sie fort. Links werden auch während der Pause zur Liste hinzugefügt.</value>
   </data>
 </root>

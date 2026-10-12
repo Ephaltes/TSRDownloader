@@ -12,22 +12,29 @@
         Title="TSR Downloader"
         Height="550" Width="960"
         MinHeight="400" MinWidth="860"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        AllowDrop="True" DragOver="OnDragOver" Drop="OnDrop">
 
     <Window.Resources>
         <conv:ColumnWidthToCellWidthConverter x:Key="ColumnWidthToCellWidthConverter"/>
     </Window.Resources>
 
+    <!-- Ctrl+V adds the links on the clipboard; a focused text box handles its own paste first. -->
+    <Window.InputBindings>
+        <KeyBinding Key="V" Modifiers="Control" Command="{Binding PasteLinksCommand}"/>
+    </Window.InputBindings>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Row 0: Menu bar -->
-        <DockPanel Grid.Row="0" Margin="0,0,0,10">
+        <!-- Row 0: Menu bar and the two status toggles -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,8">
             <Menu DockPanel.Dock="Left" Background="Transparent" FontSize="13"
                   VerticalAlignment="Center">
                 <MenuItem Header="{loc:Loc Menu_File}">
@@ -41,67 +48,49 @@
                 </MenuItem>
             </Menu>
 
-            <!-- Monitoring Status Indicator -->
-            <Border DockPanel.Dock="Right" CornerRadius="4" Padding="8,4"
-                    HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Setter Property="Background" Value="{DynamicResource App.SuccessSurface}"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsMonitoring}" Value="False">
-                                <Setter Property="Background" Value="{DynamicResource App.WarningSurface}"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-                <TextBlock FontSize="12">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Text" Value="{loc:Loc Main_Status_Monitoring}"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsMonitoring}" Value="False">
-                                    <Setter Property="Text" Value="{loc:Loc Main_Status_Paused}"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </Border>
-
-            <!-- Toolbar: quiet outlined buttons sized like the status pill next to them -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
-                        VerticalAlignment="Center" Margin="0,0,8,0">
-                <Button Command="{Binding ToggleMonitoringCommand}"
-                        ToolTip="{loc:Loc Toolbar_PauseHint}"
-                        Style="{StaticResource ToolbarButtonStyle}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock>
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock" BasedOn="{StaticResource ToolbarIcon}">
-                                    <Setter Property="Text" Value="&#xE769;"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsMonitoring}" Value="False">
-                                            <Setter Property="Text" Value="&#xE768;"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <TextBlock>
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Text" Value="{loc:Loc Toolbar_Pause}"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsMonitoring}" Value="False">
-                                            <Setter Property="Text" Value="{loc:Loc Toolbar_Resume}"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
+            <!-- Each pill shows a state and toggles it: clipboard watching, and downloading.
+                 Pausing downloads keeps adding copied links to the list. -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Command="{Binding ToggleClipboardCommand}" Tag="{Binding IsMonitoring}"
+                        ToolTip="{loc:Loc Toolbar_ClipboardHint}"
+                        Style="{StaticResource StatusToggleStyle}">
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="{loc:Loc Main_Status_Monitoring}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsMonitoring}" Value="False">
+                                        <Setter Property="Text" Value="{loc:Loc Main_Status_Paused}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </Button>
-                <Button Command="{Binding RetryFailedCommand}" Style="{StaticResource ToolbarButtonStyle}">
+                <Button Command="{Binding ToggleDownloadsCommand}" Tag="{Binding IsDownloading}"
+                        ToolTip="{loc:Loc Toolbar_DownloadsHint}"
+                        Style="{StaticResource StatusToggleStyle}">
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="{loc:Loc Main_Status_Downloading}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsDownloading}" Value="False">
+                                        <Setter Property="Text" Value="{loc:Loc Main_Status_DownloadsPaused}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Row 1: Toolbar (actions on the list) -->
+        <DockPanel Grid.Row="1" Margin="0,0,0,8" LastChildFill="False">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Command="{Binding RetryFailedCommand}" Style="{StaticResource ToolbarButtonStyle}"
+                        Margin="0">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE72C;" Style="{StaticResource ToolbarIcon}"/>
                         <TextBlock Text="{loc:Loc Toolbar_RetryFailed}"/>
@@ -122,8 +111,8 @@
             </StackPanel>
         </DockPanel>
 
-        <!-- Row 1: Download List with resizable columns -->
-        <Border Grid.Row="1" BorderBrush="{DynamicResource App.Border}" BorderThickness="1"
+        <!-- Row 2: Download List with resizable columns -->
+        <Border Grid.Row="2" BorderBrush="{DynamicResource App.Border}" BorderThickness="1"
                 CornerRadius="6">
             <Grid>
             <ListView ItemsSource="{Binding DownloadItems}"
@@ -319,8 +308,8 @@
             </Grid>
         </Border>
 
-        <!-- Row 2: Overall Progress -->
-        <Border Grid.Row="2" Margin="0,10,0,0" Padding="10,8"
+        <!-- Row 3: Overall Progress -->
+        <Border Grid.Row="3" Margin="0,10,0,0" Padding="10,8"
                 Background="{DynamicResource App.Surface}" BorderBrush="{DynamicResource App.Border}"
                 BorderThickness="1" CornerRadius="6">
             <Grid>
@@ -351,8 +340,8 @@
             </Grid>
         </Border>
 
-        <!-- Row 3: Status Bar -->
-        <Border Grid.Row="3" Margin="0,8,0,0" Padding="10,4"
+        <!-- Row 4: Status Bar -->
+        <Border Grid.Row="4" Margin="0,8,0,0" Padding="10,4"
                 Background="{DynamicResource App.SurfaceAlt}" CornerRadius="4">
             <DockPanel>
             <TextBlock DockPanel.Dock="Right" Text="{Binding VersionText}"

@@ -31,8 +31,13 @@ public partial class MainViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(RetryCommand), nameof(RemoveCommand), nameof(ShowInFolderCommand))]
     private DownloadItemViewModel? _selectedItem;
 
+    /// <summary>Whether copied TSR links are picked up from the clipboard.</summary>
     [ObservableProperty]
     private bool _isMonitoring;
+
+    /// <summary>Whether queued items are downloaded (false while the user paused downloads).</summary>
+    [ObservableProperty]
+    private bool _isDownloading;
 
     [ObservableProperty]
     private int _totalCount;
@@ -107,19 +112,39 @@ public partial class MainViewModel : ObservableObject
     {
         if (!IsMonitoring) return;
 
-        List<DownloadItem> newItems = _clipboardService.ProcessClipboardContent(clipboardText);
-        if (newItems.Count == 0) return;
+        int added = AddLinks(clipboardText);
+        if (added == 0 || !_configService.Config.NotifyOnLinkFound) return;
+
+        string message = added == 1
+            ? _localization.Get("Notify_LinkFound_One")
+            : _localization.Format("Notify_LinkFound_Many", added);
+        _notificationService.Notify(_localization.Get("App_Name"), message);
+    }
+
+    /// <summary>
+    /// Queues the new TSR links found in <paramref name="text"/> (pasted or dropped by the user,
+    /// or copied to the clipboard). Works while clipboard watching is paused.
+    /// Returns how many links were added.
+    /// </summary>
+    public int AddLinks(string text)
+    {
+        List<DownloadItem> newItems = _clipboardService.ProcessClipboardContent(text);
+        if (newItems.Count == 0) return 0;
 
         AddToList(newItems);
         _downloadService.EnqueueRange(newItems);
+        return newItems.Count;
+    }
 
-        if (_configService.Config.NotifyOnLinkFound)
-        {
-            string message = newItems.Count == 1
-                ? _localization.Get("Notify_LinkFound_One")
-                : _localization.Format("Notify_LinkFound_Many", newItems.Count);
-            _notificationService.Notify(_localization.Get("App_Name"), message);
-        }
+    /// <summary>Adds the links currently on the clipboard (Ctrl+V).</summary>
+    [RelayCommand]
+    private void PasteLinks()
+    {
+        string text;
+        try { text = Clipboard.GetText(); }
+        catch (System.Runtime.InteropServices.ExternalException) { return; } // clipboard held by another app
+
+        AddLinks(text);
     }
 
     /// <summary>
@@ -151,28 +176,46 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>Starts watching the clipboard and downloading (on startup).</summary>
     [RelayCommand]
     private void StartMonitoring()
     {
         IsMonitoring = true;
-        _downloadService.Start();
+        StartDownloads();
     }
 
+    /// <summary>Stops watching the clipboard and downloading (on shutdown).</summary>
     [RelayCommand]
     private void StopMonitoring()
     {
         IsMonitoring = false;
-        _downloadService.Stop();
+        StopDownloads();
     }
 
-    /// <summary>Pauses (stops monitoring and downloads) or resumes.</summary>
+    /// <summary>Pauses or resumes picking up links from the clipboard; downloads are unaffected.</summary>
     [RelayCommand]
-    private void ToggleMonitoring()
+    private void ToggleClipboard() => IsMonitoring = !IsMonitoring;
+
+    /// <summary>Pauses or resumes all downloads; new links are still added to the list.</summary>
+    [RelayCommand]
+    private void ToggleDownloads()
     {
-        if (IsMonitoring)
-            StopMonitoring();
+        if (IsDownloading)
+            StopDownloads();
         else
-            StartMonitoring();
+            StartDownloads();
+    }
+
+    private void StartDownloads()
+    {
+        IsDownloading = true;
+        _downloadService.Start();
+    }
+
+    private void StopDownloads()
+    {
+        IsDownloading = false;
+        _downloadService.Stop();
     }
 
     // Closing the main window (rather than Application.Shutdown) lets it ask for confirmation.

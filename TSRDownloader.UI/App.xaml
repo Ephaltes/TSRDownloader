@@ -102,6 +102,157 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <!-- Combo boxes: rounded like the settings text boxes; a toolbar combo overrides
+                 ComboCornerRadius in its own resources to match the toolbar buttons. -->
+            <CornerRadius x:Key="ComboCornerRadius">6</CornerRadius>
+
+            <!-- Dropdown item: rounded with the app's hover/selection blues -->
+            <Style x:Key="RoundedComboBoxItem" TargetType="ComboBoxItem">
+                <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Padding" Value="10,7"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBoxItem">
+                            <Border x:Name="ItemBd" Background="Transparent"
+                                    CornerRadius="4" Margin="4,2"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource App.AccentHover}"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource App.AccentPressed}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+    
+            <!-- Rounded combo box matching the app's text boxes and panel styling -->
+            <Style x:Key="RoundedComboBox" TargetType="ComboBox">
+                <Setter Property="Background" Value="{DynamicResource App.Surface}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource App.InputBorder}"/>
+                <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="ItemContainerStyle" Value="{StaticResource RoundedComboBoxItem}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBox">
+                            <Grid>
+                                <ToggleButton Name="ToggleButton" Focusable="False" ClickMode="Press"
+                                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                              Background="{TemplateBinding Background}"
+                                              BorderBrush="{TemplateBinding BorderBrush}"
+                                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border x:Name="Bd" CornerRadius="{DynamicResource ComboCornerRadius}"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                                                <Path x:Name="Arrow" HorizontalAlignment="Right"
+                                                      VerticalAlignment="Center" Margin="0,0,12,0"
+                                                      Fill="{DynamicResource App.TextMuted}" Data="M 0 0 L 4 4 L 8 0 Z"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                                    <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource App.Accent}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
+    
+                                <ContentPresenter Name="ContentSite" IsHitTestVisible="False"
+                                                  Content="{TemplateBinding SelectionBoxItem}"
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                  Margin="10,0,28,0"
+                                                  VerticalAlignment="Center" HorizontalAlignment="Left"/>
+    
+                                <Popup Name="Popup" Placement="Bottom" Focusable="False"
+                                       IsOpen="{TemplateBinding IsDropDownOpen}"
+                                       AllowsTransparency="True" PopupAnimation="Slide">
+                                    <Border x:Name="DropDownBorder"
+                                            MinWidth="{TemplateBinding ActualWidth}"
+                                            MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                            Margin="0,4,0,0"
+                                            Background="{DynamicResource App.Control}" BorderBrush="{DynamicResource App.Border}"
+                                            BorderThickness="1" CornerRadius="6"
+                                            SnapsToDevicePixels="True">
+                                        <ScrollViewer SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True"
+                                                        KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Compact combo box sized and coloured like the toolbar buttons -->
+            <Style x:Key="ToolbarComboBox" TargetType="ComboBox" BasedOn="{StaticResource RoundedComboBox}">
+                <Setter Property="Background" Value="{DynamicResource App.Control}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource App.Border}"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Height" Value="26"/>
+            </Style>
+
+            <!-- Search box sized and coloured like the toolbar buttons, with a search glyph and
+                 its placeholder text in Tag -->
+            <Style x:Key="SearchTextBox" TargetType="TextBox">
+                <Setter Property="Background" Value="{DynamicResource App.Control}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource App.Border}"/>
+                <Setter Property="Foreground" Value="{DynamicResource App.Text}"/>
+                <Setter Property="CaretBrush" Value="{DynamicResource App.Text}"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Height" Value="26"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border x:Name="Bd" CornerRadius="4" BorderThickness="1"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                <Grid>
+                                    <TextBlock Text="&#xE721;" Style="{StaticResource ToolbarIcon}"
+                                               Foreground="{DynamicResource App.TextMuted}"
+                                               Margin="8,0,0,0" HorizontalAlignment="Left"/>
+                                    <TextBlock x:Name="Placeholder" Text="{TemplateBinding Tag}"
+                                               Foreground="{DynamicResource App.TextMuted}"
+                                               Margin="28,0,8,0" VerticalAlignment="Center"
+                                               IsHitTestVisible="False" Visibility="Collapsed"/>
+                                    <ScrollViewer x:Name="PART_ContentHost" Margin="24,0,6,0"
+                                                  VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="Text" Value="">
+                                    <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource App.Accent}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -357,4 +357,22 @@
   <data name="Notify_QueueFinishedWithErrors" xml:space="preserve">
     <value>All downloads finished: {0} completed, {1} failed</value>
   </data>
+  <data name="Toolbar_Search" xml:space="preserve">
+    <value>Search…</value>
+  </data>
+  <data name="Toolbar_SortHint" xml:space="preserve">
+    <value>Order of the list</value>
+  </data>
+  <data name="Sort_OldestFirst" xml:space="preserve">
+    <value>Oldest first</value>
+  </data>
+  <data name="Sort_NewestFirst" xml:space="preserve">
+    <value>Newest first</value>
+  </data>
+  <data name="Sort_Status" xml:space="preserve">
+    <value>By status</value>
+  </data>
+  <data name="Sort_Name" xml:space="preserve">
+    <value>By name</value>
+  </data>
 </root>

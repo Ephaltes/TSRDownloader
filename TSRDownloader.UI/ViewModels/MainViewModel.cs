@@ -23,6 +23,7 @@ public partial class MainViewModel : ObservableObject
     private readonly LocalizationManager _localization;
     private readonly IUiDispatcher _dispatcher;
     private readonly Dictionary<int, DownloadItemViewModel> _vmLookup = [];
+    private int _nextSequence;
 
     [ObservableProperty]
     private ObservableCollection<DownloadItemViewModel> _downloadItems = [];
@@ -93,6 +94,18 @@ public partial class MainViewModel : ObservableObject
         _dispatcher = dispatcher;
         VersionText = FormatVersionText();
 
+        DownloadItemsView = new ListCollectionView(DownloadItems)
+        {
+            Filter = MatchesSearch,
+            IsLiveSorting = true,
+            IsLiveFiltering = true
+        };
+        DownloadItemsView.LiveSortingProperties.Add(nameof(DownloadItemViewModel.StatusSortOrder));
+        DownloadItemsView.LiveSortingProperties.Add(nameof(DownloadItemViewModel.FileName));
+        DownloadItemsView.LiveFilteringProperties.Add(nameof(DownloadItemViewModel.FileName));
+        SortOptions = BuildSortOptions();
+        SelectedSort = SortOptions[0];
+
         _downloadService.ItemChanged += OnItemChanged;
         _downloadService.QueueStatsChanged += OnQueueStatsChanged;
         _extractionService.ItemChanged += OnItemChanged;
@@ -108,7 +121,70 @@ public partial class MainViewModel : ObservableObject
             foreach (DownloadItemViewModel vm in DownloadItems)
                 vm.UpdateFromModel();
             VersionText = FormatVersionText();
+
+            ListSort current = SelectedSort.Sort;
+            SortOptions = BuildSortOptions();
+            SelectedSort = SortOptions.First(option => option.Sort == current);
         });
+    }
+
+    /// <summary>The list as shown: filtered by <see cref="SearchText"/>, ordered by <see cref="SelectedSort"/>.</summary>
+    public ListCollectionView DownloadItemsView { get; }
+
+    /// <summary>Shows only items whose file name, link or id contains this text.</summary>
+    [ObservableProperty]
+    private string _searchText = string.Empty;
+
+    [ObservableProperty]
+    private IReadOnlyList<SortOption> _sortOptions = [];
+
+    [ObservableProperty]
+    private SortOption _selectedSort = null!;
+
+    private IReadOnlyList<SortOption> BuildSortOptions() =>
+    [
+        new(ListSort.OldestFirst, _localization.Get("Sort_OldestFirst")),
+        new(ListSort.NewestFirst, _localization.Get("Sort_NewestFirst")),
+        new(ListSort.Status, _localization.Get("Sort_Status")),
+        new(ListSort.Name, _localization.Get("Sort_Name")),
+    ];
+
+    partial void OnSearchTextChanged(string value) => DownloadItemsView.Refresh();
+
+    partial void OnSelectedSortChanged(SortOption value)
+    {
+        SortDescriptionCollection sorting = DownloadItemsView.SortDescriptions;
+        using (DownloadItemsView.DeferRefresh())
+        {
+            sorting.Clear();
+            // Oldest first is the list's own order, so it needs no sort description.
+            switch (value.Sort)
+            {
+                case ListSort.NewestFirst:
+                    sorting.Add(new SortDescription(nameof(DownloadItemViewModel.Sequence), ListSortDirection.Descending));
+                    break;
+                case ListSort.Status:
+                    sorting.Add(new SortDescription(nameof(DownloadItemViewModel.StatusSortOrder), ListSortDirection.Ascending));
+                    sorting.Add(new SortDescription(nameof(DownloadItemViewModel.Sequence), ListSortDirection.Ascending));
+                    break;
+                case ListSort.Name:
+                    sorting.Add(new SortDescription(nameof(DownloadItemViewModel.FileName), ListSortDirection.Ascending));
+                    sorting.Add(new SortDescription(nameof(DownloadItemViewModel.Sequence), ListSortDirection.Ascending));
+                    break;
+            }
+        }
+    }
+
+    private bool MatchesSearch(object item)
+    {
+        string term = SearchText.Trim();
+        if (term.Length == 0)
+            return true;
+
+        DownloadItemViewModel vm = (DownloadItemViewModel)item;
+        return (vm.Model.FileName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+               || vm.Url.Contains(term, StringComparison.OrdinalIgnoreCase)
+               || vm.ItemId.ToString(CultureInfo.InvariantCulture).Contains(term, StringComparison.Ordinal);
     }
 
     private string FormatVersionText() => _updateService.IsInstalled
@@ -181,7 +257,7 @@ public partial class MainViewModel : ObservableObject
     {
         foreach (DownloadItem item in items)
         {
-            DownloadItemViewModel vm = new(item, _notificationService);
+            DownloadItemViewModel vm = new(item, _notificationService) { Sequence = _nextSequence++ };
             _vmLookup[item.ItemId] = vm;
             DownloadItems.Add(vm);
         }

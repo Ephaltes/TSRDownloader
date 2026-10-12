@@ -116,6 +116,56 @@ public class MainViewModelTests
         notifications.Received(1).Notify(Arg.Any<string>(), Arg.Any<string>());
     }
 
+    private static MainViewModel VmWithFiles()
+    {
+        MainViewModel vm = NewVm(Substitute.For<IDownloadService>(), Substitute.For<IClipboardService>(),
+            Substitute.For<IConfigService>());
+        vm.RestoreDownloads(
+        [
+            new() { ItemId = 11, FileName = "Bravo.zip", Url = "https://www.thesimsresource.com/id/11", Status = DownloadStatus.Completed },
+            new() { ItemId = 22, FileName = "Alpha.zip", Url = "https://www.thesimsresource.com/id/22", Status = DownloadStatus.Failed },
+            new() { ItemId = 33, FileName = "Charlie.package", Url = "https://www.thesimsresource.com/id/33", Status = DownloadStatus.Queued },
+        ]);
+        return vm;
+    }
+
+    private static int[] ShownIds(MainViewModel vm) =>
+        vm.DownloadItemsView.Cast<DownloadItemViewModel>().Select(item => item.ItemId).ToArray();
+
+    [Theory]
+    [InlineData("alpha", new[] { 22 })]
+    [InlineData(".zip", new[] { 11, 22 })]
+    [InlineData("33", new[] { 33 })]
+    [InlineData("  ", new[] { 11, 22, 33 })]
+    public void SearchText_Should_FilterByNameLinkOrId_When_Set(string search, int[] expected)
+    {
+        // Arrange
+        MainViewModel vm = VmWithFiles();
+
+        // Act
+        vm.SearchText = search;
+
+        // Assert
+        ShownIds(vm).ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData(ListSort.OldestFirst, new[] { 11, 22, 33 })]
+    [InlineData(ListSort.NewestFirst, new[] { 33, 22, 11 })]
+    [InlineData(ListSort.Status, new[] { 22, 33, 11 })]
+    [InlineData(ListSort.Name, new[] { 22, 11, 33 })]
+    public void SelectedSort_Should_OrderTheList_When_Changed(ListSort sort, int[] expected)
+    {
+        // Arrange
+        MainViewModel vm = VmWithFiles();
+
+        // Act
+        vm.SelectedSort = vm.SortOptions.Single(option => option.Sort == sort);
+
+        // Assert
+        ShownIds(vm).ShouldBe(expected);
+    }
+
     [Fact]
     public void QueueStatsChanged_Should_NotNotify_When_OnlyFinishedHistoryIsRestored()
     {

@@ -109,6 +109,25 @@
                     </StackPanel>
                 </Button>
             </StackPanel>
+
+            <!-- Filter and order of the list -->
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Tag="{loc:Loc Toolbar_Search}" Width="200"
+                         Style="{StaticResource SearchTextBox}"/>
+                <ComboBox ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}"
+                          ToolTip="{loc:Loc Toolbar_SortHint}" Width="140" Margin="6,0,0,0"
+                          Style="{StaticResource ToolbarComboBox}">
+                    <ComboBox.Resources>
+                        <CornerRadius x:Key="ComboCornerRadius">4</CornerRadius>
+                    </ComboBox.Resources>
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
         </DockPanel>
 
         <!-- Row 2: Download List with resizable columns -->
@@ -116,7 +135,7 @@
                 CornerRadius="6">
             <Grid>
             <ListView x:Name="DownloadList"
-                      ItemsSource="{Binding DownloadItems}"
+                      ItemsSource="{Binding DownloadItemsView}"
                       SelectionChanged="OnSelectionChanged"
                       BorderThickness="0" Background="{DynamicResource App.WindowBackground}"
                       behaviors:GridViewColumnSizing.Fill="True"

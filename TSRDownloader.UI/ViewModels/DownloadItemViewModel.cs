@@ -133,7 +133,21 @@ public partial class DownloadItemViewModel : ObservableObject
     {
         SyncFromModel();
         OnPropertyChanged(nameof(FileName));
+        OnPropertyChanged(nameof(StatusSortOrder));
     }
+
+    /// <summary>Order in which the item was added to the list; set by the main view model.</summary>
+    public int Sequence { get; init; }
+
+    /// <summary>Sort key for "by status": running first, then failed, waiting and finished.</summary>
+    public int StatusSortOrder => _model.Status switch
+    {
+        DownloadStatus.Downloading => 0,
+        DownloadStatus.Extracting or DownloadStatus.WaitingToExtract => 1,
+        DownloadStatus.Failed or DownloadStatus.ExtractionFailed => 2,
+        DownloadStatus.Queued => 3,
+        _ => 4
+    };
 
     [RelayCommand]
     private void CopyUrlToClipboard()

@@ -339,4 +339,13 @@
   <data name="Progress_TransferNoTotal" xml:space="preserve">
     <value>{0} · {1}/s</value>
   </data>
+  <data name="Context_Open" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="Context_OpenOnTsr" xml:space="preserve">
+    <value>Auf TSR öffnen</value>
+  </data>
+  <data name="Notify_UrlsCopied" xml:space="preserve">
+    <value>{0} URLs kopiert</value>
+  </data>
 </root>

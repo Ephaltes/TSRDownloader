@@ -164,7 +164,7 @@ public class MainViewModelTests
         download.Remove(Arg.Any<DownloadItem>()).Returns(true);
         IClipboardService clipboard = Substitute.For<IClipboardService>();
         MainViewModel vm = VmWithItems(download, clipboard, new DownloadItem { ItemId = 7, Status = DownloadStatus.Failed });
-        vm.SelectedItem = vm.DownloadItems[0];
+        vm.SetSelection([vm.DownloadItems[0]]);
 
         // Act
         vm.RemoveCommand.Execute(null);
@@ -186,7 +186,7 @@ public class MainViewModelTests
             new DownloadItem { ItemId = 1, Status = status });
 
         // Act
-        vm.SelectedItem = vm.DownloadItems[0];
+        vm.SetSelection([vm.DownloadItems[0]]);
 
         // Assert
         vm.RemoveCommand.CanExecute(null).ShouldBe(expected);
@@ -199,7 +199,7 @@ public class MainViewModelTests
         IDownloadService download = Substitute.For<IDownloadService>();
         MainViewModel vm = VmWithItems(download, Substitute.For<IClipboardService>(),
             new DownloadItem { ItemId = 1, Status = DownloadStatus.Failed });
-        vm.SelectedItem = vm.DownloadItems[0];
+        vm.SetSelection([vm.DownloadItems[0]]);
 
         // Act
         bool canRetry = vm.RetryCommand.CanExecute(null);
@@ -208,6 +208,62 @@ public class MainViewModelTests
         // Assert
         canRetry.ShouldBeTrue();
         download.Received(1).Retry(vm.DownloadItems[0].Model);
+    }
+
+    [Fact]
+    public void RemoveCommand_Should_RemoveEverySelectedRemovableItem_When_SeveralSelected()
+    {
+        // Arrange
+        IDownloadService download = Substitute.For<IDownloadService>();
+        download.Remove(Arg.Any<DownloadItem>()).Returns(true);
+        MainViewModel vm = VmWithItems(download, Substitute.For<IClipboardService>(),
+            new DownloadItem { ItemId = 1, Status = DownloadStatus.Failed },
+            new DownloadItem { ItemId = 2, Status = DownloadStatus.Extracting },
+            new DownloadItem { ItemId = 3, Status = DownloadStatus.Completed },
+            new DownloadItem { ItemId = 4, Status = DownloadStatus.Queued });
+        vm.SetSelection(vm.DownloadItems.Take(3));
+
+        // Act
+        vm.RemoveCommand.Execute(null);
+
+        // Assert
+        vm.DownloadItems.Select(item => item.ItemId).ShouldBe(new[] { 2, 4 });
+        vm.SelectedItems.Select(item => item.ItemId).ShouldBe(new[] { 2 });
+    }
+
+    [Fact]
+    public void RetryCommand_Should_RetryOnlyFailedSelectedItems_When_SeveralSelected()
+    {
+        // Arrange
+        IDownloadService download = Substitute.For<IDownloadService>();
+        MainViewModel vm = VmWithItems(download, Substitute.For<IClipboardService>(),
+            new DownloadItem { ItemId = 1, Status = DownloadStatus.Failed },
+            new DownloadItem { ItemId = 2, Status = DownloadStatus.Completed },
+            new DownloadItem { ItemId = 3, Status = DownloadStatus.ExtractionFailed });
+        vm.SetSelection(vm.DownloadItems);
+
+        // Act
+        vm.RetryCommand.Execute(null);
+
+        // Assert
+        download.Received(1).Retry(vm.DownloadItems[0].Model);
+        download.Received(1).Retry(vm.DownloadItems[2].Model);
+        download.DidNotReceive().Retry(vm.DownloadItems[1].Model);
+    }
+
+    [Theory]
+    [InlineData("https://www.thesimsresource.com/downloads/details/id/42/", "https://www.thesimsresource.com/downloads/details/id/42/")]
+    [InlineData("http://thesimsresource.com/downloads/42", "http://thesimsresource.com/downloads/42")]
+    [InlineData("file://C:/evil.exe?thesimsresource.com/downloads/42", "https://www.thesimsresource.com/downloads/42")]
+    [InlineData("https://evil.example/thesimsresource.com/downloads/42", "https://www.thesimsresource.com/downloads/42")]
+    [InlineData("thesimsresource.com/downloads/42", "https://www.thesimsresource.com/downloads/42")]
+    public void TsrPageUrl_Should_OnlyPassThroughHttpTsrLinks_When_Building(string copiedUrl, string expected)
+    {
+        // Act
+        string url = MainViewModel.TsrPageUrl(new DownloadItem { ItemId = 42, Url = copiedUrl });
+
+        // Assert
+        url.ShouldBe(expected);
     }
 
     [Fact]

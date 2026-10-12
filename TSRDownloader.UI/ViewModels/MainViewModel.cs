@@ -27,9 +27,8 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<DownloadItemViewModel> _downloadItems = [];
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(RetryCommand), nameof(RemoveCommand), nameof(ShowInFolderCommand))]
-    private DownloadItemViewModel? _selectedItem;
+    /// <summary>The selected rows; set by the view, since a ListView's SelectedItems cannot be bound.</summary>
+    public IReadOnlyList<DownloadItemViewModel> SelectedItems { get; private set; } = [];
 
     /// <summary>Whether copied TSR links are picked up from the clipboard.</summary>
     [ObservableProperty]
@@ -234,15 +233,39 @@ public partial class MainViewModel : ObservableObject
         _downloadService.SetMaxActiveDownloads(_configService.Config.MaxActiveDownloads);
     }
 
+    /// <summary>Called by the view whenever the selection changes.</summary>
+    public void SetSelection(IEnumerable<DownloadItemViewModel> selectedItems)
+    {
+        SelectedItems = selectedItems.ToList();
+        NotifySelectionCommandsChanged();
+    }
+
+    private void NotifySelectionCommandsChanged()
+    {
+        RetryCommand.NotifyCanExecuteChanged();
+        RemoveCommand.NotifyCanExecuteChanged();
+        ShowInFolderCommand.NotifyCanExecuteChanged();
+        OpenCommand.NotifyCanExecuteChanged();
+        OpenOnTsrCommand.NotifyCanExecuteChanged();
+        CopyUrlsCommand.NotifyCanExecuteChanged();
+    }
+
+    private static bool IsFailed(DownloadItemViewModel vm) =>
+        vm.Model.Status is DownloadStatus.Failed or DownloadStatus.ExtractionFailed;
+
+    // Items owned by the extraction queue cannot be removed until extraction has finished.
+    private static bool IsRemovable(DownloadItemViewModel vm) =>
+        vm.Model.Status is not (DownloadStatus.WaitingToExtract or DownloadStatus.Extracting);
+
+    /// <summary>Re-queues the selected failed items.</summary>
     [RelayCommand(CanExecute = nameof(CanRetry))]
     private void Retry()
     {
-        if (SelectedItem is not null)
-            _downloadService.Retry(SelectedItem.Model);
+        foreach (DownloadItemViewModel vm in SelectedItems.Where(IsFailed).ToList())
+            _downloadService.Retry(vm.Model);
     }
 
-    private bool CanRetry() =>
-        SelectedItem?.Model.Status is DownloadStatus.Failed or DownloadStatus.ExtractionFailed;
+    private bool CanRetry() => SelectedItems.Any(IsFailed);
 
     /// <summary>Re-queues every failed item.</summary>
     [RelayCommand(CanExecute = nameof(CanRetryFailed))]
@@ -255,16 +278,15 @@ public partial class MainViewModel : ObservableObject
 
     private bool CanRetryFailed() => FailedCount > 0;
 
+    /// <summary>Removes the selected items that are not being extracted.</summary>
     [RelayCommand(CanExecute = nameof(CanRemove))]
     private void Remove()
     {
-        if (SelectedItem is not null)
-            RemoveItem(SelectedItem);
+        foreach (DownloadItemViewModel vm in SelectedItems.Where(IsRemovable).ToList())
+            RemoveItem(vm);
     }
 
-    // Items owned by the extraction queue cannot be removed until extraction has finished.
-    private bool CanRemove() =>
-        SelectedItem?.Model.Status is not (null or DownloadStatus.WaitingToExtract or DownloadStatus.Extracting);
+    private bool CanRemove() => SelectedItems.Any(IsRemovable);
 
     /// <summary>Removes every successfully finished item from the list.</summary>
     [RelayCommand]
@@ -283,28 +305,116 @@ public partial class MainViewModel : ObservableObject
 
         DownloadItems.Remove(vm);
         _vmLookup.Remove(vm.ItemId);
+        SetSelection(SelectedItems.Where(selected => selected != vm));
         // Copying the link again should add it again.
         _clipboardService.Forget(vm.ItemId);
     }
 
+    /// <summary>The first selected item that has been downloaded (folder actions open one window only).</summary>
+    private DownloadItem? FirstDownloadedSelection =>
+        SelectedItems.Select(vm => vm.Model).FirstOrDefault(item => item.FilePath is not null);
+
+    private static string ExtractedFolder(string filePath) =>
+        Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, Path.GetFileNameWithoutExtension(filePath));
+
     [RelayCommand(CanExecute = nameof(CanShowInFolder))]
     private void ShowInFolder()
     {
-        string? filePath = SelectedItem?.Model.FilePath;
+        string? filePath = FirstDownloadedSelection?.FilePath;
         if (filePath is null)
             return;
 
         // After extraction the archive may be gone; select the extracted folder instead.
-        string directory = Path.GetDirectoryName(filePath) ?? string.Empty;
-        string extractedFolder = Path.Combine(directory, Path.GetFileNameWithoutExtension(filePath));
+        string extractedFolder = ExtractedFolder(filePath);
         string target = File.Exists(filePath) ? filePath
             : Directory.Exists(extractedFolder) ? extractedFolder
-            : directory;
+            : Path.GetDirectoryName(filePath) ?? string.Empty;
 
         StartExplorer($"/select,\"{target}\"");
     }
 
-    private bool CanShowInFolder() => SelectedItem?.Model.FilePath is not null;
+    private bool CanShowInFolder() => FirstDownloadedSelection is not null;
+
+    /// <summary>
+    /// Opens the extracted folder, or a .zip that was not extracted (Explorer shows its content).
+    /// Other downloaded files are never started from here.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanOpen))]
+    private void Open()
+    {
+        if (OpenTarget() is { } target)
+            StartExplorer($"\"{target}\"");
+    }
+
+    private bool CanOpen() => OpenTarget() is not null;
+
+    private string? OpenTarget()
+    {
+        string? filePath = FirstDownloadedSelection?.FilePath;
+        if (filePath is null)
+            return null;
+
+        string extractedFolder = ExtractedFolder(filePath);
+        if (Directory.Exists(extractedFolder))
+            return extractedFolder;
+        return File.Exists(filePath) && Path.GetExtension(filePath).Equals(".zip", StringComparison.OrdinalIgnoreCase)
+            ? filePath
+            : null;
+    }
+
+    /// <summary>Opens the TSR page of each selected item in the browser.</summary>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void OpenOnTsr()
+    {
+        foreach (DownloadItemViewModel vm in SelectedItems)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(TsrPageUrl(vm.Model)) { UseShellExecute = true });
+            }
+            catch (Exception)
+            {
+                // No browser registered — nothing sensible to do.
+            }
+        }
+    }
+
+    /// <summary>
+    /// The copied link if it is a real http(s) TSR address, otherwise a link built from the item id.
+    /// Never hands arbitrary clipboard text to the shell.
+    /// </summary>
+    public static string TsrPageUrl(DownloadItem item) =>
+        Uri.TryCreate(item.Url, UriKind.Absolute, out Uri? uri)
+        && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp)
+        && (uri.Host.Equals("thesimsresource.com", StringComparison.OrdinalIgnoreCase)
+            || uri.Host.EndsWith(".thesimsresource.com", StringComparison.OrdinalIgnoreCase))
+            ? uri.AbsoluteUri
+            : $"https://www.thesimsresource.com/downloads/{item.ItemId}";
+
+    /// <summary>Copies the links of the selected items, one per line.</summary>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void CopyUrls()
+    {
+        if (SelectedItems.Count == 1)
+        {
+            SelectedItems[0].CopyUrlToClipboardCommand.Execute(null);
+            return;
+        }
+
+        try
+        {
+            Clipboard.SetText(string.Join(Environment.NewLine, SelectedItems.Select(vm => vm.Url)));
+        }
+        catch (System.Runtime.InteropServices.ExternalException)
+        {
+            return; // another application holds the clipboard open
+        }
+
+        _notificationService.Notify(_localization.Get("App_Name"),
+            _localization.Format("Notify_UrlsCopied", SelectedItems.Count));
+    }
+
+    private bool HasSelection() => SelectedItems.Count > 0;
 
     [RelayCommand]
     private void OpenDownloadFolder()
@@ -336,12 +446,8 @@ public partial class MainViewModel : ObservableObject
                 return;
 
             vm.UpdateFromModel();
-            if (ReferenceEquals(vm, SelectedItem))
-            {
-                RetryCommand.NotifyCanExecuteChanged();
-                RemoveCommand.NotifyCanExecuteChanged();
-                ShowInFolderCommand.NotifyCanExecuteChanged();
-            }
+            if (SelectedItems.Contains(vm))
+                NotifySelectionCommandsChanged();
         });
     }
 

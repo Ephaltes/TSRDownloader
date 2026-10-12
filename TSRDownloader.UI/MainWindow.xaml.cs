@@ -47,6 +47,9 @@ public partial class MainWindow : Window
         _clipboardHook.Dispose();
     }
 
+    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e) =>
+        _viewModel.SetSelection(DownloadList.SelectedItems.Cast<DownloadItemViewModel>());
+
     private void OnDragOver(object sender, DragEventArgs e)
     {
         e.Effects = e.Data.GetDataPresent(DataFormats.UnicodeText) ? DragDropEffects.Copy : DragDropEffects.None;

@@ -115,27 +115,29 @@
         <Border Grid.Row="2" BorderBrush="{DynamicResource App.Border}" BorderThickness="1"
                 CornerRadius="6">
             <Grid>
-            <ListView ItemsSource="{Binding DownloadItems}"
-                      SelectedItem="{Binding SelectedItem}"
+            <ListView x:Name="DownloadList"
+                      ItemsSource="{Binding DownloadItems}"
+                      SelectionChanged="OnSelectionChanged"
                       BorderThickness="0" Background="{DynamicResource App.WindowBackground}"
                       behaviors:GridViewColumnSizing.Fill="True"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                       ScrollViewer.VerticalScrollBarVisibility="Auto"
                       VirtualizingPanel.ScrollUnit="Pixel"
                       VirtualizingPanel.VirtualizationMode="Recycling"
-                       SelectionMode="Single">
+                      SelectionMode="Extended">
 
                 <ListView.InputBindings>
                     <KeyBinding Key="Delete" Command="{Binding RemoveCommand}"/>
                 </ListView.InputBindings>
 
-                <!-- Right-clicking a row selects it, so the commands act on SelectedItem. -->
+                <!-- Right-clicking a row selects it; the commands act on all selected rows. -->
                 <ListView.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="{loc:Loc Context_Retry}" Command="{Binding RetryCommand}"/>
+                        <MenuItem Header="{loc:Loc Context_Open}" Command="{Binding OpenCommand}"/>
                         <MenuItem Header="{loc:Loc Context_ShowInFolder}" Command="{Binding ShowInFolderCommand}"/>
-                        <MenuItem Header="{loc:Loc Context_CopyUrl}"
-                                  Command="{Binding SelectedItem.CopyUrlToClipboardCommand}"/>
+                        <MenuItem Header="{loc:Loc Context_OpenOnTsr}" Command="{Binding OpenOnTsrCommand}"/>
+                        <MenuItem Header="{loc:Loc Context_CopyUrl}" Command="{Binding CopyUrlsCommand}"/>
                         <Separator/>
                         <MenuItem Header="{loc:Loc Context_Remove}" Command="{Binding RemoveCommand}"
                                   InputGestureText="Del"/>

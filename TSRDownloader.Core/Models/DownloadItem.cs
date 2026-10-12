@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TSRDownloader.Core.Models;
 
 /// <summary>
@@ -28,6 +30,10 @@ public class DownloadItem
 
     /// <summary>Bytes downloaded so far.</summary>
     public long DownloadedBytes { get; set; }
+
+    /// <summary>Number of the automatic retry in progress (0 on the first attempt). Not saved.</summary>
+    [JsonIgnore]
+    public int RetryAttempt { get; set; }
 
     /// <summary>Error message if the download failed.</summary>
     public string? ErrorMessage { get; set; }

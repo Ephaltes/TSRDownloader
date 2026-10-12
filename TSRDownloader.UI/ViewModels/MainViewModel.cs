@@ -41,6 +41,7 @@ public partial class MainViewModel : ObservableObject
     private int _completedCount;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
     private int _failedCount;
 
     [ObservableProperty]
@@ -199,6 +200,17 @@ public partial class MainViewModel : ObservableObject
 
     private bool CanRetry() =>
         SelectedItem?.Model.Status is DownloadStatus.Failed or DownloadStatus.ExtractionFailed;
+
+    /// <summary>Re-queues every failed item.</summary>
+    [RelayCommand(CanExecute = nameof(CanRetryFailed))]
+    private void RetryFailed()
+    {
+        foreach (DownloadItem item in _downloadService.Items
+                     .Where(item => item.Status is DownloadStatus.Failed or DownloadStatus.ExtractionFailed))
+            _downloadService.Retry(item);
+    }
+
+    private bool CanRetryFailed() => FailedCount > 0;
 
     [RelayCommand(CanExecute = nameof(CanRemove))]
     private void Remove()

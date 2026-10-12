@@ -188,6 +188,29 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public void RetryFailedCommand_Should_RetryEveryFailedItem_When_Executed()
+    {
+        // Arrange
+        IDownloadService download = Substitute.For<IDownloadService>();
+        DownloadItem failed = new() { ItemId = 1, Status = DownloadStatus.Failed };
+        DownloadItem extractionFailed = new() { ItemId = 2, Status = DownloadStatus.ExtractionFailed };
+        DownloadItem completed = new() { ItemId = 3, Status = DownloadStatus.Completed };
+        download.Items.Returns(new List<DownloadItem> { failed, extractionFailed, completed });
+        MainViewModel vm = NewVm(download, Substitute.For<IClipboardService>(), Substitute.For<IConfigService>());
+        download.QueueStatsChanged += Raise.Event<System.Action>();
+
+        // Act
+        bool canExecute = vm.RetryFailedCommand.CanExecute(null);
+        vm.RetryFailedCommand.Execute(null);
+
+        // Assert
+        canExecute.ShouldBeTrue();
+        download.Received(1).Retry(failed);
+        download.Received(1).Retry(extractionFailed);
+        download.DidNotReceive().Retry(completed);
+    }
+
+    [Fact]
     public void ClearFinishedCommand_Should_RemoveOnlyFinishedItems_When_Executed()
     {
         // Arrange

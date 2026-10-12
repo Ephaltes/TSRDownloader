@@ -100,6 +100,12 @@
                         </TextBlock>
                     </StackPanel>
                 </Button>
+                <Button Command="{Binding RetryFailedCommand}" Style="{StaticResource ToolbarButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE72C;" Style="{StaticResource ToolbarIcon}"/>
+                        <TextBlock Text="{loc:Loc Toolbar_RetryFailed}"/>
+                    </StackPanel>
+                </Button>
                 <Button Command="{Binding ClearFinishedCommand}" Style="{StaticResource ToolbarButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE74D;" Style="{StaticResource ToolbarIcon}"/>

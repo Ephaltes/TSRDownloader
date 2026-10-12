@@ -13,7 +13,11 @@ public sealed class DownloadService : IDownloadService, IDisposable
     /// <summary>Minimum time between two progress notifications for the same download.</summary>
     private const long ProgressNotifyIntervalMs = 100;
 
+    /// <summary>How often a failed download is retried automatically before it is marked failed.</summary>
+    public const int MaxAutomaticRetries = 3;
+
     private readonly ITsrDownloadClient _tsrClient;
+    private readonly Func<int, TimeSpan> _retryDelay;
     private readonly IConfigService _configService;
     private readonly IArchiveExtractionService _extractionService;
     private readonly List<DownloadItem> _items = [];
@@ -31,16 +35,25 @@ public sealed class DownloadService : IDownloadService, IDisposable
         get { lock (_lock) return _items.ToList().AsReadOnly(); }
     }
 
+    /// <param name="retryDelay">
+    /// Wait before automatic retry number 1..<see cref="MaxAutomaticRetries"/>;
+    /// defaults to <see cref="DefaultRetryDelay"/>.
+    /// </param>
     public DownloadService(
         ITsrDownloadClient tsrClient,
         IConfigService configService,
-        IArchiveExtractionService extractionService)
+        IArchiveExtractionService extractionService,
+        Func<int, TimeSpan>? retryDelay = null)
     {
         _tsrClient = tsrClient;
         _configService = configService;
         _extractionService = extractionService;
+        _retryDelay = retryDelay ?? DefaultRetryDelay;
         _maxActiveDownloads = Math.Max(1, configService.Config.MaxActiveDownloads);
     }
+
+    /// <summary>5, 15, then 45 seconds: gives TSR or the network increasingly more time to recover.</summary>
+    public static TimeSpan DefaultRetryDelay(int attempt) => TimeSpan.FromSeconds(5 * Math.Pow(3, attempt - 1));
 
     public void SetMaxActiveDownloads(int max)
     {
@@ -203,6 +216,9 @@ public sealed class DownloadService : IDownloadService, IDisposable
                     continue;
 
                 item.Status = DownloadStatus.Downloading;
+                // No bytes yet: the UI shows "waiting for TSR" until the transfer starts.
+                item.DownloadedBytes = 0;
+                item.TotalBytes = 0;
                 claimed.Add(item);
                 activeCount++;
             }
@@ -222,7 +238,7 @@ public sealed class DownloadService : IDownloadService, IDisposable
 
         try
         {
-            await DownloadItemAsync(item, cts.Token);
+            await DownloadWithRetriesAsync(item, cts.Token);
         }
         catch (OperationCanceledException) when (cts.IsCancellationRequested)
         {
@@ -241,9 +257,34 @@ public sealed class DownloadService : IDownloadService, IDisposable
             // Only remove our own entry; a restart may already have registered a new one.
             _activeTokens.TryRemove(new KeyValuePair<int, CancellationTokenSource>(item.ItemId, cts));
             cts.Dispose();
+            item.RetryAttempt = 0;
             NotifyItemChanged(item);
             NotifyStatsChanged();
             StartQueuedDownloads();
+        }
+    }
+
+    /// <summary>
+    /// Downloads the item, retrying failures up to <see cref="MaxAutomaticRetries"/> times with
+    /// increasing waits. The item keeps its download slot while waiting; stopping cancels the wait.
+    /// </summary>
+    private async Task DownloadWithRetriesAsync(DownloadItem item, CancellationToken ct)
+    {
+        while (true)
+        {
+            try
+            {
+                await DownloadItemAsync(item, ct);
+                return;
+            }
+            catch (Exception) when (item.RetryAttempt < MaxAutomaticRetries && !ct.IsCancellationRequested)
+            {
+                item.RetryAttempt++;
+                item.DownloadedBytes = 0;
+                item.TotalBytes = 0;
+                NotifyItemChanged(item);
+                await Task.Delay(_retryDelay(item.RetryAttempt), ct);
+            }
         }
     }
 

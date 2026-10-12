@@ -309,4 +309,7 @@
   <data name="Main_EmptyHint" xml:space="preserve">
     <value>Copy a link from thesimsresource.com — it will be downloaded automatically.</value>
   </data>
+  <data name="Toolbar_RetryFailed" xml:space="preserve">
+    <value>Retry failed</value>
+  </data>
 </root>

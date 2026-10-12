@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -96,6 +97,72 @@ public class DownloadServiceTests
         extraction.DidNotReceive().Enqueue(Arg.Any<DownloadItem>());
     }
 
+    private static readonly Func<int, TimeSpan> NoRetryDelay = _ => TimeSpan.Zero;
+
+    [Fact]
+    public async Task Start_Should_RetryAutomatically_When_DownloadFailsTransiently()
+    {
+        // Arrange
+        using TempDir temp = new();
+        int attempts = 0;
+        ITsrDownloadClient client = ClientReturning("readme.txt");
+        client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(_ => ++attempts < 3
+                ? Task.FromException<TsrDownloadInfo>(new InvalidOperationException("flaky"))
+                : Task.FromResult(new TsrDownloadInfo(1, "url", "readme.txt")));
+        List<int> retryDelaysRequested = [];
+        using DownloadService service = new(client, Config(temp.Path, extract: true),
+            Substitute.For<IArchiveExtractionService>(), attempt =>
+            {
+                retryDelaysRequested.Add(attempt);
+                return TimeSpan.Zero;
+            });
+        DownloadItem item = new() { ItemId = 1 };
+
+        // Act
+        service.Enqueue(item);
+        service.Start();
+        await ServiceCompletion.WaitAsync(service, () => item.Status == DownloadStatus.Completed);
+        service.Stop();
+
+        // Assert
+        attempts.ShouldBe(3);
+        retryDelaysRequested.ShouldBe([1, 2]);
+        item.RetryAttempt.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Start_Should_Fail_When_AllAutomaticRetriesFail()
+    {
+        // Arrange
+        using TempDir temp = new();
+        ITsrDownloadClient client = Substitute.For<ITsrDownloadClient>();
+        client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException("down"));
+        using DownloadService service = new(client, Config(temp.Path, extract: true),
+            Substitute.For<IArchiveExtractionService>(), NoRetryDelay);
+        DownloadItem item = new() { ItemId = 1 };
+
+        // Act
+        service.Enqueue(item);
+        service.Start();
+        await ServiceCompletion.WaitAsync(service, () => item.Status == DownloadStatus.Failed);
+        service.Stop();
+
+        // Assert
+        await client.Received(1 + DownloadService.MaxAutomaticRetries)
+            .ResolveDownloadAsync(1, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public void DefaultRetryDelay_Should_Increase_When_AttemptsIncrease()
+    {
+        // Act & Assert
+        DownloadService.DefaultRetryDelay(1).ShouldBe(TimeSpan.FromSeconds(5));
+        DownloadService.DefaultRetryDelay(2).ShouldBe(TimeSpan.FromSeconds(15));
+        DownloadService.DefaultRetryDelay(3).ShouldBe(TimeSpan.FromSeconds(45));
+    }
+
     [Fact]
     public async Task Start_Should_FailWithMessage_When_ClientThrows()
     {
@@ -105,7 +172,7 @@ public class DownloadServiceTests
         client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("nope"));
         using DownloadService service = new(client, Config(temp.Path, extract: true),
-            Substitute.For<IArchiveExtractionService>());
+            Substitute.For<IArchiveExtractionService>(), NoRetryDelay);
         DownloadItem item = new() { ItemId = 1 };
 
         // Act
@@ -168,7 +235,7 @@ public class DownloadServiceTests
         client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new TaskCanceledException("timed out"));
         using DownloadService service = new(client, Config(temp.Path, extract: true),
-            Substitute.For<IArchiveExtractionService>());
+            Substitute.For<IArchiveExtractionService>(), NoRetryDelay);
         DownloadItem item = new() { ItemId = 1 };
 
         // Act
@@ -189,11 +256,11 @@ public class DownloadServiceTests
         int attempts = 0;
         ITsrDownloadClient client = ClientReturning("readme.txt");
         client.ResolveDownloadAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
-            .Returns(_ => ++attempts == 1
+            .Returns(_ => ++attempts <= 1 + DownloadService.MaxAutomaticRetries
                 ? Task.FromException<TsrDownloadInfo>(new InvalidOperationException("first"))
                 : Task.FromResult(new TsrDownloadInfo(1, "url", "readme.txt")));
         using DownloadService service = new(client, Config(temp.Path, extract: true),
-            Substitute.For<IArchiveExtractionService>());
+            Substitute.For<IArchiveExtractionService>(), NoRetryDelay);
         DownloadItem item = new() { ItemId = 1 };
         service.Enqueue(item);
         service.Start();

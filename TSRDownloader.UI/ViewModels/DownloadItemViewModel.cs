@@ -37,6 +37,10 @@ public partial class DownloadItemViewModel : ObservableObject
     [ObservableProperty]
     private bool _isIndeterminate;
 
+    /// <summary>The full error message of a failed item, which the progress cell may cut off; null otherwise (no tooltip).</summary>
+    [ObservableProperty]
+    private string? _errorToolTip;
+
     [ObservableProperty]
     private string _statusIcon = string.Empty;
 
@@ -70,6 +74,7 @@ public partial class DownloadItemViewModel : ObservableObject
 
         Progress = _model.Status.IsSucceeded() ? 100 : _model.Progress;
         ProgressText = BuildProgressText();
+        ErrorToolTip = _model.Status.IsFailed() ? ProgressText : null;
         OnPropertyChanged(nameof(FileName));
         OnPropertyChanged(nameof(StatusSortOrder));
     }

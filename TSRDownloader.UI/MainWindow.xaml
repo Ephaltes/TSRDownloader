@@ -17,6 +17,17 @@
 
     <Window.Resources>
         <converters:ColumnWidthToCellWidthConverter x:Key="ColumnWidthToCellWidthConverter"/>
+
+        <!-- Long tooltip text (error messages, links) wraps instead of running off the screen. -->
+        <Style TargetType="ToolTip">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" TextWrapping="Wrap" MaxWidth="400"/>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <!-- Ctrl+V adds the links on the clipboard; a focused text box handles its own paste first. -->
@@ -257,7 +268,9 @@
                                     <!-- GridView never stretches cell content, so we size the cell
                                          to the progress column's own Width (Columns[4]) via the
                                          parent ListView. This fills the column and tracks resizing. -->
-                                    <Grid Width="{Binding View.Columns[4].Width, RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Converter={StaticResource ColumnWidthToCellWidthConverter}}">
+                                    <!-- A failed item's error is often cut off; hovering shows all of it. -->
+                                    <Grid Width="{Binding View.Columns[4].Width, RelativeSource={RelativeSource AncestorType={x:Type ListView}}, Converter={StaticResource ColumnWidthToCellWidthConverter}}"
+                                          ToolTip="{Binding ErrorToolTip}" ToolTipService.ShowDuration="30000">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="*"/>
                                             <RowDefinition Height="Auto"/>

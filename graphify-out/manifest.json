@@ -6,8 +6,8 @@
     "semantic_hash": "ecce1738670318e5d0e0813fce4b4ba3"
   },
   "TSRDownloader.Core.Tests/ArchiveExtractionServiceTests.cs": {
-    "mtime": 1791829103.2109022,
-    "seen": 1791829123.6503837,
+    "mtime": 1791831260.594017,
+    "seen": 1791918405.1498787,
     "ast_hash": "c92c1a2f2f093ea27232b90c54776107",
     "semantic_hash": ""
   },
@@ -24,20 +24,20 @@
     "semantic_hash": "cb94039d3ef7cb2dc7ee51a03c49a38d"
   },
   "TSRDownloader.Core.Tests/DownloadQueueAutosaveTests.cs": {
-    "mtime": 1791829103.224061,
-    "seen": 1791829123.650389,
+    "mtime": 1791831260.594017,
+    "seen": 1791918405.1498852,
     "ast_hash": "7f27196cec4329a4d771b786f6d5a0b9",
     "semantic_hash": ""
   },
   "TSRDownloader.Core.Tests/DownloadQueueStoreTests.cs": {
-    "mtime": 1791829103.2264905,
-    "seen": 1791829123.6503906,
+    "mtime": 1791831260.594017,
+    "seen": 1791918405.149886,
     "ast_hash": "8cf586e4a50fb218d5453dec93820a49",
     "semantic_hash": ""
   },
   "TSRDownloader.Core.Tests/DownloadServiceTests.cs": {
-    "mtime": 1791829103.2284915,
-    "seen": 1791829123.650391,
+    "mtime": 1791831260.5950162,
+    "seen": 1791918405.1498866,
     "ast_hash": "6e2a02445a240cfd88fcdd963a70fae0",
     "semantic_hash": ""
   },
@@ -54,14 +54,14 @@
     "semantic_hash": "cbddc60945805d03d6bfb27ecf663fc0"
   },
   "TSRDownloader.Core.Tests/TsrDownloadClientTests.cs": {
-    "mtime": 1791829103.2360077,
-    "seen": 1791829123.6503944,
-    "ast_hash": "cd4ab41cf3c9a5ebb0dc2e6459b66fba",
+    "mtime": 1791831260.5950162,
+    "seen": 1791918405.1498897,
+    "ast_hash": "7ab4d866d8679fa48b4e3e5bebcbf6a6",
     "semantic_hash": ""
   },
   "TSRDownloader.Core.Tests/ZipArchiveExtractorTests.cs": {
-    "mtime": 1791829103.2432754,
-    "seen": 1791829123.650395,
+    "mtime": 1791831260.5950162,
+    "seen": 1791918405.1498907,
     "ast_hash": "7374e5de3332c1be2dcd97b6cdce0297",
     "semantic_hash": ""
   },
@@ -72,26 +72,26 @@
     "semantic_hash": "d3fb17afbb50c61bd338efcae6c4aceb"
   },
   "TSRDownloader.Core/Helpers/AtomicFile.cs": {
-    "mtime": 1791829103.2507935,
-    "seen": 1791829123.6503968,
+    "mtime": 1791831260.5950162,
+    "seen": 1791918405.149893,
     "ast_hash": "722d2d6193799529c222de458a0dfcd8",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Helpers/TSRUrlParser.cs": {
-    "mtime": 1791829103.252299,
-    "seen": 1791829123.6503978,
+    "mtime": 1791831260.5960166,
+    "seen": 1791918405.1498935,
     "ast_hash": "1665ec7811d509b63d36a8d97f3c4dd9",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Helpers/TsrEndpoints.cs": {
-    "mtime": 1791829103.2543094,
-    "seen": 1791829123.6503983,
+    "mtime": 1791831260.5960166,
+    "seen": 1791918405.1498945,
     "ast_hash": "7a4d67c2876fcab962251b0ef50ac2a9",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Models/DownloadItem.cs": {
-    "mtime": 1791829103.2588253,
-    "seen": 1791829123.6504014,
+    "mtime": 1791830443.718186,
+    "seen": 1791918405.1498969,
     "ast_hash": "172ea738702b2b315f97ffc2e372f236",
     "semantic_hash": ""
   },
@@ -132,9 +132,9 @@
     "semantic_hash": "0e0dc8a7e1992cc0b80f488298cf9003"
   },
   "TSRDownloader.Core/Services/ArchiveExtractionService.cs": {
-    "mtime": 1791829103.2722373,
-    "seen": 1791829123.650417,
-    "ast_hash": "9aa29a165788b65d98a2582b9048616f",
+    "mtime": 1791831260.5960166,
+    "seen": 1791918405.1499035,
+    "ast_hash": "747a309fdcbb22238e4d00abd2d54762",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/ClipboardService.cs": {
@@ -144,32 +144,32 @@
     "semantic_hash": "76a6081468b611762585d35d20a42ae7"
   },
   "TSRDownloader.Core/Services/DownloadQueueAutosave.cs": {
-    "mtime": 1791829103.2784154,
-    "seen": 1791829123.6504202,
+    "mtime": 1791831260.5970166,
+    "seen": 1791918405.1499054,
     "ast_hash": "740c984ec9821da38cc30fb3a7eb6211",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/DownloadQueueStore.cs": {
-    "mtime": 1791829103.2794168,
-    "seen": 1791829123.6504211,
+    "mtime": 1791831260.5970166,
+    "seen": 1791918405.149906,
     "ast_hash": "32e5822a40700f98b259423cabf8954b",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/DownloadService.cs": {
-    "mtime": 1791829103.2834146,
-    "seen": 1791829123.6504223,
-    "ast_hash": "e95e0abeb316511146b9a4e13e86c4aa",
+    "mtime": 1791831260.5970166,
+    "seen": 1791918405.1499064,
+    "ast_hash": "99f1259664a760983313ba68544fed6b",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/IArchiveExtractionService.cs": {
-    "mtime": 1791829103.2907877,
-    "seen": 1791829123.6504233,
+    "mtime": 1791831260.5970166,
+    "seen": 1791918405.1499069,
     "ast_hash": "d7219f92f61d4ed356565dfef4c28fb7",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/IArchiveExtractor.cs": {
-    "mtime": 1791829103.2927825,
-    "seen": 1791829123.650424,
+    "mtime": 1791831260.5970166,
+    "seen": 1791918405.1499074,
     "ast_hash": "4d9bacb63025243284fdf9cd2422bbcf",
     "semantic_hash": ""
   },
@@ -186,32 +186,32 @@
     "semantic_hash": "9a2dd509627f40e73e809954ec8fc400"
   },
   "TSRDownloader.Core/Services/IDownloadService.cs": {
-    "mtime": 1791829103.298936,
-    "seen": 1791829123.650427,
+    "mtime": 1791831260.5980172,
+    "seen": 1791918405.14991,
     "ast_hash": "a841c528217890eecf3866cc704528cc",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/IFileConflictResolver.cs": {
-    "mtime": 1791829103.3009346,
-    "seen": 1791829123.6504278,
+    "mtime": 1791831260.5980172,
+    "seen": 1791918405.1499104,
     "ast_hash": "7734a77122086b3cdbee4883d634a083",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/ITsrDownloadClient.cs": {
-    "mtime": 1791829103.3029385,
-    "seen": 1791829123.650429,
+    "mtime": 1791831260.5980172,
+    "seen": 1791918405.1499114,
     "ast_hash": "791cdcf8d3c244390aa783cd1d3a7640",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/TsrDownloadClient.cs": {
-    "mtime": 1791829103.3054495,
-    "seen": 1791829123.65043,
+    "mtime": 1791831260.5980172,
+    "seen": 1791918405.1499119,
     "ast_hash": "6049c399ae4610250aa33f1298632009",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/ZipArchiveExtractor.cs": {
-    "mtime": 1791829103.3117385,
-    "seen": 1791829123.6504312,
+    "mtime": 1791831260.5990195,
+    "seen": 1791918405.1499124,
     "ast_hash": "321128e92237df4bcc7fcdc203f87628",
     "semantic_hash": ""
   },
@@ -222,8 +222,8 @@
     "semantic_hash": "eaa2b89ea1c6e8a92eb8964645201faf"
   },
   "TSRDownloader.E2E.Tests/FullPipelineE2ETests.cs": {
-    "mtime": 1791829103.3134515,
-    "seen": 1791829123.650434,
+    "mtime": 1791831260.5990195,
+    "seen": 1791918405.1499133,
     "ast_hash": "04f9fa852a1003bd188d47fc0389a363",
     "semantic_hash": ""
   },
@@ -234,14 +234,14 @@
     "semantic_hash": "d86d7a00ba06b898de1e6598c9b0e561"
   },
   "TSRDownloader.Integration.Tests/DownloadExtractionPipelineTests.cs": {
-    "mtime": 1791829103.3149605,
-    "seen": 1791829123.6504362,
+    "mtime": 1791831260.5990195,
+    "seen": 1791918405.149915,
     "ast_hash": "44b7e169dc54e66f0aa090b2e5597089",
     "semantic_hash": ""
   },
   "TSRDownloader.Integration.Tests/QueuePersistenceTests.cs": {
-    "mtime": 1791829103.3174944,
-    "seen": 1791829123.6504369,
+    "mtime": 1791831260.5990195,
+    "seen": 1791918405.1499155,
     "ast_hash": "ea83e8010eece9e44aa484b9aaab1dda",
     "semantic_hash": ""
   },
@@ -252,20 +252,20 @@
     "semantic_hash": "e48ce4a491b4837848691941d7ca53bc"
   },
   "TSRDownloader.TestHelper/FakeTsrDownloadClient.cs": {
-    "mtime": 1791829103.3194947,
-    "seen": 1791829123.650439,
+    "mtime": 1791831260.6000168,
+    "seen": 1791918405.1499166,
     "ast_hash": "c1dfc608b62fdb96af2cab8b1c97eee0",
     "semantic_hash": ""
   },
   "TSRDownloader.TestHelper/RecordingConflictResolver.cs": {
-    "mtime": 1791829103.321494,
-    "seen": 1791829123.6504397,
+    "mtime": 1791831260.6000168,
+    "seen": 1791918405.1499171,
     "ast_hash": "3a074a9b374d243374113f685ff2688b",
     "semantic_hash": ""
   },
   "TSRDownloader.TestHelper/ServiceCompletion.cs": {
-    "mtime": 1791829103.3235006,
-    "seen": 1791829123.6504405,
+    "mtime": 1791831260.6000168,
+    "seen": 1791918405.1499176,
     "ast_hash": "74494e8855ad8bf351aa65d98e06313e",
     "semantic_hash": ""
   },
@@ -282,8 +282,8 @@
     "semantic_hash": "f7a6cda298330f3e0f64db96cfaf84e2"
   },
   "TSRDownloader.TestHelper/TsrProtocolStub.cs": {
-    "mtime": 1791829103.3350122,
-    "seen": 1791829123.6504436,
+    "mtime": 1791831260.6000168,
+    "seen": 1791918405.1499205,
     "ast_hash": "235fbcb0a469e1dce48ebf45dde20857",
     "semantic_hash": ""
   },
@@ -300,15 +300,15 @@
     "semantic_hash": "826d7a9b1e6bd7103e6c5983acdb6296"
   },
   "TSRDownloader.UI.Tests/ConverterTests.cs": {
-    "mtime": 1791829103.3458877,
-    "seen": 1791829123.6504452,
-    "ast_hash": "97feaec43966db9b20adc5853ab81c45",
+    "mtime": 1791831260.6000168,
+    "seen": 1791918405.1499224,
+    "ast_hash": "c177d9add3727980da9fd621ea60d92f",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/DownloadItemViewModelTests.cs": {
-    "mtime": 1791829103.347087,
-    "seen": 1791829123.650446,
-    "ast_hash": "8d60e3fa272f8993cb84464184ddc1bf",
+    "mtime": 1791918385.9574168,
+    "seen": 1791918405.1499228,
+    "ast_hash": "744afb8f41a89f2d50103e8741b69a1b",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/DownloadStatusPresenterTests.cs": {
@@ -324,27 +324,27 @@
     "semantic_hash": "51519e6e96b07ff3808cfa75dd3d4985"
   },
   "TSRDownloader.UI.Tests/LocalizationManagerTests.cs": {
-    "mtime": 1791829103.3569455,
-    "seen": 1791829123.6504476,
+    "mtime": 1791831260.6010165,
+    "seen": 1791918405.1499245,
     "ast_hash": "af6404c83f9a69da79f62cbef5a48b0a",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/LoggingSetupTests.cs": {
-    "mtime": 1791829103.3589458,
-    "seen": 1791829123.650448,
+    "mtime": 1791831260.6010165,
+    "seen": 1791918405.1499255,
     "ast_hash": "f43313f6e98d1a31c8657e563be00abd",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/MainViewModelTests.cs": {
-    "mtime": 1791829753.089231,
-    "seen": 1791829760.5589695,
-    "ast_hash": "72efd4de4df5d9c6a57961ce0f008404",
+    "mtime": 1791831260.6010165,
+    "seen": 1791918405.149926,
+    "ast_hash": "aaa2f74cdf6d9a7f5a817334009c041f",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/SettingsViewModelTests.cs": {
-    "mtime": 1791829103.3679924,
-    "seen": 1791829123.6504495,
-    "ast_hash": "f0395ab7671eb03eb25f649e40a69ca7",
+    "mtime": 1791831260.6010165,
+    "seen": 1791918405.1499264,
+    "ast_hash": "8e9c51e4602347a355a96eb645a2d2c1",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/TSRDownloader.UI.Tests.csproj": {
@@ -354,26 +354,26 @@
     "semantic_hash": "8e5ab826ee6395eb6d1647e8fba07f66"
   },
   "TSRDownloader.UI.Tests/UpdateCoordinatorTests.cs": {
-    "mtime": 1791829103.3725042,
-    "seen": 1791829123.6504524,
+    "mtime": 1791831260.6020174,
+    "seen": 1791918405.1499293,
     "ast_hash": "f7004f0747a60f458a5d3659a2356198",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/UpdateViewModelTests.cs": {
-    "mtime": 1791829103.3801749,
-    "seen": 1791829123.6504533,
+    "mtime": 1791831260.6020174,
+    "seen": 1791918405.1499295,
     "ast_hash": "ef89ce1d04dc94bfcb104807ecf83695",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/App.xaml": {
-    "mtime": 1791829103.382174,
-    "seen": 1791829123.650454,
-    "ast_hash": "70bc8e499b95125591a4e59c47561b63",
+    "mtime": 1791830443.7211862,
+    "seen": 1791918405.1499302,
+    "ast_hash": "ba1f7c6bc3c2fb744e2a92fa8019c888",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/App.xaml.cs": {
-    "mtime": 1791829625.0241966,
-    "seen": 1791829760.558976,
+    "mtime": 1791831260.6020174,
+    "seen": 1791918405.1499307,
     "ast_hash": "46a09ed951fe64f152a1b460c2e6e5b8",
     "semantic_hash": ""
   },
@@ -384,8 +384,8 @@
     "semantic_hash": "ff154451e3155261c75537f652b064cc"
   },
   "TSRDownloader.UI/Behaviors/GridViewColumnSizing.cs": {
-    "mtime": 1791829103.3988676,
-    "seen": 1791829123.6504557,
+    "mtime": 1791831260.6020174,
+    "seen": 1791918405.1499321,
     "ast_hash": "5081bd87057a5e06c234f3610175eda3",
     "semantic_hash": ""
   },
@@ -402,8 +402,8 @@
     "semantic_hash": "3e1bed871d9f669f219c513c99322a1b"
   },
   "TSRDownloader.UI/Localization/LocalizationManager.cs": {
-    "mtime": 1791829103.409836,
-    "seen": 1791829123.6504586,
+    "mtime": 1791831260.603017,
+    "seen": 1791918405.1499348,
     "ast_hash": "644a2b45c56a1ff41c7c2a8e9a0333d5",
     "semantic_hash": ""
   },
@@ -420,26 +420,26 @@
     "semantic_hash": "1c1522d2c51ec7a2d086706de7c6c0f2"
   },
   "TSRDownloader.UI/MainWindow.xaml": {
-    "mtime": 1791829846.0488825,
-    "seen": 1791830120.4297428,
-    "ast_hash": "d2103b592a86632ba00aa9b85d9f5390",
+    "mtime": 1791918380.6763148,
+    "seen": 1791918405.1499386,
+    "ast_hash": "81308e27fca3df1213c101fdac77e77e",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/MainWindow.xaml.cs": {
-    "mtime": 1791830027.1158192,
-    "seen": 1791830120.4297442,
-    "ast_hash": "3e56d86050edc4b4ffbbb8411f86582c",
+    "mtime": 1791831260.603017,
+    "seen": 1791918405.1499393,
+    "ast_hash": "6d237d8b949372480e5aead8326f94da",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Presentation/DownloadStatusPresenter.cs": {
-    "mtime": 1791829103.4293642,
-    "seen": 1791829123.6504645,
-    "ast_hash": "cb28cc53aefbb9bc12cf88886b58ed72",
+    "mtime": 1791830443.7221894,
+    "seen": 1791918405.1499405,
+    "ast_hash": "abb0554281c316322bc9594d073ac9e5",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Program.cs": {
-    "mtime": 1791829103.437884,
-    "seen": 1791829123.650467,
+    "mtime": 1791831260.6040175,
+    "seen": 1791918405.1499426,
     "ast_hash": "21a088322caeebe781c2644aa783b98a",
     "semantic_hash": ""
   },
@@ -456,20 +456,20 @@
     "semantic_hash": "9a6bd2d3dbdfa7f24107ea9ac8950b99"
   },
   "TSRDownloader.UI/Services/ClipboardHookService.cs": {
-    "mtime": 1791829103.4434025,
-    "seen": 1791829123.6504686,
+    "mtime": 1791831260.6040175,
+    "seen": 1791918405.1499445,
     "ast_hash": "983ffcb254ef1486778abe0c96e53fcb",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/FileConflictResolver.cs": {
-    "mtime": 1791829103.4449098,
-    "seen": 1791829123.6504693,
+    "mtime": 1791831260.6040175,
+    "seen": 1791918405.149945,
     "ast_hash": "5e312d74059bc7a5a1415045b35a54c6",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/INotificationService.cs": {
-    "mtime": 1791829103.4469151,
-    "seen": 1791829123.6504698,
+    "mtime": 1791830443.7243347,
+    "seen": 1791918405.1499455,
     "ast_hash": "3210321a397d1d5c691bef7fe8031630",
     "semantic_hash": ""
   },
@@ -498,20 +498,20 @@
     "semantic_hash": "fe22200c45c71bc6e9affd471218158c"
   },
   "TSRDownloader.UI/Services/NotificationService.cs": {
-    "mtime": 1791829103.4577482,
-    "seen": 1791829123.6504738,
+    "mtime": 1791831260.6050158,
+    "seen": 1791918405.1499498,
     "ast_hash": "33b4ed4549d2996ebf4c212bb5dd4e7c",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/StartupService.cs": {
-    "mtime": 1791829103.4607508,
-    "seen": 1791829123.650475,
+    "mtime": 1791831260.6050158,
+    "seen": 1791918405.1499512,
     "ast_hash": "dc4d38c8454090be74c9e4670ae602a9",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/UpdateCoordinator.cs": {
-    "mtime": 1791829103.4668236,
-    "seen": 1791829123.6504774,
+    "mtime": 1791831260.6050158,
+    "seen": 1791918405.1499534,
     "ast_hash": "db3ee745c998007253a4cd2c598d598e",
     "semantic_hash": ""
   },
@@ -522,9 +522,9 @@
     "semantic_hash": "3e0ff82b2eebfe71601fd1ce9b21a7df"
   },
   "TSRDownloader.UI/Services/VelopackUpdateService.cs": {
-    "mtime": 1791830000.1289618,
-    "seen": 1791830120.4297593,
-    "ast_hash": "2a057e7052e50982c2660324ca8bc94e",
+    "mtime": 1791831260.6050158,
+    "seen": 1791918405.1499543,
+    "ast_hash": "ffc651eefd01d48f6aa542a19cabec2b",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/WpfDispatcher.cs": {
@@ -534,27 +534,27 @@
     "semantic_hash": "eece095d1fb62132a68fd224b6bdff28"
   },
   "TSRDownloader.UI/TSRDownloader.UI.csproj": {
-    "mtime": 1791830096.8067763,
-    "seen": 1791830120.4297605,
-    "ast_hash": "c7cfd8b510ccf5b0f4429de432c08ffd",
+    "mtime": 1791831260.6060162,
+    "seen": 1791918405.1499555,
+    "ast_hash": "4cf3ff36ffa600b0f61bb960bd964552",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/ViewModels/DownloadItemViewModel.cs": {
-    "mtime": 1791829103.4808402,
-    "seen": 1791829123.650482,
-    "ast_hash": "b83759be92a82e399fe138c0db10d5ad",
+    "mtime": 1791918357.0318532,
+    "seen": 1791918405.1499574,
+    "ast_hash": "25d027a2e0718b5f5e2cd8e1b60c40d1",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/ViewModels/MainViewModel.cs": {
-    "mtime": 1791829747.8943138,
-    "seen": 1791829760.5590057,
-    "ast_hash": "7bf528f2f455de866ef538f4beef6952",
+    "mtime": 1791831260.6060162,
+    "seen": 1791918405.149958,
+    "ast_hash": "43cc43a081c1bccdcb1fc2fcc64be617",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/ViewModels/SettingsViewModel.cs": {
-    "mtime": 1791829103.4940321,
-    "seen": 1791829123.6504831,
-    "ast_hash": "d435751f922e68a6e45c0ec73032908e",
+    "mtime": 1791831260.6060162,
+    "seen": 1791918405.1499584,
+    "ast_hash": "4cf5bd0f266f66a59ffc67dd96dc1ad9",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/ViewModels/UpdateViewModel.cs": {
@@ -564,45 +564,45 @@
     "semantic_hash": "9dc6b1282d141b1107b0cf77ab00cf5e"
   },
   "TSRDownloader.UI/Views/FileConflictDialog.xaml": {
-    "mtime": 1791829103.5026476,
-    "seen": 1791829123.6504846,
-    "ast_hash": "d75913e536f1eaecb8f7bdc9244c0824",
+    "mtime": 1791831260.6070209,
+    "seen": 1791918405.149961,
+    "ast_hash": "82567a292c46880be3649d5178c27fe2",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Views/FileConflictDialog.xaml.cs": {
-    "mtime": 1791829103.5052161,
-    "seen": 1791829123.650485,
+    "mtime": 1791831260.6070209,
+    "seen": 1791918405.1499617,
     "ast_hash": "ee04dab226225f6e12ea25eabc76bcde",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Views/SettingsWindow.xaml": {
-    "mtime": 1791829103.5062277,
-    "seen": 1791829123.6504858,
-    "ast_hash": "48c066c459420c3cef2260b9ebb3c1de",
+    "mtime": 1791831260.6070209,
+    "seen": 1791918405.1499622,
+    "ast_hash": "b3ee0b370368008507f7359d2de3b502",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Views/SettingsWindow.xaml.cs": {
-    "mtime": 1791829103.51374,
-    "seen": 1791829123.6504862,
+    "mtime": 1791831260.6070209,
+    "seen": 1791918405.1499627,
     "ast_hash": "5534c1e7b0d996cec4db07eac192eb3f",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Views/UpdateWindow.xaml": {
-    "mtime": 1791829103.5147414,
-    "seen": 1791829123.6504867,
-    "ast_hash": "087bbf5cfc613baf8a47e40295c0cd4b",
+    "mtime": 1791831260.6070209,
+    "seen": 1791918405.1499634,
+    "ast_hash": "e26bf6b0bfd714ed85bb284d7a9ed8c4",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Views/UpdateWindow.xaml.cs": {
-    "mtime": 1791829103.5171695,
-    "seen": 1791829123.650488,
+    "mtime": 1791831260.6080172,
+    "seen": 1791918405.1499639,
     "ast_hash": "2d198c47d213d720ca1ee72d11a593b4",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/appsettings.json": {
-    "mtime": 1791826579.8475807,
-    "seen": 1791827024.6414416,
-    "ast_hash": "9fa2ee8af88f7b0495e31e5312c0cf31",
+    "mtime": 1791830443.7278364,
+    "seen": 1791918405.1499643,
+    "ast_hash": "d9188c4602a0d1d9d4cf0fda7dbe662f",
     "semantic_hash": ""
   },
   "TSRDownloader.slnx": {
@@ -618,8 +618,8 @@
     "semantic_hash": "cc96b25e5d00fd39fb3379106ec9734f"
   },
   "README.md": {
-    "mtime": 1791827016.0468013,
-    "seen": 1791827024.6414442,
+    "mtime": 1791830443.7171884,
+    "seen": 1791918405.1499672,
     "ast_hash": "29b4fc6492a061bf7a9c56685f428dcc",
     "semantic_hash": ""
   },
@@ -642,165 +642,165 @@
     "semantic_hash": "6ba0fe882fc66c56592e54bc4a6bfe5c"
   },
   "TSRDownloader.Core/Models/AppTheme.cs": {
-    "mtime": 1791829103.2568288,
-    "seen": 1791829123.6504002,
-    "ast_hash": "f281eb42cfb4fff3090ed9bf79852077",
+    "mtime": 1791830443.718186,
+    "seen": 1791918405.1498961,
+    "ast_hash": "d82b43a95d8849a027f41a638578744c",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Models/WindowLayout.cs": {
-    "mtime": 1791829103.271237,
-    "seen": 1791829123.6504161,
-    "ast_hash": "785a43c0fc4db7ef8ff4b8fa2bcf6a0c",
+    "mtime": 1791830443.7191858,
+    "seen": 1791918405.1499028,
+    "ast_hash": "f9447f6f44c4fc6ea474031bd6db318e",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/SingleInstanceTests.cs": {
-    "mtime": 1791829103.3689868,
-    "seen": 1791829123.6504502,
-    "ast_hash": "bc484d1078e80960d37f2612f98257e1",
+    "mtime": 1791830443.720185,
+    "seen": 1791918405.1499271,
+    "ast_hash": "87beb8b4844de3ffae7775e20579e6c7",
     "semantic_hash": ""
   },
   "TSRDownloader.UI.Tests/TransferFormatTests.cs": {
-    "mtime": 1791829103.3699865,
-    "seen": 1791829123.650452,
-    "ast_hash": "178d7b386cfcd30a27d67767c68683be",
+    "mtime": 1791830443.720185,
+    "seen": 1791918405.1499283,
+    "ast_hash": "4e96f687a3dfd17fcc355f113c39af35",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Localization/SortOption.cs": {
-    "mtime": 1791829103.4138322,
-    "seen": 1791829123.6504602,
-    "ast_hash": "8bf65c2dd13b6bf1ec079f1729a49d8a",
+    "mtime": 1791830443.7211862,
+    "seen": 1791918405.1499362,
+    "ast_hash": "fc4f96e60f8655356ce282bf4385a2d9",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Localization/ThemeOption.cs": {
-    "mtime": 1791829103.4148366,
-    "seen": 1791829123.6504607,
-    "ast_hash": "8a1699316de83db9abcf037030350935",
+    "mtime": 1791830443.7221894,
+    "seen": 1791918405.149937,
+    "ast_hash": "4cd65748352b5a673ba04a1a0b6e8877",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Presentation/TransferFormat.cs": {
-    "mtime": 1791829103.4313648,
-    "seen": 1791829123.6504655,
-    "ast_hash": "3a6fc5030db28c8f571e028facee3d9d",
+    "mtime": 1791830443.7231855,
+    "seen": 1791918405.149941,
+    "ast_hash": "053daf763953b8dc14d3ae4dc1db62c7",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Presentation/TransferRateMeter.cs": {
-    "mtime": 1791829103.4368834,
-    "seen": 1791829123.6504662,
-    "ast_hash": "82d4777c304dbfd970cc940126a55302",
+    "mtime": 1791831260.603017,
+    "seen": 1791918405.1499417,
+    "ast_hash": "7b775b55ba7c1dd8171351b2489176af",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/IThemeService.cs": {
-    "mtime": 1791829103.4499152,
-    "seen": 1791829123.6504712,
-    "ast_hash": "f7f629600bdaa8aa4403b4e3500b7758",
+    "mtime": 1791830443.7243347,
+    "seen": 1791918405.149947,
+    "ast_hash": "33d334456daa1a6a07b973c41bb07c85",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/SingleInstance.cs": {
-    "mtime": 1791829103.4587529,
-    "seen": 1791829123.6504745,
-    "ast_hash": "7a3d676a4935fa1a9e64b34047e72280",
+    "mtime": 1791830443.725335,
+    "seen": 1791918405.1499503,
+    "ast_hash": "dff23b410ef401472db67387300cf799",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/ThemeService.cs": {
-    "mtime": 1791829103.4627533,
-    "seen": 1791829123.6504757,
-    "ast_hash": "e87d0e29d1dbfa8b8834f46c3e1e9723",
+    "mtime": 1791830443.725335,
+    "seen": 1791918405.1499517,
+    "ast_hash": "d04f14cc57757a8d7ca5a733033808a2",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Services/TrayIconService.cs": {
-    "mtime": 1791829103.4647522,
-    "seen": 1791829123.6504765,
-    "ast_hash": "2013fc3d8f9b92e70546891653f551ad",
+    "mtime": 1791831260.6050158,
+    "seen": 1791918405.1499524,
+    "ast_hash": "161e4ac0db11a6586eb00d9de2f6da9c",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Themes/Dark.xaml": {
-    "mtime": 1791829103.4758358,
-    "seen": 1791829123.6504807,
-    "ast_hash": "6be454358864d919d6734d0cf0615839",
+    "mtime": 1791830443.725335,
+    "seen": 1791918405.1499565,
+    "ast_hash": "3e526a58e387fddec26d58d32826f089",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Themes/Light.xaml": {
-    "mtime": 1791829103.478841,
-    "seen": 1791829123.6504815,
-    "ast_hash": "417a1d2f4c3fc674d546d06e07254d6c",
+    "mtime": 1791830443.7263331,
+    "seen": 1791918405.149957,
+    "ast_hash": "1feb79a94040202d572d21af1b643c19",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1791818095.6912482,
-    "seen": 1791827024.6414435,
+    "mtime": 1791830443.716188,
+    "seen": 1791918405.1499662,
     "ast_hash": "590ee0511921383fc9c2c97e262f1d91",
     "semantic_hash": ""
   },
   "TSRDownloader.Core.Tests/ConfigurationServiceTests.cs": {
-    "mtime": 1791829103.2215526,
-    "seen": 1791829123.6503873,
+    "mtime": 1791831260.594017,
+    "seen": 1791918405.149883,
     "ast_hash": "cf14936d1d1161f153a0cd0bb8f8ff00",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Helpers/ArchivePaths.cs": {
-    "mtime": 1791828837.377811,
-    "seen": 1791829123.6503963,
-    "ast_hash": "5d95d7cc6f563b0af226002a57dec975",
+    "mtime": 1791831260.5950162,
+    "seen": 1791918405.1498923,
+    "ast_hash": "7af4a04413451e879344c3b7ef1217b8",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Models/AppConfiguration.cs": {
-    "mtime": 1791829103.2558243,
-    "seen": 1791829123.6503987,
-    "ast_hash": "192b889bd1740b7f814cd3cf63807f67",
+    "mtime": 1791831260.5960166,
+    "seen": 1791918405.1498952,
+    "ast_hash": "99de7a643e4d9493fbe288374433fc0e",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Models/DownloadStatusExtensions.cs": {
-    "mtime": 1791828836.4708297,
-    "seen": 1791829123.6504061,
-    "ast_hash": "bfd7d2d51d1619f5220be9be37240554",
+    "mtime": 1791831260.5960166,
+    "seen": 1791918405.1498992,
+    "ast_hash": "17c5b52af2267862a9f86c9d46a6bb0d",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/ConfigurationService.cs": {
-    "mtime": 1791829103.2764218,
-    "seen": 1791829123.6504192,
-    "ast_hash": "97083e70523159289c3017ebccfb211e",
+    "mtime": 1791831260.5960166,
+    "seen": 1791918405.149905,
+    "ast_hash": "3f874ea9fd80cecbf13a6d253335956b",
     "semantic_hash": ""
   },
   "TSRDownloader.Core/Services/IConfigurationService.cs": {
-    "mtime": 1791829103.2959359,
-    "seen": 1791829123.6504257,
+    "mtime": 1791831260.5970166,
+    "seen": 1791918405.1499088,
     "ast_hash": "406797ce73f34c190de1be2d42d5a248",
     "semantic_hash": ""
   },
   "TSRDownloader.TestHelper/TemporaryDirectory.cs": {
-    "mtime": 1791829103.3330162,
-    "seen": 1791829123.6504428,
-    "ast_hash": "085e18a0f3088ddc44db4d23a5d37b90",
+    "mtime": 1791831260.6000168,
+    "seen": 1791918405.14992,
+    "ast_hash": "674f4770cd03518154458dc169b59d22",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Converters/InverseBooleanToVisibilityConverter.cs": {
-    "mtime": 1791829103.4066386,
-    "seen": 1791829123.6504574,
-    "ast_hash": "4832194d12dc2f1af782da517c218faf",
+    "mtime": 1791831260.6020174,
+    "seen": 1791918405.1499333,
+    "ast_hash": "f469f83cb1bfc49141daede0ff3ce96b",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Localization/LocalizeExtension.cs": {
-    "mtime": 1791829103.4118311,
-    "seen": 1791829123.6504593,
+    "mtime": 1791831260.603017,
+    "seen": 1791918405.1499352,
     "ast_hash": "c3541c9dd0cc47c5d42c43b510383814",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Presentation/AppVersionText.cs": {
-    "mtime": 1791828947.710659,
-    "seen": 1791829123.650464,
-    "ast_hash": "cd7b2c653a972305ef263994223470e2",
+    "mtime": 1791831260.603017,
+    "seen": 1791918405.1499398,
+    "ast_hash": "ca56727cc4e3b6b6e09fd9a87f94442f",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Views/AboutWindow.xaml": {
-    "mtime": 1791830078.4393733,
-    "seen": 1791830120.4297652,
-    "ast_hash": "4eb52b2d2673ad47f7a992f876c91618",
+    "mtime": 1791831260.6060162,
+    "seen": 1791918405.14996,
+    "ast_hash": "ec751926323a92ab371e811bfc462f69",
     "semantic_hash": ""
   },
   "TSRDownloader.UI/Views/AboutWindow.xaml.cs": {
-    "mtime": 1791830018.0985398,
-    "seen": 1791830120.429766,
-    "ast_hash": "ab0591acd5c7386321b956e2aafee537",
+    "mtime": 1791831260.6060162,
+    "seen": 1791918405.1499605,
+    "ast_hash": "c09dd4612f98343a8a653e97faa6839d",
     "semantic_hash": ""
   }
 }

@@ -74,6 +74,34 @@ public class DownloadItemViewModelTests
         progressText.ShouldBe("Retrying (2/3)…");
     }
 
+    [Theory]
+    [InlineData(DownloadStatus.Failed)]
+    [InlineData(DownloadStatus.ExtractionFailed)]
+    public void ErrorToolTip_Should_ShowFullErrorMessage_When_Failed(DownloadStatus status)
+    {
+        // Arrange
+        DownloadItem model = new() { Status = status, ErrorMessage = "A very long error message from the server" };
+
+        // Act
+        DownloadItemViewModel viewModel = CreateViewModel(model);
+
+        // Assert
+        viewModel.ErrorToolTip.ShouldBe("A very long error message from the server");
+    }
+
+    [Fact]
+    public void ErrorToolTip_Should_BeNull_When_NotFailed()
+    {
+        // Arrange
+        DownloadItem model = new() { Status = DownloadStatus.Completed };
+
+        // Act
+        DownloadItemViewModel viewModel = CreateViewModel(model);
+
+        // Assert
+        viewModel.ErrorToolTip.ShouldBeNull();
+    }
+
     [Fact]
     public void ProgressText_Should_ShowQueuePosition_When_Queued()
     {
